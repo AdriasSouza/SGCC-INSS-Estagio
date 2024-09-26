@@ -40,11 +40,11 @@ O primeiro comando recebe as atualizações mais recentes do repositório remoto
 ### Backend (Java Spring Boot)
 1. Baixe as Extensões:
    - **Extension Pack for Java (Extensão do VS Code)**
-   - - <https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack>
+     - <https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack>
    - **Spring Boot Extension Pack (Extensão do VS Code)**
-   - <https://marketplace.visualstudio.com/items?itemName=pivotal.vscode-boot-dev-pack>
-   - - **XML (Extensão do VS Code)**
-   - <https://marketplace.visualstudio.com/items?itemName=redhat.vscode-xml>
+     - <https://marketplace.visualstudio.com/items?itemName=pivotal.vscode-boot-dev-pack>
+   - **XML (Extensão do VS Code)**
+     - <https://marketplace.visualstudio.com/items?itemName=redhat.vscode-xml>
 
 2. Navegue até o diretório do backend:
    ```bash
@@ -93,13 +93,13 @@ O primeiro comando recebe as atualizações mais recentes do repositório remoto
 
 5. Acesse a aplicação no navegador em `http://localhost:4200`.
    
-6. Em caso de erro com o ng serve adicione , no navegador digite:
+6. Em caso de erro com o ng serve, no navegador digite:
     ```console
     chrome: chrome://net-internals/#hsts
     edge: edge://net-internals/#hsts
     brave: brave://net-internals/#hsts
     ```
-    No campo em Delete domain security policies, digite localhost e clique no botão delete
+    No campo em Delete domain security policies, adicione localhost e clique no botão delete
 
 ## Ferramentas
 - **Visual Studio Code**
