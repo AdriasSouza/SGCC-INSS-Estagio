@@ -166,13 +166,13 @@ Back-End
 
 - **Criando projetos Spring Boot (VS Code)**
   -Na paleta de comandos do vscode (F1), selecionar a opção “Spring Initializr: Create a MavenProject”.
-    ▪ Spring Boot version: 3.2.6
-    ▪ Project Language: Java
-    ▪ Group ID: inss.sgcc
-    ▪ Artifact ID: sgccapi
-    ▪ Packing type: Jar
-    ▪ Java version: 17
-    ▪ Dependencies: Spring Web
+     ▪ Spring Boot version: 3.2.6
+     ▪ Project Language: Java
+     ▪ Group ID: inss.sgcc
+     ▪ Artifact ID: sgccapi
+     ▪ Packing type: Jar
+     ▪ Java version: 17
+     ▪ Dependencies: Spring Web
 
 ## Sites de referência
 - Angular Docs: <https://v17.angular.io/docs>
