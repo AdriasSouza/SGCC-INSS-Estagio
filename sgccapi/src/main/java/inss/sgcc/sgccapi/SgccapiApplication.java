@@ -1,4 +1,4 @@
-package br.inss.sgccapi;
+package inss.sgcc.sgccapi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
