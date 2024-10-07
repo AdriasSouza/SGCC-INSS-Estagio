@@ -1,27 +1,40 @@
 <head>
 	<title>SGCC</title>
 </head>
-<!-- Cabeçalho -->
-<header class="p-3 mb-3 border-bottom" data-bs-theme="auto">
-  <div class="container">
-      <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-      
-        <!-- Logo -->
-          <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 link-body-emphasis text-decoration-none">
-            <svg class="bi me-2" width="120" height="32"><use xlink:href="#Camada_1"/></svg>
-          </a>
 
-          <!-- Navegação -->
-          <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-              <li><a href="#" class="nav-link px-2 link-secondary">Overview</a></li>
-              <li><a href="#" class="nav-link px-2 link-body-emphasis">Inventory</a></li>
-              <li><a href="#" class="nav-link px-2 link-body-emphasis">Customers</a></li>
-              <li><a href="#" class="nav-link px-2 link-body-emphasis">Products</a></li>
+
+<!-- Cabeçalho -->
+<header class="p-3 mb-3 border-bottom">
+  <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-light">
+      <!-- Logo -->
+      <a href="/" class="navbar-brand d-flex align-items-center mb-2 mb-lg-0 link-body-emphasis text-decoration-none">
+        <svg class="bi me-2" width="120" height="32"><use xlink:href="#Camada_1"/></svg>
+      </a>
+
+      <!-- Botão do Menu Sanduíche -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Offcanvas Menu -->
+      <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="offcanvasMenuLabel">Menu</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          <ul class="nav nav-pills navbar-nav me-auto mb-auto mb-lg-0">
+            <li class="nav-item"><a routerLink="/equipamentos" class="nav-link link-secondary">Equipamentos</a></li>
+            <li class="nav-item"><a routerLink="" class="nav-link link-body-emphasis">Inventario</a></li>
+            <li class="nav-item"><a routerLink="" class="nav-link link-body-emphasis">Customers</a></li>
+            <li class="nav-item"><a routerLink="" class="nav-link link-body-emphasis">Relatórios</a></li>
           </ul>
 
-          <!-- Perfil -->
-          <div class="dropdown text-end d-inline-flex align-items-center">
+          <hr>
 
+          <!-- Perfil (Itens que não colapsam) -->
+          <div class="dropdown">
             <!-- Foto de Perfil -->
             <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
               <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
@@ -36,10 +49,12 @@
               <li><a class="dropdown-item" href="#">Sign out</a></li>
             </ul>
           </div>
-
+        </div>
       </div>
+    </nav>
   </div>
 </header>
+
 
 <!-- Conteudo Principal -->
 <main id="main" class="flex-fill bg-white">
@@ -47,7 +62,7 @@
 </main>
 
 <!-- Footer -->
-<footer class="d-flex flex-wrap justify-content-between align-items-center border-top py-3 my-4">
+<footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
   <p class="col-md-4 mb-0 text-body-secondary">&copy; 2024 Company, Inc</p>
 
   <a href="/" class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
@@ -71,34 +86,50 @@
           type="button"
           aria-expanded="false"
           data-bs-toggle="dropdown"
-          aria-label="Toggle theme (auto)">
-    <svg class="bi my-1 theme-icon-active" width="1em" height="1em"><use href="#circle-half"></use></svg>
+          [attr.aria-label]="'Toggle theme (' + currentTheme + ')'">
+    <svg class="bi my-1 theme-icon-active" width="1em" height="1em">
+      <use href="#circle-half"></use>
+    </svg>
     <span class="visually-hidden" id="bd-theme-text">Toggle theme</span>
   </button>
+  
   <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text">
     <li>
-      <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
-        <svg class="bi me-2 opacity-50" width="1em" height="1em"><use href="#sun-fill"></use></svg>
+      <button type="button" class="dropdown-item d-flex align-items-center"
+              (click)="toggleTheme('light')"
+              [class.active]="currentTheme === 'light'"
+              [attr.aria-pressed]="currentTheme === 'light' ? 'true' : 'false'">
+        <svg class="bi me-2 opacity-50" width="1em" height="1em">
+          <use href="#sun-fill"></use>
+        </svg>
         Light
-        <svg class="bi ms-auto d-none" width="1em" height="1em"><use href="#check2"></use></svg>
       </button>
     </li>
     <li>
-      <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
-        <svg class="bi me-2 opacity-50" width="1em" height="1em"><use href="#moon-stars-fill"></use></svg>
+      <button type="button" class="dropdown-item d-flex align-items-center"
+              (click)="toggleTheme('dark')"
+              [class.active]="currentTheme === 'dark'"
+              [attr.aria-pressed]="currentTheme === 'dark' ? 'true' : 'false'">
+        <svg class="bi me-2 opacity-50" width="1em" height="1em">
+          <use href="#moon-stars-fill"></use>
+        </svg>
         Dark
-        <svg class="bi ms-auto d-none" width="1em" height="1em"><use href="#check2"></use></svg>
       </button>
     </li>
     <li>
-      <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto" aria-pressed="true">
-        <svg class="bi me-2 opacity-50" width="1em" height="1em"><use href="#circle-half"></use></svg>
+      <button type="button" class="dropdown-item d-flex align-items-center"
+              (click)="toggleTheme('auto')"
+              [class.active]="currentTheme === 'auto'"
+              [attr.aria-pressed]="currentTheme === 'auto' ? 'true' : 'false'">
+        <svg class="bi me-2 opacity-50" width="1em" height="1em">
+          <use href="#circle-half"></use>
+        </svg>
         Auto
-        <svg class="bi ms-auto d-none" width="1em" height="1em"><use href="#check2"></use></svg>
       </button>
     </li>
   </ul>
 </div>
+
 
 
 <!-- SVGS da pagina -->

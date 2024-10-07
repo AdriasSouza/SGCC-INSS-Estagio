@@ -1,50 +1,29 @@
 import { Component, inject, Renderer2 } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterLink, RouterOutlet } from '@angular/router';
 import { DarkmodeService } from './service/darkmode/darkmode.service';
+import { EquipamentoComponent } from './components/equipamentos/equipamento/equipamento.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, EquipamentoComponent, RouterLink],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
   title = 'theme-switcher';
+  currentUrl = '';
 
-  constructor(private renderer: Renderer2) {}
+  // Injetando o serviço de Darkmode
+  darkModeService: DarkmodeService = inject(DarkmodeService);
 
-  ngOnInit() {
-    this.initializeTheme();
+  currentThemeLabel = 'Toggle theme (auto)'; // Valor inicial como 'auto'
+  currentTheme = 'auto'; // Armazena o tema atual // Define o tema inicial como 'auto'
+
+  // Função para alternar o tema baseado em um string (light, dark, auto)
+  toggleTheme(theme: string) {
+    this.currentTheme = theme; // Atualiza o tema ativo
+    this.darkModeService.setTheme(theme);  // Envia o tema selecionado para o serviço
   }
 
-  // Função para inicializar o tema baseado em preferências do usuário
-  initializeTheme() {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      this.setTheme(savedTheme);
-    } else {
-      this.setTheme('auto');
-    }
-  }
-
-  // Função para alterar o tema
-  setTheme(theme: string) {
-    const htmlElement = document.documentElement;
-
-    if (theme === 'auto') {
-      // Lógica para alternar entre light/dark baseado nas preferências do sistema
-      const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      theme = darkModeQuery.matches ? 'dark' : 'light';
-    }
-
-    // Adiciona o tema selecionado ao elemento <html>
-    this.renderer.setAttribute(htmlElement, 'data-bs-theme', theme);
-    localStorage.setItem('theme', theme);
-  }
-
-  // Evento que altera o tema quando o botão é clicado
-  changeTheme(theme: string) {
-    this.setTheme(theme);
-  }
 }
