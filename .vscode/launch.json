@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-SgccapiApplication<sgccapi>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "inss.sgcc.sgccapi.SgccapiApplication",
+            "projectName": "sgccapi",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

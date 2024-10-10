@@ -1,12 +1,12 @@
 import { Component, inject, Renderer2 } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { DarkmodeService } from './service/darkmode/darkmode.service';
-import { EquipamentoComponent } from './components/equipamentos/equipamento/equipamento.component';
+import { EquipamentoComponent } from './components/equipamento/equipamento.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, EquipamentoComponent, RouterLink],
+  imports: [RouterOutlet, RouterLink, EquipamentoComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
