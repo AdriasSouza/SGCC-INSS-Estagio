@@ -1,12 +1,77 @@
 import { Component } from '@angular/core';
+import { Equipamento } from './equipamentos.model';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-equipamento',
   standalone: true,
-  imports: [],
+  imports: [FormsModule, CommonModule],
   templateUrl: './equipamento.component.html',
-  styleUrl: './equipamento.component.css'
+  styleUrls: ['./equipamento.component.scss']
 })
-export class EquipamentoComponent {
 
+export class EquipamentoComponent {
+  // Lista inicial de equipamentos (pode ser carregada via serviço em um cenário real)
+  equipamentos: Equipamento[] = [
+    { plaqueta: 371298, nome: 'Positivo Micro', marca: 'Positivo', tipo: 'Computador', setor: 'Gerência', estado: 'Bom', situacao: 'Estoque', responsavel: 'Rusemberg', sala: 101 },
+    { plaqueta: 371299, nome: 'Monitor LG', marca: 'LG', tipo: 'Monitor', setor: 'Logística', estado: 'Novo', situacao: 'Em uso', responsavel: 'Ana', sala: 102 },
+    // Mais equipamentos...
+  ];
+
+  // Filtros
+  searchText: string = '';
+  selectedMarca: string = '';
+  selectedTipo: string = '';
+  selectedSetor: string = '';
+  selectedEstado: string = '';
+  selectedSituacao: string = '';
+
+  // Equipamentos filtrados
+  filteredEquipamentos: Equipamento[] = this.equipamentos;
+
+  // Função para filtrar a lista de equipamentos de acordo com os filtros aplicados
+  filterEquipamentos() {
+    this.filteredEquipamentos = this.equipamentos.filter(equipamento => {
+      const matchesSearch = this.searchText === '' || equipamento.plaqueta.toString().includes(this.searchText) || equipamento.sala.toString().includes(this.searchText) || equipamento.responsavel.toLowerCase().includes(this.searchText.toLowerCase());
+      const matchesMarca = this.selectedMarca === '' || equipamento.marca === this.selectedMarca;
+      const matchesTipo = this.selectedTipo === '' || equipamento.tipo === this.selectedTipo;
+      const matchesSetor = this.selectedSetor === '' || equipamento.setor === this.selectedSetor;
+      const matchesEstado = this.selectedEstado === '' || equipamento.estado === this.selectedEstado;
+      const matchesSituacao = this.selectedSituacao === '' || equipamento.situacao === this.selectedSituacao;
+
+      return matchesSearch && matchesMarca && matchesTipo && matchesSetor && matchesEstado && matchesSituacao;
+    });
+  }
+
+  // Função chamada quando o campo de busca é alterado
+  onSearchTextChange() {
+    this.filterEquipamentos();
+  }
+
+  // Funções chamadas ao alterar os selects
+  onMarcaChange(marca: string) {
+    this.selectedMarca = marca;
+    this.filterEquipamentos();
+  }
+
+  onTipoChange(tipo: string) {
+    this.selectedTipo = tipo;
+    this.filterEquipamentos();
+  }
+
+  onSetorChange(setor: string) {
+    this.selectedSetor = setor;
+    this.filterEquipamentos();
+  }
+
+  onEstadoChange(estado: string) {
+    this.selectedEstado = estado;
+    this.filterEquipamentos();
+  }
+
+  onSituacaoChange(situacao: string) {
+    this.selectedSituacao = situacao;
+    this.filterEquipamentos();
+  }
 }

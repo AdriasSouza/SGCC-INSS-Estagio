@@ -1,0 +1,58 @@
+<div class="container mt-4">
+    <!-- Título da página -->
+    <h3 class="fw-bold mb-4">Histórico de Manutenções</h3>
+    <h5 class="mb-4">Registro de manutenções dos equipamentos</h5>
+  
+    <!-- Campo de busca -->
+    <div class="mb-3">
+      <label for="searchInput" class="form-label">Buscar Manutenção</label>
+      <input type="text" id="searchInput" class="form-control" placeholder="Número da manutenção, nome do equipamento ou responsável" (input)="onSearch($event)" />
+    </div>
+  
+    <!-- Filtros -->
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label for="equipamentoSelect" class="form-label">Equipamento</label>
+        <select id="equipamentoSelect" class="form-select" (change)="onFilterChange()">
+          <option value="">Todos os Equipamentos</option>
+          <option *ngFor="let equipamento of equipamentos">{{ equipamento }}</option>
+        </select>
+      </div>
+  
+      <div class="col-md-4 mb-3">
+        <label for="responsavelSelect" class="form-label">Responsável</label>
+        <select id="responsavelSelect" class="form-select" (change)="onFilterChange()">
+          <option value="">Todos os Responsáveis</option>
+          <option *ngFor="let responsavel of responsaveis">{{ responsavel }}</option>
+        </select>
+      </div>
+  
+      <div class="col-md-4 mb-3">
+        <label for="dataSelect" class="form-label">Data da Manutenção</label>
+        <input type="date" id="dataSelect" class="form-control" (change)="onFilterChange()" />
+      </div>
+    </div>
+  
+    <!-- Tabela -->
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+          <tr>
+            <th scope="col">Nº da Manutenção</th>
+            <th scope="col">Equipamento</th>
+            <th scope="col">Responsável</th>
+            <th scope="col">Data da Manutenção</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let manutencao of manutencoesFiltradas">
+            <td>{{ manutencao.numero }}</td>
+            <td>{{ manutencao.equipamento.numero }} - {{ manutencao.equipamento.nome }}</td>
+            <td>{{ manutencao.responsavel }}</td>
+            <td>{{ manutencao.data | date}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  

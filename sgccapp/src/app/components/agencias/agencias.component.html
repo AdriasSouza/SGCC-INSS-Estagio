@@ -1,0 +1,99 @@
+<!-- agency-management.component.html -->
+<div class="container mt-5">
+    <h2 class="mb-4">Gerenciamento de Agências, Setores e Salas</h2>
+  
+    <!-- Formulário para adicionar/editar uma agência -->
+    <form (ngSubmit)="saveAgency()" #agencyForm="ngForm">
+      <h4>Agência</h4>
+      <div class="mb-3">
+        <label for="agencyCode" class="form-label">Código</label>
+        <input type="text" class="form-control" id="agencyCode" [(ngModel)]="selectedAgency.codigo" name="agencyCode" required>
+      </div>
+  
+      <div class="mb-3">
+        <label for="agencyDescription" class="form-label">Descrição</label>
+        <input type="text" class="form-control" id="agencyDescription" [(ngModel)]="selectedAgency.descricao" name="agencyDescription" required>
+      </div>
+  
+      <button type="submit" class="btn btn-primary">{{ selectedAgency.id ? 'Atualizar' : 'Adicionar' }} Agência</button>
+      <button type="button" class="btn btn-secondary" (click)="resetAgencyForm()">Limpar</button>
+    </form>
+  
+    <!-- Lista de agências -->
+    <h4 class="mt-5">Lista de Agências</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Código</th>
+          <th>Descrição</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let agency of agencies">
+          <td>{{ agency.id }}</td>
+          <td>{{ agency.codigo }}</td>
+          <td>{{ agency.descricao }}</td>
+          <td>
+            <button class="btn btn-warning" (click)="editAgency(agency)">Editar</button>
+            <button class="btn btn-danger" (click)="deleteAgency(agency.id)">Excluir</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <!-- Formulário para adicionar/editar um setor -->
+    <form (ngSubmit)="saveSector()" #sectorForm="ngForm" class="mt-5">
+      <h4>Setor</h4>
+      <div class="mb-3">
+        <label for="sectorCode" class="form-label">Código</label>
+        <input type="text" class="form-control" id="sectorCode" [(ngModel)]="selectedSector.codigo" name="sectorCode" required>
+      </div>
+  
+      <div class="mb-3">
+        <label for="sectorName" class="form-label">Nome do Setor</label>
+        <input type="text" class="form-control" id="sectorName" [(ngModel)]="selectedSector.nome_setor" name="sectorName" required>
+      </div>
+  
+      <div class="mb-3">
+        <label for="agencyId" class="form-label">Agência</label>
+        <select id="agencyId" class="form-select" [(ngModel)]="selectedSector.id_agencia" name="agencyId" required>
+          <option *ngFor="let agency of agencies" [value]="agency.id">{{ agency.descricao }}</option>
+        </select>
+      </div>
+  
+      <button type="submit" class="btn btn-primary">{{ selectedSector.id ? 'Atualizar' : 'Adicionar' }} Setor</button>
+      <button type="button" class="btn btn-secondary" (click)="resetSectorForm()">Limpar</button>
+    </form>
+  
+    <!-- Lista de setores -->
+    <h4 class="mt-5">Lista de Setores</h4>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Código</th>
+          <th>Nome do Setor</th>
+          <th>Agência</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let sector of sectors">
+          <td>{{ sector.id }}</td>
+          <td>{{ sector.codigo }}</td>
+          <td>{{ sector.nome_setor }}</td>
+          <td>{{ getAgencyDescription(sector.id_agencia) }}</td>
+          <td>
+            <button class="btn btn-warning" (click)="editSector(sector)">Editar</button>
+            <button class="btn btn-danger" (click)="deleteSector(sector.id)">Excluir</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <!-- Formulário para adicionar/editar uma sala (opcional) -->
+    <!-- Você pode adicionar aqui um formulário para gerenciar as salas seguindo o mesmo padrão -->
+  </div>
+  
