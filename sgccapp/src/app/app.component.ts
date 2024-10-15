@@ -38,46 +38,44 @@ export class AppComponent {
     this.darkModeService.setTheme(theme);  // Envia o tema selecionado para o serviço
   }
 
-    // Função para habilitar o modo de edição
-    editUser() {
-      this.isEditing = true;
-    }
-  
-    // Função para salvar os dados e desabilitar o modo de edição
-    saveUser() {
-      this.isEditing = false;
-      // Aqui você pode implementar a lógica para enviar as alterações ao backend
-      console.log('Dados do usuário salvos:', this.user);
-    }
+  // Função para habilitar o modo de edição
+  editUser() {
+    this.isEditing = true;
+  }
 
-    // Função de logout
-    confirmLogout() {
-      // Aqui você pode chamar um serviço para fazer o logout, limpar dados locais, etc.
-      console.log('Usuário deslogado');
-      
-      // Redireciona o usuário para a página de login ou a página inicial
-      this.router.navigate(['/login']); // Substitua '/login' pela rota correta
-    }
-  
-    saveSettings() {
-      const language = (document.getElementById('languageSelect') as HTMLSelectElement).value;
-      const accessibilityEnabled = (document.getElementById('accessibilityCheck') as HTMLInputElement).checked;
-      const notifications = (document.getElementById('notifications') as HTMLSelectElement).value;
-  
-      // Aqui você pode implementar a lógica para salvar as configurações
-      console.log('Idioma:', language);
-      console.log('Acessibilidade:', accessibilityEnabled);
-      console.log('Notificações:', notifications);
-      
-      // Fechar o modal após salvar
-      this.closeSettingsModal();
-    }
-    
-    closeSettingsModal() {
-        const modal = document.getElementById('settingsModal') as any;
-        const modalInstance = bootstrap.Modal.getInstance(modal);
-        modalInstance.hide();
-    }
-    
+  // Função para salvar os dados e desabilitar o modo de edição
+  saveUser() {
+    this.isEditing = false;
+    // Aqui você pode implementar a lógica para enviar as alterações ao backend
+    console.log('Dados do usuário salvos:', this.user);
+  }
 
+  // Função de logout
+  confirmLogout() {
+    // Aqui você pode chamar um serviço para fazer o logout, limpar dados locais, etc.
+    console.log('Usuário deslogado');
+    
+    // Redireciona o usuário para a página de login ou a página inicial
+    this.router.navigate(['/login']); // Substitua '/login' pela rota correta
+  }
+
+  saveSettings() {
+    const language = (document.getElementById('languageSelect') as HTMLSelectElement).value;
+    const accessibilityEnabled = (document.getElementById('accessibilityCheck') as HTMLInputElement).checked;
+    const notifications = (document.getElementById('notifications') as HTMLSelectElement).value;
+
+    // Aqui você pode implementar a lógica para salvar as configurações
+    console.log('Idioma:', language);
+    console.log('Acessibilidade:', accessibilityEnabled);
+    console.log('Notificações:', notifications);
+    
+    // Fechar o modal após salvar
+    this.closeSettingsModal();
+  }
+  
+  closeSettingsModal() {
+      const modal = document.getElementById('settingsModal') as any;
+      const modalInstance = bootstrap.Modal.getInstance(modal);
+      modalInstance.hide();
+  }
 }

@@ -8,14 +8,14 @@
   <!-- Campo de busca -->
   <div class="mb-3">
     <label for="searchInput" class="form-label">Buscar Peça</label>
-    <input type="text" id="searchInput" class="form-control" placeholder="Código da peça ou descrição" />
+    <input type="text" id="searchInput" class="form-control" placeholder="Código, número de série ou descrição" [(ngModel)]="busca" (input)="atualizarBusca()" />
   </div>
 
   <!-- Filtros para a tabela -->
   <div class="row mb-3">
     <div class="col-md-4 mb-3">
       <label for="tipoSelect" class="form-label">Tipo</label>
-      <select id="tipoSelect" class="form-select" [(ngModel)]="filtros.tipo">
+      <select id="tipoSelect" class="form-select" [(ngModel)]="filtros.tipo" (change)="atualizarBusca()">
         <option value="">Todos os Tipos</option>
         <option value="Memória RAM">Memória RAM</option>
         <option value="Memória Interna">Memória Interna</option>
@@ -25,16 +25,19 @@
     </div>
     <div class="col-md-4 mb-3">
       <label for="fabricanteSelect" class="form-label">Fabricante</label>
-      <select id="fabricanteSelect" class="form-select">
+      <select id="fabricanteSelect" class="form-select" [(ngModel)]="filtros.fabricante" (change)="atualizarBusca()">
         <option value="">Todos os Fabricantes</option>
-        <option></option>
+        <option value="Fabricante A">Fabricante A</option>
+        <option value="Fabricante B">Fabricante B</option>
       </select>
     </div>
     <div class="col-md-4 mb-3">
       <label for="tamanhoSelect" class="form-label">Tamanho (GB)</label>
-      <select id="tamanhoSelect" class="form-select"  >
+      <select id="tamanhoSelect" class="form-select" [(ngModel)]="filtros.tamanho" (change)="atualizarBusca()">
         <option value="">Todos os Tamanhos</option>
-        <option></option>
+        <option value="4">4 GB</option>
+        <option value="8">8 GB</option>
+        <option value="16">16 GB</option>
       </select>
     </div>
   </div>
@@ -48,18 +51,20 @@
         <th>Tipo</th>
         <th>Fabricante</th>
         <th>Tamanho (GB)</th>
+        <th>Número de Série</th>
         <th>Ações</th>
       </tr>
     </thead>
     <tbody>
       <!-- Filtra as peças de acordo com os filtros -->
-      <tr *ngFor="let peca of pecasFiltradas()">
+      <tr *ngFor="let peca of pecasFiltradas">
         <td>{{ peca.codigo }}</td>
         <td>{{ peca.descricao }}</td>
         <td>{{ peca.tipo }}</td>
         <td>{{ peca.fabricante }}</td>
         <td *ngIf="peca.tipo === 'Memória RAM' || peca.tipo === 'Memória Interna'">{{ peca.tamanho }}</td>
         <td *ngIf="peca.tipo !== 'Memória RAM' && peca.tipo !== 'Memória Interna'">N/A</td>
+        <td>{{ peca.numeroSerie }}</td>
         <td>
           <button class="btn btn-sm btn-warning" (click)="editarPeca(peca)">Editar</button>
           <button class="btn btn-sm btn-danger" (click)="confirmarExclusao(peca)">Excluir</button>
@@ -67,96 +72,92 @@
       </tr>
     </tbody>
   </table>
-</div>
 
-<!-- Modal para adicionar/editar peça -->
-<div class="modal fade" id="pecaModal" tabindex="-1" aria-labelledby="pecaModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="pecaModalLabel">{{ editMode ? 'Editar Peça' : 'Adicionar Nova Peça' }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="codigo" class="form-label">Código</label>
-              <input type="text" id="codigo" class="form-control" [(ngModel)]="novaPeca.codigo" name="codigo" required />
-            </div>
-            <div class="col-md-6 mb-3">
+  <!-- Modais -->
+  <!-- Modal de Adicionar/Editar Peça -->
+  <div class="modal fade" id="pecaModal" tabindex="-1" aria-labelledby="pecaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="pecaModalLabel">{{ editMode ? 'Editar Peça' : 'Adicionar Peça' }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" (click)="cancelarOperacao()"></button>
+        </div>
+        <div class="modal-body">
+          <form #pecaForm="ngForm" class="row g-3 needs-validation" novalidate>
+            <div class="col-md-12">
               <label for="descricao" class="form-label">Descrição</label>
-              <input type="text" id="descricao" class="form-control" [(ngModel)]="novaPeca.descricao" name="descricao" required />
+              <input type="text" class="form-control" id="descricao" [(ngModel)]="novaPeca.descricao" name="descricao" required [class.is-invalid]="pecaForm.submitted && !novaPeca.descricao">
+              <div class="invalid-feedback">Descrição é obrigatória.</div>
             </div>
-          </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
+            <div class="col-md-12">
               <label for="tipo" class="form-label">Tipo</label>
-              <select id="tipo" class="form-select" [(ngModel)]="novaPeca.tipo" name="tipo" required>
+              <select class="form-select" id="tipo" [(ngModel)]="novaPeca.tipo" name="tipo" required [class.is-invalid]="pecaForm.submitted && !novaPeca.tipo">
+                <option value="" disabled selected>Selecione um tipo</option>
                 <option value="Memória RAM">Memória RAM</option>
                 <option value="Memória Interna">Memória Interna</option>
                 <option value="Processador">Processador</option>
                 <option value="Placa Mãe">Placa Mãe</option>
               </select>
+              <div class="invalid-feedback">Tipo é obrigatório.</div>
             </div>
-            <div class="col-md-6 mb-3">
-              <label for="fabricante" class="form-label">Fabricante</label>
-              <input type="text" id="fabricante" class="form-control" [(ngModel)]="novaPeca.fabricante" name="fabricante" required />
-            </div>
-          </div>
-          <div class="row" *ngIf="novaPeca.tipo === 'Memória RAM' || novaPeca.tipo === 'Memória Interna'">
-            <div class="col-md-6 mb-3">
+            <div class="col-md-12" *ngIf="novaPeca.tipo === 'Memória RAM' || novaPeca.tipo === 'Memória Interna'">
               <label for="tamanho" class="form-label">Tamanho (GB)</label>
-              <input type="number" id="tamanho" class="form-control" [(ngModel)]="novaPeca.tamanho" name="tamanho" />
+              <input type="number" class="form-control" id="tamanho" [(ngModel)]="novaPeca.tamanho" name="tamanho" required [class.is-invalid]="pecaForm.submitted && !novaPeca.tamanho">
+              <div class="invalid-feedback">Tamanho é obrigatório.</div>
             </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <!-- Botão que abre o modal de confirmação -->
-        <button type="button" class="btn btn-primary" (click)="abrirConfirmacaoModal()">
-          {{ editMode ? 'Salvar Alterações' : 'Adicionar Peça' }}
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de confirmação de adição/edição -->
-<div class="modal fade" id="confirmacaoAddEditModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="confirmacaoAddEditModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered"> <!-- Adicionada a classe modal-dialog-centered -->
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="confirmacaoAddEditModalLabel">Confirmar Ação</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Tem certeza que deseja {{ editMode ? 'salvar as alterações' : 'adicionar a nova peça' }}?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" (click)="onSubmit()">Confirmar</button>
+            <div class="col-md-12">
+              <label for="fabricante" class="form-label">Fabricante</label>
+              <input type="text" class="form-control" id="fabricante" [(ngModel)]="novaPeca.fabricante" name="fabricante" required [class.is-invalid]="pecaForm.submitted && !novaPeca.fabricante">
+              <div class="invalid-feedback">Fabricante é obrigatório.</div>
+            </div>
+            <div class="col-md-12">
+              <label for="numeroSerie" class="form-label">Número de Série</label>
+              <input type="text" class="form-control" id="numeroSerie" [(ngModel)]="novaPeca.numeroSerie" name="numeroSerie" required [class.is-invalid]="pecaForm.submitted && !novaPeca.numeroSerie">
+              <div class="invalid-feedback">Número de Série é obrigatório.</div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="cancelarOperacao()">Cancelar</button>
+          <button type="button" class="btn btn-primary" (click)="abrirConfirmacaoModal(pecaForm)">Adicionar</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
+  <!-- Modal de Confirmação -->
+  <div class="modal fade" id="confirmacaoAddEditModal" tabindex="-1" aria-labelledby="confirmacaoAddEditModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmacaoAddEditModalLabel">Confirmação</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Tem certeza que deseja {{ editMode ? 'editar' : 'adicionar' }} esta peça?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="voltarParaModalPeca()">Cancelar</button>
+          <button type="button" class="btn btn-primary" (click)="onSubmit()">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<!-- Modal de confirmação de exclusão -->
-<div class="modal fade" id="confirmacaoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="confirmacaoModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="confirmacaoModalLabel">Confirmar Exclusão</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Tem certeza de que deseja excluir a peça de código "{{ pecaEmExclusao?.codigo }}"?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-danger" (click)="excluirPeca()">Excluir</button>
+  <!-- Modal de Alerta -->
+  <div class="modal fade" id="alertaModal" tabindex="-1" aria-labelledby="alertaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="alertaModalLabel">Alerta</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>{{ mensagemAlerta }}</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+        </div>
       </div>
     </div>
   </div>
