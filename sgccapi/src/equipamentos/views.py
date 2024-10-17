@@ -1,46 +1,77 @@
-from rest_framework import viewsets, filters
-from rest_framework.permissions import IsAuthenticated
-from django_filters.rest_framework import DjangoFilterBackend
-from .models import TipoEquipamento, Equipamento, Manutencao
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated  # Importa permissão
+from django_filters.rest_framework import DjangoFilterBackend  # Importa filtro
+from .models import (
+    TipoEquipamento,
+    Equipamento,
+    Manutencao,
+    TipoComponente,
+    Componente,
+    EquipComponente
+)
 from .serializers import (
     TipoEquipamentoSerializer,
     EquipamentoSerializer,
-    ManutencaoSerializer
-    )
-from rest_framework.pagination import PageNumberPagination
+    ManutencaoSerializer,
+    TipoComponenteSerializer,
+    ComponenteSerializer,
+    EquipComponenteSerializer
+)
 
 
-class SmallResultsSetPagination(PageNumberPagination):
-    page_size = 10
-
-
-# ViewSet para o modelo TipoEquipamento
+# ViewSet para CRUD de TipoEquipamento
 class TipoEquipamentoViewSet(viewsets.ModelViewSet):
     queryset = TipoEquipamento.objects.all()
     serializer_class = TipoEquipamentoSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]  # Requer autenticação
+    filter_backends = [DjangoFilterBackend]  # Ativa o filtro
+    filterset_fields = ['nome', 'descricao']  # Campos que podem ser filtrados
 
 
-# ViewSet para o modelo Equipamento
+# ViewSet para CRUD de Equipamento
 class EquipamentoViewSet(viewsets.ModelViewSet):
     queryset = Equipamento.objects.all()
     serializer_class = EquipamentoSerializer
-    permission_classes = [IsAuthenticated]
-    pagination_class = SmallResultsSetPagination  # Paginação
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['estado', 'situacao', 'sala']  # Filtros exatos
-    search_fields = ['nome', 'marca']  # Pesquisa textual
-
-    def perform_create(self, serializer):
-        serializer.save(servidor=self.request.user.servidor)
-
-    def perform_update(self, serializer):
-        serializer.save()
+    permission_classes = [IsAuthenticated]  # Requer autenticação
+    filter_backends = [DjangoFilterBackend]  # Ativa o filtro
+    filterset_fields = ['plaqueta', 'nome', 'marca', 
+                        'estado', 'situacao', 'sala', 'tipo']
+    # Campos filtráveis
 
 
-# ViewSet para o modelo Manutencao
+# ViewSet para CRUD de Manutencao
 class ManutencaoViewSet(viewsets.ModelViewSet):
     queryset = Manutencao.objects.all()
     serializer_class = ManutencaoSerializer
-    permission_classes = [IsAuthenticated]
-    pagination_class = SmallResultsSetPagination  # Paginação
+    permission_classes = [IsAuthenticated]  # Requer autenticação
+    filter_backends = [DjangoFilterBackend]  # Ativa o filtro
+    filterset_fields = ['codigo', 'equipamento', 'responsavel']
+    # Campos filtráveis
+
+
+# ViewSet para CRUD de TipoComponente
+class TipoComponenteViewSet(viewsets.ModelViewSet):
+    queryset = TipoComponente.objects.all()
+    serializer_class = TipoComponenteSerializer
+    permission_classes = [IsAuthenticated]  # Requer autenticação
+    filter_backends = [DjangoFilterBackend]  # Ativa o filtro
+    filterset_fields = ['nome', 'descricao']  # Campos que podem ser filtrados
+
+
+# ViewSet para CRUD de Componente
+class ComponenteViewSet(viewsets.ModelViewSet):
+    queryset = Componente.objects.all()
+    serializer_class = ComponenteSerializer
+    permission_classes = [IsAuthenticated]  # Requer autenticação
+    filter_backends = [DjangoFilterBackend]  # Ativa o filtro
+    filterset_fields = ['codigo', 'nome', 'tipo', 'fabricante']
+    # Campos filtráveis
+
+
+# ViewSet para CRUD de EquipComponente
+class EquipComponenteViewSet(viewsets.ModelViewSet):
+    queryset = EquipComponente.objects.all()
+    serializer_class = EquipComponenteSerializer
+    permission_classes = [IsAuthenticated]  # Requer autenticação
+    filter_backends = [DjangoFilterBackend]  # Ativa o filtro
+    filterset_fields = ['equip', 'componente']  # Campos filtráveis

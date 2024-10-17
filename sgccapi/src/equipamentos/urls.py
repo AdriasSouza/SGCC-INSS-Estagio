@@ -3,28 +3,22 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     TipoEquipamentoViewSet,
     EquipamentoViewSet,
-    ManutencaoViewSet
-    )
+    ManutencaoViewSet,
+    TipoComponenteViewSet,
+    ComponenteViewSet,
+    EquipComponenteViewSet
+)
 
-# Cria o router para os ViewSets
+# Cria um roteador padrão
 router = DefaultRouter()
+router.register(r'tipo-equipamento', TipoEquipamentoViewSet)
+router.register(r'equipamento', EquipamentoViewSet)
+router.register(r'manutencao', ManutencaoViewSet)
+router.register(r'tipo-componente', TipoComponenteViewSet)
+router.register(r'componente', ComponenteViewSet)
+router.register(r'equip-componente', EquipComponenteViewSet)
 
-# Registra as rotas para os ViewSets
-router.register(
-    r'tipos-equipamentos', TipoEquipamentoViewSet, basename='tipo-equipamento'
-    )
-router.register(
-    r'equipamentos', EquipamentoViewSet, basename='equipamento'
-    )
-router.register(
-    r'manutencao', ManutencaoViewSet, basename='manutencao'
-    )
-
-# Inclui as rotas no padrão da API
+# Inclui as URLs do roteador nas URLs principais
 urlpatterns = [
     path('api/', include(router.urls)),
 ]
-
-# Opcional: se desejar adicionar uma rota para documentação da API
-# path('api/docs/', include('rest_framework_swagger.urls')), # Swagger
-# path('api/docs/', include('drf_yasg.urls')), # Redoc

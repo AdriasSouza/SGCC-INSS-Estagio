@@ -1,161 +1,279 @@
 from django.urls import reverse
-from rest_framework.test import APITestCase
 from rest_framework import status
-from .models import Equipamento, TipoEquipamento, Manutencao
-from usuarios.models import User, Servidor, Setor, Agencia
+from rest_framework.test import APITestCase
+from usuarios.models import User, Servidor
+from .models import TipoEquipamento, Equipamento, Manutencao, TipoComponente, Componente, EquipComponente
 
-
-class EquipamentoTest(APITestCase):
+class EquipamentoAPITestCase(APITestCase):
 
     def setUp(self):
-        # Criação de uma agência, setor e servidor
-        self.agencia = Agencia.objects.create(nome="Agência Central", numero=101)
-        self.setor = Setor.objects.create(nome="TI", codigo=12, id_agencia=self.agencia)
-        self.servidor = Servidor.objects.create(inscricao_institucional="123456789", nome_completo="José Souza", setor=self.setor)
+        # Cria um servidor para associar aos equipamentos e manutenções
+        self.servidor = Servidor.objects.create(
+            inscricao_institucional="12345",
+            nome_completo="Servidor Teste"
+        )
+
+        # Cria um usuário para autenticação
+        self.user = User.objects.create_user(
+            email="teste@teste.com",
+            password="password123",
+            id_servidor=self.servidor
+        )
         
-        # Criação de um usuário vinculado a um servidor
-        self.user = User.objects.create_user(email="user1@test.com", password="password123", id_servidor=self.servidor)
-
-        # Criação de um Tipo de Equipamento
-        self.tipo_equipamento = TipoEquipamento.objects.create(nome="Computador", descricao="Desktop padrão")
-
-        # Criação de um Equipamento
-        self.equipamento = Equipamento.objects.create(
-            plaqueta="PC-001",
-            nome="Positivo Micro",
-            marca="Positivo",
-            estado="NOVO",
-            situacao="EM_USO",
-            sala=123,
-            tipo=self.tipo_equipamento,
-            servidor=self.servidor,
-        )
-
-        # Criação de um registro de manutenção
-        self.manutencao = Manutencao.objects.create(
-            equipamento=self.equipamento,
-            codigo=456,
-            data_inicio="2023-09-10",
-            data_fim="2023-09-12",
-            descricao="Substituição de memória RAM",
-            responsavel=self.servidor
-        )
-
-    # Teste para criação de Tipo de Equipamento
-    def test_create_tipo_equipamento(self):
+        # Realiza login para obter o token JWT
+        self.client.login(email='teste@teste.com', password='password123')
+        
+    def test_tipo_equipamento_crud(self):
         url = reverse('tipoequipamento-list')
-        data = {
-            'nome': 'Impressora',
-            'descricao': 'Impressora multifuncional'
-        }
+
+        # Criação de TipoEquipamento
+        data = {'nome': 'Computador', 'descricao': 'Computador de mesa'}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(TipoEquipamento.objects.count(), 2)
 
-    # Teste para visualização de um Tipo de Equipamento
-    def test_view_tipo_equipamento(self):
-        url = reverse('tipoequipamento-detail', args=[self.tipo_equipamento.id])
-        response = self.client.get(url)
+        # Leitura de TipoEquipamento
+        response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['nome'], self.tipo_equipamento.nome)
+        self.assertEqual(response.data[0]['nome'], 'Computador')
 
-    # Teste para atualização de um Tipo de Equipamento
-    def test_update_tipo_equipamento(self):
-        url = reverse('tipoequipamento-detail', args=[self.tipo_equipamento.id])
-        data = {'nome': 'Servidor', 'descricao': 'Servidor de arquivos'}
-        response = self.client.put(url, data, format='json')
+        tipo_equipamento_id = response.data[0]['id']
+        url_detail = reverse('tipoequipamento-detail', args=[tipo_equipamento_id])
+
+        # Atualização de TipoEquipamento
+        data = {'nome': 'Notebook', 'descricao': 'Computador portátil'}
+        response = self.client.put(url_detail, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.tipo_equipamento.refresh_from_db()
-        self.assertEqual(self.tipo_equipamento.nome, 'Servidor')
+        self.assertEqual(response.data['nome'], 'Notebook')
 
-    # Teste para exclusão de um Tipo de Equipamento
-    def test_delete_tipo_equipamento(self):
-        url = reverse('tipoequipamento-detail', args=[self.tipo_equipamento.id])
-        response = self.client.delete(url)
+        # Exclusão de TipoEquipamento
+        response = self.client.delete(url_detail)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(TipoEquipamento.objects.count(), 0)
 
-    # Teste para criação de Equipamento
-    def test_create_equipamento(self):
+    def test_equipamento_crud(self):
+        tipo = TipoEquipamento.objects.create(nome="Desktop")
+
         url = reverse('equipamento-list')
+
+        # Criação de Equipamento
         data = {
-            'codigo': 'PC-002',
-            'tipo_equipamento': self.tipo_equipamento.id,
-            'responsavel': self.servidor.id,
-            'estado': 'Em manutenção'
+            'plaqueta': '12345',
+            'nome': 'Computador A',
+            'marca': 'Dell',
+            'estado': 'NOVO',
+            'situacao': 'EM_USO',
+            'sala': 101,
+            'tipo': tipo.id,
+            'servidor': self.servidor.id,
+            'data_aquisicao': '2024-10-17'
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Equipamento.objects.count(), 2)
 
-    # Teste para visualização de um Equipamento
-    def test_view_equipamento(self):
-        url = reverse('equipamento-detail', args=[self.equipamento.id])
-        response = self.client.get(url)
+        # Leitura de Equipamento
+        response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['codigo'], self.equipamento.codigo)
+        self.assertEqual(response.data[0]['nome'], 'Computador A')
 
-    # Teste para atualização de um Equipamento
-    def test_update_equipamento(self):
-        url = reverse('equipamento-detail', args=[self.equipamento.id])
+        equipamento_id = response.data[0]['id']
+        url_detail = reverse('equipamento-detail', args=[equipamento_id])
+
+        # Atualização de Equipamento
         data = {
-            'codigo': 'PC-003',
-            'tipo_equipamento': self.tipo_equipamento.id,
-            'responsavel': self.servidor.id,
-            'estado': 'Desativado'
+            'plaqueta': '12345',
+            'nome': 'Computador B',
+            'marca': 'HP',
+            'estado': 'NOVO',
+            'situacao': 'EM_USO',
+            'sala': 101,
+            'tipo': tipo.id,
+            'servidor': self.servidor.id,
+            'data_aquisicao': '2024-10-17'
         }
-        response = self.client.put(url, data, format='json')
+        response = self.client.put(url_detail, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.equipamento.refresh_from_db()
-        self.assertEqual(self.equipamento.codigo, 'PC-003')
-        self.assertEqual(self.equipamento.estado, 'Desativado')
+        self.assertEqual(response.data['nome'], 'Computador B')
 
-    # Teste para exclusão de um Equipamento
-    def test_delete_equipamento(self):
-        url = reverse('equipamento-detail', args=[self.equipamento.id])
-        response = self.client.delete(url)
+        # Exclusão de Equipamento
+        response = self.client.delete(url_detail)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Equipamento.objects.count(), 0)
 
-    # Teste para criação de registro de Manutenção
-    def test_create_manutencao(self):
+    # Funções de CRUD para Manutencao, TipoComponente, Componente e EquipComponente
+    # são similares. Adicione-as da mesma forma que os exemplos acima.
+    def test_manutencao_crud(self):
+        equipamento = Equipamento.objects.create(
+            plaqueta='67890',
+            nome='Impressora',
+            marca='Epson',
+            estado='NOVO',
+            situacao='EM_USO',
+            sala=102,
+            tipo=TipoEquipamento.objects.create(nome='Impressora'),
+            servidor=self.servidor,
+            data_aquisicao='2024-10-17'
+        )
+
         url = reverse('manutencao-list')
+
+        # Criação de Manutencao
         data = {
-            'equipamento': self.equipamento.id,
-            'descricao': 'Limpeza interna',
-            'data_inicio': '2023-10-01',
-            'data_fim': '2023-10-02',
-            'tecnico_responsavel': self.servidor.id
+            'codigo': 1,
+            'data_inicio': '2024-10-17T12:00:00Z',
+            'data_fim': '2024-11-17',
+            'descricao': 'Manutenção preventiva',
+            'equipamento': equipamento.id,
+            'responsavel': self.servidor.id
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Manutencao.objects.count(), 2)
 
-    # Teste para visualização de um registro de Manutenção
-    def test_view_manutencao(self):
-        url = reverse('manutencao-detail', args=[self.manutencao.id])
-        response = self.client.get(url)
+        # Leitura de Manutencao
+        response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['descricao'], self.manutencao.descricao)
+        self.assertEqual(response.data[0]['descricao'], 'Manutenção preventiva')
 
-    # Teste para atualização de um registro de Manutenção
-    def test_update_manutencao(self):
-        url = reverse('manutencao-detail', args=[self.manutencao.id])
+        manutencao_id = response.data[0]['id']
+        url_detail = reverse('manutencao-detail', args=[manutencao_id])
+
+        # Atualização de Manutencao
         data = {
-            'equipamento': self.equipamento.id,
-            'descricao': 'Troca de fonte',
-            'data_inicio': '2023-10-05',
-            'data_fim': '2023-10-07',
-            'tecnico_responsavel': self.servidor.id
+            'codigo': 1,
+            'data_inicio': '2024-10-17T12:00:00Z',
+            'data_fim': '2024-11-17',
+            'descricao': 'Manutenção corretiva',
+            'equipamento': equipamento.id,
+            'responsavel': self.servidor.id
         }
-        response = self.client.put(url, data, format='json')
+        response = self.client.put(url_detail, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.manutencao.refresh_from_db()
-        self.assertEqual(self.manutencao.descricao, 'Troca de fonte')
+        self.assertEqual(response.data['descricao'], 'Manutenção corretiva')
 
-    # Teste para exclusão de um registro de Manutenção
-    def test_delete_manutencao(self):
-        url = reverse('manutencao-detail', args=[self.manutencao.id])
-        response = self.client.delete(url)
+        # Exclusão de Manutencao
+        response = self.client.delete(url_detail)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Manutencao.objects.count(), 0)
+
+    def test_tipo_componente_crud(self):
+        url = reverse('tipocomponente-list')
+
+        # Criação de TipoComponente
+        data = {'nome': 'RAM', 'descricao': 'Memória RAM'}
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Leitura de TipoComponente
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['nome'], 'RAM')
+
+        tipo_componente_id = response.data[0]['id']
+        url_detail = reverse('tipocomponente-detail', args=[tipo_componente_id])
+
+        # Atualização de TipoComponente
+        data = {'nome': 'SSD', 'descricao': 'Disco de Estado Sólido'}
+        response = self.client.put(url_detail, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['nome'], 'SSD')
+
+        # Exclusão de TipoComponente
+        response = self.client.delete(url_detail)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_componente_crud(self):
+        tipo_componente = TipoComponente.objects.create(nome="RAM", descricao="Memória RAM")
+
+        url = reverse('componente-list')
+
+        # Criação de Componente
+        data = {
+            'codigo': 12345,
+            'nome': 'Corsair Vengeance',
+            'descricao': '16GB DDR4',
+            'tipo': tipo_componente.id,
+            'fabricante': 'Corsair',
+            'tamanho_mem': 16,
+            'n_serie': 'XYZ12345',
+            'data_aquisicao': '2024-10-17'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Leitura de Componente
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['nome'], 'Corsair Vengeance')
+
+        componente_id = response.data[0]['id']
+        url_detail = reverse('componente-detail', args=[componente_id])
+
+        # Atualização de Componente
+        data = {
+            'codigo': 12345,
+            'nome': 'Corsair Dominator',
+            'descricao': '32GB DDR4',
+            'tipo': tipo_componente.id,
+            'fabricante': 'Corsair',
+            'tamanho_mem': 32,
+            'n_serie': 'XYZ67890',
+            'data_aquisicao': '2024-10-17'
+        }
+        response = self.client.put(url_detail, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['nome'], 'Corsair Dominator')
+
+        # Exclusão de Componente
+        response = self.client.delete(url_detail)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_equip_componente_crud(self):
+        equipamento = Equipamento.objects.create(
+            plaqueta='12345',
+            nome='Computador A',
+            marca='Dell',
+            estado='NOVO',
+            situacao='EM_USO',
+            sala=101,
+            tipo=TipoEquipamento.objects.create(nome='Desktop'),
+            servidor=self.servidor,
+            data_aquisicao='2024-10-17'
+        )
+        componente = Componente.objects.create(
+            codigo=12345,
+            nome='Corsair Vengeance',
+            descricao='16GB DDR4',
+            tipo=TipoComponente.objects.create(nome='RAM', descricao='Memória RAM'),
+            fabricante='Corsair',
+            tamanho_mem=16,
+            n_serie='XYZ12345',
+            data_aquisicao='2024-10-17'
+        )
+
+        url = reverse('equipcomponente-list')
+
+        # Criação de EquipComponente
+        data = {
+            'equip': [equipamento.id],
+            'componente': [componente.id]
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Leitura de EquipComponente
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['equip'][0], equipamento.id)
+
+        equip_componente_id = response.data[0]['id']
+        url_detail = reverse('equipcomponente-detail', args=[equip_componente_id])
+
+        # Atualização de EquipComponente
+        data = {
+            'equip': [equipamento.id],
+            'componente': [componente.id]
+        }
+        response = self.client.put(url_detail, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['equip'][0], equipamento.id)
+
+        # Exclusão de EquipComponente
+        response = self.client.delete(url_detail)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
