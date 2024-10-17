@@ -1,14 +1,14 @@
 <div class="container mt-4">
-  <h3 class="fw-bold mb-4">Gestão de Peças</h3>
+  <h3 class="fw-bold mb-4">Gestão de Componentes</h3>
   <h5 class="mb-4">Lista dos componentes principais dos computadores</h5>
 
   <!-- Botão para adicionar nova peça -->
-  <button class="btn btn-primary mb-3" (click)="openModal()">Adicionar Peça</button>
+  <button class="btn btn-primary mb-3" (click)="openModal()">Adicionar Componente</button>
 
   <!-- Campo de busca -->
   <div class="mb-3">
-    <label for="searchInput" class="form-label">Buscar Peça</label>
-    <input type="text" id="searchInput" class="form-control" placeholder="Código, número de série ou descrição" [(ngModel)]="busca" (input)="atualizarBusca()" />
+    <label for="searchInput" class="form-label">Buscar Componente</label>
+    <input type="text" id="searchInput" class="form-control" placeholder="Código, número de série ou descrição" [(ngModel)]="busca" (input)="atualizarBusca()"/>
   </div>
 
   <!-- Filtros para a tabela -->
@@ -42,44 +42,46 @@
     </div>
   </div>
 
-  <!-- Tabela de Peças -->
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Descrição</th>
-        <th>Tipo</th>
-        <th>Fabricante</th>
-        <th>Tamanho (GB)</th>
-        <th>Número de Série</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Filtra as peças de acordo com os filtros -->
-      <tr *ngFor="let peca of pecasFiltradas">
-        <td>{{ peca.codigo }}</td>
-        <td>{{ peca.descricao }}</td>
-        <td>{{ peca.tipo }}</td>
-        <td>{{ peca.fabricante }}</td>
-        <td *ngIf="peca.tipo === 'Memória RAM' || peca.tipo === 'Memória Interna'">{{ peca.tamanho }}</td>
-        <td *ngIf="peca.tipo !== 'Memória RAM' && peca.tipo !== 'Memória Interna'">N/A</td>
-        <td>{{ peca.numeroSerie }}</td>
-        <td>
-          <button class="btn btn-sm btn-warning" (click)="editarPeca(peca)">Editar</button>
-          <button class="btn btn-sm btn-danger" (click)="confirmarExclusao(peca)">Excluir</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Tabela de Componentes -->
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered">
+      <thead class="table-active">
+        <tr>
+          <th>Código</th>
+          <th>Descrição</th>
+          <th>Tipo</th>
+          <th>Fabricante</th>
+          <th>Tamanho (GB)</th>
+          <th>Número de Série</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Filtra as peças de acordo com os filtros -->
+        <tr *ngFor="let peca of pecasFiltradas">
+          <td>{{ peca.codigo }}</td>
+          <td>{{ peca.descricao }}</td>
+          <td>{{ peca.tipo }}</td>
+          <td>{{ peca.fabricante }}</td>
+          <td *ngIf="peca.tipo === 'Memória RAM' || peca.tipo === 'Memória Interna'">{{ peca.tamanho }}</td>
+          <td *ngIf="peca.tipo !== 'Memória RAM' && peca.tipo !== 'Memória Interna'">N/A</td>
+          <td>{{ peca.numeroSerie }}</td>
+            <td>
+              <button class="btn btn-sm btn-secondary me-2" (click)="editarPeca(peca)">Editar</button>
+              <button class="btn btn-sm btn-danger" (click)="confirmarExclusao(peca)">Excluir</button>
+            </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
   <!-- Modais -->
-  <!-- Modal de Adicionar/Editar Peça -->
+  <!-- Modal de Adicionar/Editar Componente -->
   <div class="modal fade" id="pecaModal" tabindex="-1" aria-labelledby="pecaModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="pecaModalLabel">{{ editMode ? 'Editar Peça' : 'Adicionar Peça' }}</h5>
+          <h5 class="modal-title" id="pecaModalLabel">{{ editMode ? 'Editar Componente' : 'Adicionar Componente' }}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" (click)="cancelarOperacao()"></button>
         </div>
         <div class="modal-body">

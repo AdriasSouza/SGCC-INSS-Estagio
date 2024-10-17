@@ -1,7 +1,19 @@
 import { Component } from '@angular/core';
-import { Equipamento } from './equipamentos.model';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+
+//interface para simular o comportamento do model
+interface Equipamento {
+  plaqueta: number;
+  nome: string;
+  marca: string;
+  tipo: string;
+  setor: string;
+  estado: string;
+  situacao: string;
+  responsavel: string;
+  sala: number;
+}
 
 @Component({
   selector: 'app-equipamento',
@@ -28,11 +40,15 @@ export class EquipamentoComponent {
   selectedSituacao: string = '';
 
   // Equipamentos filtrados
-  filteredEquipamentos: Equipamento[] = this.equipamentos;
+  equipamentosFiltrados: Equipamento[] = [];
+
+  ngOnInit() {
+    this.equipamentosFiltrados = this.equipamentos;
+  }
 
   // Função para filtrar a lista de equipamentos de acordo com os filtros aplicados
   filterEquipamentos() {
-    this.filteredEquipamentos = this.equipamentos.filter(equipamento => {
+    this.equipamentosFiltrados = this.equipamentos.filter(equipamento => {
       const matchesSearch = this.searchText === '' || equipamento.plaqueta.toString().includes(this.searchText) || equipamento.sala.toString().includes(this.searchText) || equipamento.responsavel.toLowerCase().includes(this.searchText.toLowerCase());
       const matchesMarca = this.selectedMarca === '' || equipamento.marca === this.selectedMarca;
       const matchesTipo = this.selectedTipo === '' || equipamento.tipo === this.selectedTipo;
