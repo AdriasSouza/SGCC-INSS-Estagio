@@ -2,6 +2,8 @@ from rest_framework.views import APIView  # Para criar views baseadas em classes
 from rest_framework.response import Response  # Para enviar respostas HTTP
 from rest_framework import status  # Constantes de status HTTP
 from rest_framework.exceptions import AuthenticationFailed  # Exceção de autenticação
+from rest_framework.permissions import IsAuthenticated  # Importa permissão
+from django_filters.rest_framework import DjangoFilterBackend  # Importa filtro
 from rest_framework import viewsets  # ViewSet para CRUD automático
 from .serializers import (  # Importa os serializers necessários
     AgenciaSerializer,
@@ -106,21 +108,34 @@ class LogoutView(APIView):
 class AgenciaViewSet(viewsets.ModelViewSet):
     queryset = Agencia.objects.all()  # Retorna todas as Agencias
     serializer_class = AgenciaSerializer  # Usa o serializer de Agencia
+    permission_classes = [IsAuthenticated]  # Requer autenticação
+    filter_backends = [DjangoFilterBackend]  # Ativa o filtro
+    filterset_fields = ['nome', 'numero']
 
 
 # ViewSet para CRUD de Setores
 class SetorViewSet(viewsets.ModelViewSet):
     queryset = Setor.objects.all()  # Retorna todos os Setores
     serializer_class = SetorSerializer  # Usa o serializer de Setor
+    permission_classes = [IsAuthenticated]  # Requer autenticação
+    filter_backends = [DjangoFilterBackend]  # Ativa o filtro
+    filterset_fields = ['nome', 'codigo', 'id_agencia']
 
 
 # ViewSet para CRUD de Servidores
 class ServidorViewSet(viewsets.ModelViewSet):
     queryset = Servidor.objects.all()  # Retorna todos os Servidores
     serializer_class = ServidorSerializer  # Usa o serializer de Servidor
+    permission_classes = [IsAuthenticated]  # Requer autenticação
+    filter_backends = [DjangoFilterBackend]  # Ativa o filtro
+    filterset_fields = ['inscricao_institucional',
+                        ' nome_completo', 'setor']
 
 
 # ViewSet para CRUD de Solicitações
 class SolicitacaoViewSet(viewsets.ModelViewSet):
     queryset = Solicitacao.objects.all()  # Retorna todas as Solicitações
     serializer_class = SolicitacaoSerializer  # Usa o serializer de Solicitacao
+    permission_classes = [IsAuthenticated]  # Requer autenticação
+    filter_backends = [DjangoFilterBackend]  # Ativa o filtro
+    filterset_fields = ['user', 'data', 'descricao', 'estado']
