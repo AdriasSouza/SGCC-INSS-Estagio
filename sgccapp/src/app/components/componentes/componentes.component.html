@@ -58,7 +58,7 @@
       </thead>
       <tbody>
         <!-- Filtra as peças de acordo com os filtros -->
-        <tr *ngFor="let peca of pecasFiltradas">
+        <tr *ngFor="let peca of componentesFiltradas">
           <td>{{ peca.codigo }}</td>
           <td>{{ peca.descricao }}</td>
           <td>{{ peca.tipo }}</td>
@@ -67,7 +67,7 @@
           <td *ngIf="peca.tipo !== 'Memória RAM' && peca.tipo !== 'Memória Interna'">N/A</td>
           <td>{{ peca.numeroSerie }}</td>
             <td>
-              <button class="btn btn-sm btn-secondary me-2" (click)="editarPeca(peca)">Editar</button>
+              <button class="btn btn-sm btn-secondary me-2" (click)="editarComponente(peca)">Editar</button>
               <button class="btn btn-sm btn-danger" (click)="confirmarExclusao(peca)">Excluir</button>
             </td>
         </tr>
@@ -88,12 +88,12 @@
           <form #pecaForm="ngForm" class="row g-3 needs-validation" novalidate>
             <div class="col-md-12">
               <label for="descricao" class="form-label">Descrição</label>
-              <input type="text" class="form-control" id="descricao" [(ngModel)]="novaPeca.descricao" name="descricao" required [class.is-invalid]="pecaForm.submitted && !novaPeca.descricao">
+              <input type="text" class="form-control" id="descricao" [(ngModel)]="novaComponente.descricao" name="descricao" required [class.is-invalid]="pecaForm.submitted && !novaComponente.descricao">
               <div class="invalid-feedback">Descrição é obrigatória.</div>
             </div>
             <div class="col-md-12">
               <label for="tipo" class="form-label">Tipo</label>
-              <select class="form-select" id="tipo" [(ngModel)]="novaPeca.tipo" name="tipo" required [class.is-invalid]="pecaForm.submitted && !novaPeca.tipo">
+              <select class="form-select" id="tipo" [(ngModel)]="novaComponente.tipo" name="tipo" required [class.is-invalid]="pecaForm.submitted && !novaComponente.tipo">
                 <option value="" disabled selected>Selecione um tipo</option>
                 <option value="Memória RAM">Memória RAM</option>
                 <option value="Memória Interna">Memória Interna</option>
@@ -102,26 +102,26 @@
               </select>
               <div class="invalid-feedback">Tipo é obrigatório.</div>
             </div>
-            <div class="col-md-12" *ngIf="novaPeca.tipo === 'Memória RAM' || novaPeca.tipo === 'Memória Interna'">
+            <div class="col-md-12" *ngIf="novaComponente.tipo === 'Memória RAM' || novaComponente.tipo === 'Memória Interna'">
               <label for="tamanho" class="form-label">Tamanho (GB)</label>
-              <input type="number" class="form-control" id="tamanho" [(ngModel)]="novaPeca.tamanho" name="tamanho" required [class.is-invalid]="pecaForm.submitted && !novaPeca.tamanho">
+              <input type="number" class="form-control" id="tamanho" [(ngModel)]="novaComponente.tamanho" name="tamanho" required [class.is-invalid]="pecaForm.submitted && !novaComponente.tamanho">
               <div class="invalid-feedback">Tamanho é obrigatório.</div>
             </div>
             <div class="col-md-12">
               <label for="fabricante" class="form-label">Fabricante</label>
-              <input type="text" class="form-control" id="fabricante" [(ngModel)]="novaPeca.fabricante" name="fabricante" required [class.is-invalid]="pecaForm.submitted && !novaPeca.fabricante">
+              <input type="text" class="form-control" id="fabricante" [(ngModel)]="novaComponente.fabricante" name="fabricante" required [class.is-invalid]="pecaForm.submitted && !novaComponente.fabricante">
               <div class="invalid-feedback">Fabricante é obrigatório.</div>
             </div>
             <div class="col-md-12">
               <label for="numeroSerie" class="form-label">Número de Série</label>
-              <input type="text" class="form-control" id="numeroSerie" [(ngModel)]="novaPeca.numeroSerie" name="numeroSerie" required [class.is-invalid]="pecaForm.submitted && !novaPeca.numeroSerie">
+              <input type="text" class="form-control" id="numeroSerie" [(ngModel)]="novaComponente.numeroSerie" name="numeroSerie" required [class.is-invalid]="pecaForm.submitted && !novaComponente.numeroSerie">
               <div class="invalid-feedback">Número de Série é obrigatório.</div>
             </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="cancelarOperacao()">Cancelar</button>
-          <button type="button" class="btn btn-primary" (click)="abrirConfirmacaoModal(pecaForm)">Adicionar</button>
+          <button type="button" class="btn btn-primary" (click)="abrirConfirmacaoModal(pecaForm)">{{ editMode ? 'Editar' : 'Adicionar Componente' }}</button>
         </div>
       </div>
     </div>
@@ -139,7 +139,7 @@
           <p>Tem certeza que deseja {{ editMode ? 'editar' : 'adicionar' }} esta peça?</p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="voltarParaModalPeca()">Cancelar</button>
+          <button type="button" class="btn btn-secondary" (click)="voltarParaModalComponente()">Cancelar</button>
           <button type="button" class="btn btn-primary" (click)="onSubmit()">Confirmar</button>
         </div>
       </div>
@@ -147,7 +147,7 @@
   </div>
 
   <!-- Modal de Alerta -->
-  <div class="modal fade" id="alertaModal" tabindex="-1" aria-labelledby="alertaModalLabel" aria-hidden="true">
+  <div class="modal fade" id="alertaModal" tabindex="-1" aria-labelledby="alertaModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
