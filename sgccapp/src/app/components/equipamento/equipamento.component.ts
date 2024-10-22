@@ -13,6 +13,7 @@ interface Equipamento {
   situacao: string;
   responsavel: string;
   sala: number;
+  data: Date; // Adicionado para simular a data de aquisição
 }
 
 @Component({
@@ -26,8 +27,8 @@ interface Equipamento {
 export class EquipamentoComponent {
   // Lista inicial de equipamentos (pode ser carregada via serviço em um cenário real)
   equipamentos: Equipamento[] = [
-    { plaqueta: 371298, nome: 'Positivo Micro', marca: 'Positivo', tipo: 'Computador', setor: 'Gerência', estado: 'Bom', situacao: 'Estoque', responsavel: 'Rusemberg', sala: 101 },
-    { plaqueta: 371299, nome: 'Monitor LG', marca: 'LG', tipo: 'Monitor', setor: 'Logística', estado: 'Novo', situacao: 'Em uso', responsavel: 'Ana', sala: 102 },
+    { plaqueta: 371298, nome: 'Positivo Micro', marca: 'Positivo', tipo: 'Computador', setor: 'Gerência', estado: 'Bom', situacao: 'Estoque', responsavel: 'Rusemberg', sala: 101, data: new Date('2022-01-01') },
+    { plaqueta: 371299, nome: 'Monitor LG', marca: 'LG', tipo: 'Monitor', setor: 'Logística', estado: 'Novo', situacao: 'Em uso', responsavel: 'Ana', sala: 102, data: new Date('2022-02-01') },
     // Mais equipamentos...
   ];
 
