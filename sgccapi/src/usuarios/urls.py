@@ -23,13 +23,13 @@ router.register(r'solicitacoes', SolicitacaoViewSet)  # URL para Solicitacao
 # Define as rotas de URL da aplicação
 urlpatterns = [
     # Rota para registrar novos usuários
-    path('api/register/', RegisterView.as_view(), name='register'),
+    path('register', RegisterView.as_view()),
     # Rota para login de usuários
-    path('api/login/', LoginView.as_view(), name='login'),
+    path('login', LoginView.as_view()),
     # Rota para obter informações do usuário logado
-    path('api/user/', UserView.as_view(), name='user'),
+    path('user', UserView.as_view()),
     # Rota para logout de usuários
-    path('api/logout/', LogoutView.as_view(), name='logout'),
+    path('logout', LogoutView.as_view()),
     # Inclui as rotas dos ViewSets gerados pelo roteador
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
 ]

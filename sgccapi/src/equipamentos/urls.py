@@ -20,5 +20,5 @@ router.register(r'equip-componente', EquipComponenteViewSet)
 
 # Inclui as URLs do roteador nas URLs principais
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
 ]
