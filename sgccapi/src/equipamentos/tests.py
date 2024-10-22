@@ -4,6 +4,7 @@ from rest_framework.test import APITestCase
 from usuarios.models import User, Servidor
 from .models import TipoEquipamento, Equipamento, Manutencao, TipoComponente, Componente, EquipComponente
 
+
 class EquipamentoAPITestCase(APITestCase):
 
     def setUp(self):
