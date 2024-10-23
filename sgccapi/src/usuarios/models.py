@@ -25,7 +25,7 @@ class Setor(models.Model):
     nome = models.CharField(max_length=255, null=True, blank=True)
     # Relaciona o setor com uma agência. Se a agência for deletada,
     # o setor também será.
-    id_agencia = models.ForeignKey(
+    agencia = models.ForeignKey(
         Agencia, on_delete=models.CASCADE, null=True, blank=True
         )
 
@@ -46,6 +46,7 @@ class Servidor(models.Model):
     setor = models.ForeignKey(
         Setor, on_delete=models.SET_NULL, blank=True, null=True
         )
+    chefe = models.BooleanField(default=False)
 
     def __str__(self):
         return self.nome_completo
@@ -108,15 +109,23 @@ class User(AbstractUser):
 class Solicitacao(models.Model):
     # Relaciona a solicitação a um usuário. A remoção do usuário não
     # apaga a solicitação.
+    STATUS_CHOICES = [
+        ('ATENDIDO', 'Atendido'),
+        ('ANALISE', 'Em analise'),
+        ('NEGADO', 'Negado'),
+        ('ENCAMINHADO', 'Encaminhado'),
+    ]
+
     user = models.ForeignKey(
-        User, on_delete=models.DO_NOTHING, related_name='solicitacoes'
+        User, on_delete=models.SET_NULL, blank=True, null=True
         )
     # Armazena a data e hora em que a solicitação foi criada.
     data = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=255, choices=STATUS_CHOICES, default='ANALISE'
+        )
     # Descrição da solicitação
     descricao = models.CharField(max_length=255)
-    # Estado atual da solicitação, pode ser nulo.
-    estado = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f"Solicitação {self.id} - {self.user.email}"
