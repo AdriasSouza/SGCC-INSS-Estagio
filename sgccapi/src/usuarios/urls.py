@@ -9,6 +9,7 @@ from .views import (
     LoginView,        # View para login de usuários
     UserView,         # View para obter informações do usuário logado
     LogoutView,       # View para logout de usuários
+    ExportServidoresCSVView  # View para exportar CSV dos Servidores socorro
 )
 
 # Cria um roteador padrão que gerenciará automaticamente as URLs
@@ -30,6 +31,8 @@ urlpatterns = [
     path('user', UserView.as_view()),
     # Rota para logout de usuários
     path('logout', LogoutView.as_view()),
+    # Rota para exportar CSV de setores
+    path('export-servidores-csv', ExportServidoresCSVView.as_view()),
     # Inclui as rotas dos ViewSets gerados pelo roteador
     path('', include(router.urls)),
 ]

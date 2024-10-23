@@ -76,7 +76,7 @@ class Equipamento(models.Model):
 class Manutencao(models.Model):
     codigo = models.IntegerField(null=True, blank=True)
     data = models.DateField(
-        auto_now_add=False, blank=True, null=True
+        auto_now_add=False, auto_now=False, blank=True, null=True
         )
     descricao = models.CharField(max_length=255, null=True, blank=True)
     # Relaciona com Equipamento, excluindo manutenção
