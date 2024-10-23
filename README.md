@@ -56,7 +56,7 @@ O primeiro comando recebe as atualizações mais recentes do repositório remoto
    
 5. Instale as dependencias
    ```bash
-   pip install -r requirements.txt
+   pip install -r requiriments.txt
    ```
 
 6. Faça as migrações do banco de dados
