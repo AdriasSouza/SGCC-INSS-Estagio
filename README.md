@@ -37,35 +37,42 @@ O primeiro comando recebe as atualizações mais recentes do repositório remoto
 
 ## Instalação e Configuração
 
-### Backend (Java Spring Boot)
-1. Baixe as Extensões:
-   - **Extension Pack for Java (Extensão do VS Code)**
-     - <https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack>
-   - **Spring Boot Extension Pack (Extensão do VS Code)**
-     - <https://marketplace.visualstudio.com/items?itemName=pivotal.vscode-boot-dev-pack>
-   - **XML (Extensão do VS Code)**
-     - <https://marketplace.visualstudio.com/items?itemName=redhat.vscode-xml>
+### Backend (Django API Rest)
 
-2. Navegue até o diretório do backend:
+1. Navegue até o diretório do backend:
    ```bash
    cd sgccapi
    ```
 
-3. Configure as propriedades do banco de dados no arquivo `application.properties`:
-   ```properties
-   spring.datasource.url=jdbc:mysql://localhost:3306/sgcc
-   spring.datasource.username=seu-usuario
-   spring.datasource.password=sua-senha
+2. Crie um ambiente virtual:
+   ```bash
+   python -m venv .venv 
    ```
 
-4. Execute o projeto Spring Boot pela extensão ou com o comando:
+3. Ative a venv:
    ```bash
-   ./mvnw spring-boot:run
+   .\venv\Scripts\activate
    ```
    
-5. Baixe e utilize o Postman para testar as requisições
-   - **Postman**
-   - <https://www.postman.com/downloads/>
+5. Instale as dependencias
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+6. Faça as migrações do banco de dados
+  ```bash
+  python manage.py makemigrations
+  ```
+
+7. Rode o server
+  ```bash
+  python manage.py runserver 
+  ```
+
+8. Baixe e utilize o Postman para testar as requisições
+  - Postman
+  - https://www.postman.com/downloads/
+
 
 ### Frontend (Angular)
 1. Baixe as extensões:
@@ -106,16 +113,6 @@ O primeiro comando recebe as atualizações mais recentes do repositório remoto
   - <https://code.visualstudio.com/Download>
 - **Git**
   - <https://git-scm.com/downloads>
-- **JDK 17**
-  - Para verificar se o JDK está corretamente instalado e configurado, digite no prompt de comandos:
-    ```console
-    javac -version
-    ```
-  - Se necessário, realizar a instalação e configuração:
-    - Link para download: <https://download.oracle.com/java/17/archive/jdk-17.0.10_windows-x64_bin.msi>
-    - Criar a variável de ambiente JAVA_HOME configurada para o diretório de instalação do JDK. Exemplo: “C:\Program Files\Java\jdk-17”.
-    - Adicionar “%JAVA_HOME%\bin” na variável de ambiente PATH.
-    - Tutorial de configuração: <https://mkyong.com/java/how-to-set-java_home-on-windows-10/>
 
 Front-End
 - **Node.js (e npm)**
@@ -134,15 +131,14 @@ Front-End
   - Tutorial de instalação: <https://v17.angular.io/guide/setup-local>
 
 Back-End
-- **Maven**
-  - Para verificar se o Maven está corretamente instalado e configurado, digite no prompt de comandos:
+- **Python**
+  - Para verificar se o Python está corretamente instalado e configurado, digite no prompt de comandos:
     ```console
-    mvn -version
+    py
     ```
   - Se necessário, realizar a instalação e configuração:
-    - Link para download: <https://dlcdn.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.zip>
-    - Adicionar o diretório de instalação do Maven na variável de ambiente PATH. Exemplo: “C:\apache-maven\bin”.
-    - Tutorial de instalação: <https://mkyong.com/maven/how-to-install-maven-in-windows/>
+    - Link para download: <https://www.python.org/downloads/>
+    - Tutorial de instalação: <https://wiki.python.org/moin/BeginnersGuide/Download>
 - **MySQL**
   - Verificar se o MySQL está funcionando:
     - Para tentar conectar no MySQL, no prompt de comandos digite:
@@ -163,27 +159,5 @@ Back-End
   - Se necessário, realizar a instalação:
     - Link para download: <https://dev.mysql.com/downloads/file/?id=516927>
     - [Tutorial de instalação](https://github.com/webacademyufac/tutoriais/blob/main/mysql/mysql.md)
-
-- **Criando projetos Spring Boot (VS Code)**
-  -Na paleta de comandos do vscode (F1), selecionar a opção “Spring Initializr: Create a MavenProject”.
-     ▪ Spring Boot version: 3.2.6
-     ▪ Project Language: Java
-     ▪ Group ID: inss.sgcc
-     ▪ Artifact ID: sgccapi
-     ▪ Packing type: Jar
-     ▪ Java version: 17
-     ▪ Dependencies: Spring Web
-
-## Sites de referência
-- Angular Docs: <https://v17.angular.io/docs>
-- TypeScript Documentation: <https://www.typescriptlang.org/docs/>
-- MDN Web Docs - Aprendendo desenvolvimento web: <https://developer.mozilla.org/pt-BR/docs/Learn>
-- Using Angular in Visual Studio Code: <https://code.visualstudio.com/docs/nodejs/angular-tutorial>
-- Spring Boot Reference Documentation: <https://docs.spring.io/spring-boot/docs/3.2.6/reference/html/index.html>
-- Spring Getting Started Guides: <https://spring.io/guides#getting-started-guides>
-- Spring Boot in Visual Studio Code: <https://code.visualstudio.com/docs/java/java-spring-boot>
-- Uma visão geral do HTTP: <https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview>
-- Apostila Java e Orientação a Objetos (Caelum/Alura): <https://www.alura.com.br/apostila-java-orientacao-objetos>
-- Baeldung: <https://www.baeldung.com/>
 
 

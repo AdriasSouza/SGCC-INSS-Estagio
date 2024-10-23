@@ -100,7 +100,9 @@ class ExportEquipamentosCSVView(APIView):
                 "A data de início deve ser anterior à data de fim."
                 )
 
-        equipamentos = Equipamento.objects.filter(data_aquisicao__range=[data_inicio, data_fim])
+        equipamentos = Equipamento.objects.filter(
+            data_aquisicao__range=[data_inicio, data_fim]
+            )
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="equipamentos_{data_inicio}_a_{data_fim}.csv"'
@@ -205,6 +207,10 @@ class ExportComponentesCSVView(APIView):
             ])
 
         for componente in componentes:
-            writer.writerow([componente.id, componente.codigo, componente.nome, componente.descricao, componente.tipo.nome if componente.tipo else '', componente.fabricante, componente.tamanho_mem, componente.n_serie, componente.data_aquisicao])
+            writer.writerow([componente.id, componente.codigo, componente.nome,
+                             componente.descricao, componente.tipo.nome if componente.tipo else '',
+                             componente.fabricante, componente.tamanho_mem, componente.n_serie,
+                             componente.data_aquisicao])
 
         return response
+    
