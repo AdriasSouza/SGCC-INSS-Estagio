@@ -120,7 +120,8 @@ class ExportEquipamentosCSVView(APIView):
                 equipamento.sala, equipamento.setor.nome if equipamento.setor else '',
                 equipamento.tipo.nome if equipamento.tipo else '',
                 equipamento.servidor.nome_completo if equipamento.servidor else '',
-                equipamento.data_aquisicao])
+                equipamento.data_aquisicao
+                ])
 
         return response
 
@@ -156,7 +157,7 @@ class ExportManutencoesCSVView(APIView):
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="manutencoes_{data_inicio}_a_{data_fim}.csv"'
-        
+
         writer = csv.writer(response)
         writer.writerow([
             'ID', 'Código', 'Data', 'Descrição', 'Equipamento', 'Responsável'
@@ -199,7 +200,7 @@ class ExportComponentesCSVView(APIView):
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="componentes_{data_inicio}_a_{data_fim}.csv"'
-        
+   
         writer = csv.writer(response)
         writer.writerow([
             'ID', 'Código', 'Nome', 'Descrição', 'Tipo', 'Fabricante',
@@ -213,4 +214,3 @@ class ExportComponentesCSVView(APIView):
                              componente.data_aquisicao])
 
         return response
-    

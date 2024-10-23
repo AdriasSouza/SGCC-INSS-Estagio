@@ -84,8 +84,9 @@ class User(AbstractUser):
     id_servidor = models.ForeignKey(
         Servidor, on_delete=models.SET_NULL, null=True, blank=True
         )
+    password = models.CharField(max_length=255)
     username = None  # Desabilita o campo username, email será usado
-
+    
     objects = UserManager()  # Define o gerenciador de usuário personalizado
 
     USERNAME_FIELD = 'email'  # Usa email como campo principal de login
