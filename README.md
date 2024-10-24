@@ -15,7 +15,7 @@ O principal objetivo do projeto é automatizar a catalogação e monitoramento d
 
 ## Tecnologias Utilizadas
 - **Frontend**: Angular, HTML5, CSS3, Bootstrap
-- **Backend**: Java (Spring Boot)
+- **Backend**: Python (Django API Rest)
 - **Banco de Dados**: MySQL
 - **Controle de Versão**: Git/GitHub
 
