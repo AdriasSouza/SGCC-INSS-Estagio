@@ -24,15 +24,15 @@ router.register(r'solicitacoes', SolicitacaoViewSet)  # URL para Solicitacao
 # Define as rotas de URL da aplicação
 urlpatterns = [
     # Rota para registrar novos usuários
-    path('register', RegisterView.as_view()),
+    path('register/', RegisterView.as_view()),
     # Rota para login de usuários
-    path('login', LoginView.as_view()),
+    path('login/', LoginView.as_view()),
     # Rota para obter informações do usuário logado
-    path('user', UserView.as_view()),
+    path('user/', UserView.as_view()),
     # Rota para logout de usuários
-    path('logout', LogoutView.as_view()),
+    path('logout/', LogoutView.as_view()),
     # Rota para exportar CSV de setores
-    path('export-servidores-csv', ExportServidoresCSVView.as_view()),
+    path('export-servidores-csv/', ExportServidoresCSVView.as_view()),
     # Inclui as rotas dos ViewSets gerados pelo roteador
     path('', include(router.urls)),
 ]

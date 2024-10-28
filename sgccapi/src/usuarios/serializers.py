@@ -20,23 +20,20 @@ class SetorSerializer(serializers.ModelSerializer):
 
 class ServidorSerializer(serializers.ModelSerializer):
     setor = serializers.PrimaryKeyRelatedField(queryset=Setor.objects.all())
+    usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     
     class Meta:
         model = Servidor
         fields = ['id', 'inscricao_institucional',
-                  'nome_completo', 'setor', 'chefe']
+                  'nome_completo', 'setor', 'usuario', 'chefe']
 
 
 class UserSerializer(serializers.ModelSerializer):
-    id_servidor = serializers.PrimaryKeyRelatedField(
-        queryset=Servidor.objects.all()
-        )
-    
     class Meta:
         model = User
-        fields = ['id', 'email', 'password', 'id_servidor']
+        fields = ['id', 'email', 'password']
         extra_kwargs = {
-            'password': {'write_only': True}
+            'password': {'write_only': True},
         }
 
     def create(self, validated_data):

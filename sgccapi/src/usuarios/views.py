@@ -101,7 +101,7 @@ class ServidorViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = [
-        'inscricao_institucional', 'nome_completo', 'setor', 'chefe'
+        'inscricao_institucional', 'nome_completo', 'setor', 'usuario', 'chefe'
         ]
 
 

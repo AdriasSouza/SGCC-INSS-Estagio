@@ -37,25 +37,6 @@ class Setor(models.Model):
         verbose_name_plural = 'Setores'
 
 
-# Modelo que representa um servidor, ligado a um setor.
-class Servidor(models.Model):
-    inscricao_institucional = models.CharField(max_length=255)
-    nome_completo = models.CharField(max_length=255)
-    # Relaciona o servidor com um setor. Se o setor for deletado, o campo
-    # será nulo.
-    setor = models.ForeignKey(
-        Setor, on_delete=models.SET_NULL, blank=True, null=True
-        )
-    chefe = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.nome_completo
-
-    class Meta:
-        verbose_name = 'Servidor'
-        verbose_name_plural = 'Servidores'
-
-
 # Gerenciador personalizado para o modelo de usuário.
 class UserManager(BaseUserManager):
     # Método para criar um usuário comum.
@@ -81,9 +62,6 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     email = models.EmailField(unique=True)  # Email único para login
     # Relaciona o usuário a um servidor. Pode ser nulo.
-    id_servidor = models.ForeignKey(
-        Servidor, on_delete=models.SET_NULL, null=True, blank=True
-        )
     password = models.CharField(max_length=255)
     username = None  # Desabilita o campo username, email será usado
     
@@ -104,6 +82,28 @@ class User(AbstractUser):
     class Meta:
         verbose_name = 'Usuário'
         verbose_name_plural = 'Usuários'
+
+
+# Modelo que representa um servidor, ligado a um setor.
+class Servidor(models.Model):
+    inscricao_institucional = models.CharField(max_length=255)
+    nome_completo = models.CharField(max_length=255)
+    # Relaciona o servidor com um setor. Se o setor for deletado, o campo
+    # será nulo.
+    usuario = models.ForeignKey(
+        User, on_delete=models.SET_NULL, blank=True, null=True
+        )
+    setor = models.ForeignKey(
+        Setor, on_delete=models.SET_NULL, blank=True, null=True
+        )
+    chefe = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.nome_completo
+
+    class Meta:
+        verbose_name = 'Servidor'
+        verbose_name_plural = 'Servidores'
 
 
 # Modelo para representar uma solicitação feita por um usuário.

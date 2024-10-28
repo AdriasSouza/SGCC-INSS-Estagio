@@ -23,8 +23,8 @@ router.register(r'equip-componente', EquipComponenteViewSet)
 
 # Inclui as URLs do roteador nas URLs principais
 urlpatterns = [
-    path('export-equipamentos-csv', ExportEquipamentosCSVView.as_view()),
-    path('export-manutencoes-csv', ExportManutencoesCSVView.as_view()),
-    path('export-componentes-csv', ExportComponentesCSVView.as_view()),
+    path('export-equipamentos-csv/', ExportEquipamentosCSVView.as_view()),
+    path('export-manutencoes-csv/', ExportManutencoesCSVView.as_view()),
+    path('export-componentes-csv/', ExportComponentesCSVView.as_view()),
     path('', include(router.urls)),
 ]
