@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormsModule, NgForm } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
+import { BrowserModule } from '@angular/platform-browser';
 
 declare var bootstrap: any;
 
@@ -17,7 +18,7 @@ interface Componente {
 @Component({
   selector: 'app-componentes',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, ReactiveFormsModule],
   templateUrl: './componentes.component.html',
   styleUrls: ['./componentes.component.scss']
 })
@@ -38,6 +39,7 @@ export class ComponentesComponent implements OnInit {
   selectedFabricante: string = '';
   searchTerm: string = '';
   mensagemAlerta: string = '';
+  busca: string = '';
 
   // Filtros
   filtros = {
@@ -48,25 +50,37 @@ export class ComponentesComponent implements OnInit {
     tamanho: ''
   };
 
-  busca: string = '';
   componentesFiltradas: Componente[] = [];
+  componenteParaExcluir: Componente | null = null;
+  componenteParaEditar: Componente | null = null;
+  tipoSelecionado: string = '';
+  editTipoSelecionado: string = '';
+  editIndex: number | null = null;
+  editForm: FormGroup;
   novaComponente: Componente = { codigo: '', descricao: '', tipo: 'Memória RAM', fabricante: '', tamanho: undefined, numeroSerie: '' };
-  editMode: boolean = false;
-  pecaEmEdicao: Componente | null = null;
-  pecaEmExclusao: Componente | null = null;
+  isEditMode = false;
+  currentComponente: any = {};
+  mostrarFiltros: boolean = false;
 
 
-  private pecaModalInstance: any;
-  private confirmacaoAddEditModalInstance: any;
-  private alertaAddEditModalInstance: any;
-  private alertaModalInstance: any;
 
-  constructor() {}
+  constructor(private fb: FormBuilder) {
+    this.editForm = this.fb.group({
+      descricao: ['', Validators.required],
+      tipo: ['', Validators.required],
+      tamanho: [''],
+      numeroSerie: ['', Validators.required]
+    });
+  }
 
   ngOnInit(): void {
-    // Inicialize a lista de peças aqui
     this.componentesFiltradas = this.componentes;
   }
+
+  toggleFiltros() {
+    this.mostrarFiltros = !this.mostrarFiltros;
+  }
+
 
   atualizarBusca(): void {
     this.componentesFiltradas = this.componentes.filter(peca =>
@@ -79,134 +93,133 @@ export class ComponentesComponent implements OnInit {
     );
   }
 
-  // Abre o modal de adicionar/editar
-  openModal(editing: boolean = false, peca?: Componente) {
-    this.editMode = editing;
-    if (editing && peca) {
-      // Preenche os campos com os dados da peça para edição
-      this.pecaEmEdicao = peca;
-      this.novaComponente = { ...peca }; // Clona os dados para edição
-    } else {
-      // Reseta o formulário para adicionar nova peça
-      this.novaComponente = {
-        codigo: '',
-        descricao: '',
-        tipo: 'Memória RAM',
-        fabricante: '',
-        tamanho: undefined,
-        numeroSerie: ''
+  // Funções dos Modais
+  
+  // Modal de Delete
+  openDeleteModal(componente: Componente) {
+    this.componenteParaExcluir = componente;
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+  }
+
+  confirmDelete() {
+    if (this.componenteParaExcluir) {
+      const index = this.componentesFiltradas.indexOf(this.componenteParaExcluir);
+      if (index > -1) {
+        this.componentesFiltradas.splice(index, 1);
+      }
+      const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+      deleteModal.hide();
+      const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+      successModal.show();
+    }
+  }
+
+  // Modal de adição
+  openAddModal() {
+    const addModal = new bootstrap.Modal(document.getElementById('addModal'));
+    addModal.show();
+  }
+
+  addComponente(form: NgForm) {
+    if (form.valid) {
+      const novoComponente: Componente = {
+        codigo: this.gerarCodigo(),
+        descricao: form.value.descricao,
+        tipo: form.value.tipo,
+        fabricante: form.value.fabricante,
+        tamanho: form.value.tamanho,
+        numeroSerie: form.value.numeroSerie
       };
-    }
-    this.pecaModalInstance = new bootstrap.Modal(document.getElementById('pecaModal'));
-    this.pecaModalInstance.show();
-  }
 
-  // Abre o modal de confirmação para adicionar/editar peça
-  abrirConfirmacaoModal(pecaForm: NgForm): void {
-    pecaForm.onSubmit(new Event('submit')); // Marca o formulário como submetido
-
-    if (pecaForm.invalid) {
-      return;
-    }
-
-    
-    if (this.editMode && this.pecaEmEdicao) {
-      // Verifica se algum campo foi alterado
-      if (JSON.stringify(this.pecaEmEdicao) === JSON.stringify(this.novaComponente)) {
-      if (this.pecaModalInstance) {
-        this.pecaModalInstance.hide();
-      }
-      this.mensagemAlerta = 'Nenhuma alteração foi aplicada!';
-      this.alertaAddEditModalInstance = new bootstrap.Modal(document.getElementById('alertaModal'));
-      this.alertaAddEditModalInstance.show();
-      return;
-      }
-    }
-
-    if (this.pecaModalInstance) {
-      this.pecaModalInstance.hide();
-    }
-    this.confirmacaoAddEditModalInstance = new bootstrap.Modal(document.getElementById('confirmacaoAddEditModal'));
-    this.confirmacaoAddEditModalInstance.show();
-  }
-
-  // Ao confirmar a ação no modal de adição/edição
-  onSubmit(): void {
-    if (this.editMode && this.pecaEmEdicao) {
-      // Atualiza a peça existente
-      Object.assign(this.pecaEmEdicao, this.novaComponente);
-      this.exibirAlerta('Peça editada com sucesso!');
-    } else {
-      // Verifica se o código já existe antes de adicionar
-      const pecaExistente = this.componentes.find(p => p.codigo === this.novaComponente.codigo);
-      if (!pecaExistente) {
-        // Adiciona a nova peça à lista
-        this.novaComponente.codigo = `PC${this.componentes.length + 1}`; // Incrementa o código automaticamente
-        this.componentes.push({ ...this.novaComponente });
-        this.exibirAlerta('Peça adicionada com sucesso!');
+      if (this.componentesFiltradas.some(c => c.numeroSerie === novoComponente.numeroSerie)) {
+        const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+        errorModal.show();
       } else {
-        this.exibirAlerta('Código de peça já existente!');
+        this.componentesFiltradas.push(novoComponente);
+        const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+        addModal.hide();
       }
-    }
-
-    // Atualiza a lista filtrada após adição/edição
-    this.atualizarBusca();
-
-    // Fecha ambos os modais após salvar
-    this.fecharModais();
-  }
-
-  fecharModais(): void {
-    if (this.confirmacaoAddEditModalInstance) {
-      this.confirmacaoAddEditModalInstance.hide();
-    }
-    if (this.pecaModalInstance) {
-      this.pecaModalInstance.hide();
+    } else {
+      // Exibir mensagens de validação
+      Object.keys(form.controls).forEach(field => {
+        const control = form.controls[field];
+        control.markAsTouched({ onlySelf: true });
+      });
     }
   }
 
-  // Ação de editar peça
-  editarComponente(peca: Componente): void {
-    this.openModal(true, peca);
+  // Modal de edição
+  openEditModal(index: number) {
+    this.editIndex = index;
+    this.componenteParaEditar = { ...this.componentesFiltradas[index] };
+    this.editTipoSelecionado = this.componenteParaEditar.tipo;
+    this.editForm.patchValue(this.componenteParaEditar);
+    const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+    editModal.show();
   }
 
-  // Abre o modal de confirmação de exclusão
-  confirmarExclusao(peca: Componente): void {
-    this.pecaEmExclusao = peca;
-    const modal = new bootstrap.Modal(document.getElementById('confirmacaoModal'));
-    modal.show();
-  }
+  editComponente() {
+    if (this.editForm.valid && this.componenteParaEditar !== null && this.editIndex !== null) {
+      const formValues = this.editForm.value;
+      const originalValues = this.componentesFiltradas[this.editIndex];
 
-  // Ação de excluir peça
-  excluirComponente(): void {
-    if (this.pecaEmExclusao) {
-      this.componentes = this.componentes.filter(p => p.codigo !== this.pecaEmExclusao?.codigo);
-      this.atualizarBusca(); // Atualiza a lista filtrada após exclusão
-      this.exibirAlerta('Peça excluída com sucesso!');
+      if (JSON.stringify(formValues) === JSON.stringify(originalValues)) {
+        const noChangesModal = new bootstrap.Modal(document.getElementById('noChangesModal'));
+        noChangesModal.show();
+      } else {
+        this.componentesFiltradas[this.editIndex] = { ...this.componenteParaEditar, ...formValues };
+        const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+        editModal.hide();
+        const editSuccessModal = new bootstrap.Modal(document.getElementById('editSuccessModal'));
+        editSuccessModal.show();
+      }
+    } else {
+      // Exibir mensagens de validação
+      Object.keys(this.editForm.controls).forEach(field => {
+        const control = this.editForm.get(field);
+        control?.markAsTouched({ onlySelf: true });
+      });
     }
-    const modal = bootstrap.Modal.getInstance(document.getElementById('confirmacaoModal'));
-    modal.hide();
   }
 
-  // Volta para o modal de adicionar/editar peça
-  voltarParaModalComponente(): void {
-    if (this.confirmacaoAddEditModalInstance) {
-      this.confirmacaoAddEditModalInstance.hide();
-    }
-    if (this.pecaModalInstance) {
-      this.pecaModalInstance.show();
-    }
+  onEditTipoChange(event: any) {
+    this.editTipoSelecionado = event.target.value;
   }
 
-  // Exibe o modal de alerta
-  exibirAlerta(mensagem: string): void {
-    this.mensagemAlerta = mensagem;
-    this.alertaModalInstance = new bootstrap.Modal(document.getElementById('alertaModal'));
-    this.alertaModalInstance.show();
+
+
+  // Funções para gerar codigo e tipo selecionado
+
+  gerarCodigo(): string {
+    return 'C' + (this.componentesFiltradas.length + 1).toString().padStart(4, '0');
   }
 
-  // Cancela a operação e exibe o alerta
-  cancelarOperacao(): void {
-    this.exibirAlerta('Operação cancelada pelo usuário.');
+  onTipoChange(event: any) {
+    this.tipoSelecionado = event.target.value;
+  }
+
+  // Botões para cancelar a ação
+  cancelAdd(form: NgForm) {
+    form.resetForm();
+    const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+    addModal.hide();
+    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+    cancelModal.show();
+  }
+
+  cancelDelete() {
+    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+    deleteModal.hide();
+    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+    cancelModal.show();
+  }
+
+  cancelEdit() {
+    this.editForm.reset();
+    const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+    editModal.hide();
+    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+    cancelModal.show();
   }
 }

@@ -1,60 +1,130 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+
+declare var bootstrap: any;
 
 // servidor.model.ts
-interface Servidor {
-  id: number;               // ID do servidor
-  codigo: string;          // Código do servidor
-  nome_completo: string;   // Nome completo do servidor
-  data_nascimento: Date;   // Data de nascimento do servidor
-  id_setor: number;        // ID do setor ao qual o servidor pertence
+export interface Servidor {
+  inscricao: string;
+  nomeCompleto: string;
+  nomeSetor: string;
+  nomeAgencia: string;
+}
+
+export interface Setor {
+  codigo: string;
+  nome: string;
+}
+
+export interface Agencia {
+  codigo: string;
+  nome: string;
+  id: string;
 }
 
 
 @Component({
   selector: 'app-servidores',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, ReactiveFormsModule],
   templateUrl: './servidores.component.html',
   styleUrls: ['./servidores.component.css']
 })
 export class ServidoresComponent implements OnInit {
-  servidores: Servidor[] = []; // Lista de servidores
-  selectedServidor: Servidor = { id: 0, codigo: '', nome_completo: '', data_nascimento: new Date(), id_setor: 0 }; // Inicializa um servidor padrão
+  servidores: Servidor[] = [];
+  setores: Setor[] = [];
+  agencias: Agencia[] = [];
+  servidorForm: FormGroup;
+  editIndex: number | null = null;
+
+  constructor(private fb: FormBuilder) {
+    this.servidorForm = this.fb.group({
+      inscricao: ['', Validators.required],
+      nomeCompleto: ['', Validators.required],
+      nomeSetor: ['', Validators.required],
+      nomeAgencia: ['', Validators.required]
+    });
+  }
 
   ngOnInit() {
-    // Aqui você pode carregar os servidores de um serviço, por exemplo
+    // Populando a tabela com alguns servidores
+    this.servidores = [
+      { inscricao: '001', nomeCompleto: 'João Silva', nomeSetor: 'TI', nomeAgencia: 'Agência Central' },
+      { inscricao: '002', nomeCompleto: 'Maria Souza', nomeSetor: 'RH', nomeAgencia: 'Agência Norte' },
+      { inscricao: '003', nomeCompleto: 'Carlos Ferreira', nomeSetor: 'Financeiro', nomeAgencia: 'Agência Sul' },
+      { inscricao: '004', nomeCompleto: 'Ana Paula', nomeSetor: 'Marketing', nomeAgencia: 'Agência Leste' }
+    ];
+
+    // Populando a lista de setores e agências
+    this.setores = [
+      { codigo: 'TI', nome: 'Tecnologia da Informação' },
+      { codigo: 'RH', nome: 'Recursos Humanos' },
+      { codigo: 'Financeiro', nome: 'Financeiro' },
+      { codigo: 'Marketing', nome: 'Marketing' }
+    ];
+
+    this.agencias = [
+      { codigo: '001', nome: 'Agência Central', id: '1' },
+      { codigo: '002', nome: 'Agência Norte', id: '2' },
+      { codigo: '003', nome: 'Agência Sul', id: '3' },
+      { codigo: '004', nome: 'Agência Leste', id: '4' }
+    ];
   }
 
-  // Método para salvar servidor
-  saveServidor() {
-    if (this.selectedServidor.id) {
-      // Atualiza servidor existente
-      const index = this.servidores.findIndex(s => s.id === this.selectedServidor.id);
-      if (index !== -1) {
-        this.servidores[index] = this.selectedServidor;
-      }
+  openAddModal() {
+    this.servidorForm.reset();
+    const addModal = new bootstrap.Modal(document.getElementById('addModal'));
+    addModal.show();
+  }
+
+  addServidor() {
+    if (this.servidorForm.valid) {
+      const novoServidor: Servidor = this.servidorForm.value;
+      this.servidores.push(novoServidor);
+      const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+      addModal.hide();
     } else {
-      // Adiciona novo servidor
-      this.selectedServidor.id = this.servidores.length + 1; // Geração simples de ID
-      this.servidores.push(this.selectedServidor);
+      // Exibir mensagens de validação
+      Object.keys(this.servidorForm.controls).forEach(field => {
+        const control = this.servidorForm.get(field);
+        control?.markAsTouched({ onlySelf: true });
+      });
     }
-    this.resetServidorForm();
   }
 
-  // Método para editar servidor
-  editServidor(serv: Servidor) {
-    this.selectedServidor = { ...serv };
+  openEditModal(index: number) {
+    this.editIndex = index;
+    this.servidorForm.patchValue(this.servidores[index]);
+    const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+    editModal.show();
   }
 
-  // Método para excluir servidor
-  deleteServidor(id: number) {
-    this.servidores = this.servidores.filter(s => s.id !== id);
+  editServidor() {
+    if (this.servidorForm.valid && this.editIndex !== null) {
+      this.servidores[this.editIndex] = this.servidorForm.value;
+      const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+      editModal.hide();
+    } else {
+      // Exibir mensagens de validação
+      Object.keys(this.servidorForm.controls).forEach(field => {
+        const control = this.servidorForm.get(field);
+        control?.markAsTouched({ onlySelf: true });
+      });
+    }
   }
 
-  // Reseta o formulário de servidor
-  resetServidorForm() {
-    this.selectedServidor = { id: 0, codigo: '', nome_completo: '', data_nascimento: new Date(), id_setor: 0 };
+  openDeleteModal(index: number) {
+    this.editIndex = index;
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+  }
+
+  deleteServidor() {
+    if (this.editIndex !== null) {
+      this.servidores.splice(this.editIndex, 1);
+      const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+      deleteModal.hide();
+    }
   }
 }

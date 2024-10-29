@@ -1,7 +1,8 @@
-<head>
-	<title>SGCC</title>
-</head>
-
+<style>
+  .form-control, .form-select {
+    border-width: 3px; /* Aumentando a espessura da borda */
+  }
+</style>
 
 <!-- Cabeçalho -->
 <header class="p-3 mb-3 border-bottom">
@@ -32,24 +33,42 @@
             <li class="nav-item"><a routerLink="/servidores" class="nav-link link-body-emphasis">Servidores</a></li>
             <li class="nav-item"><a routerLink="/usuarios" class="nav-link link-body-emphasis">Usuários</a></li>
             <li class="nav-item"><a routerLink="/relatorios" class="nav-link link-body-emphasis">Relatórios</a></li>
+            <li class="nav-item"><a routerLink="/requisicoes" class="nav-link link-body-emphasis">Requisições</a></li>
           </ul>
 
           <hr>
 
-          <!-- Perfil (Itens que não colapsam) -->
-          <div class="dropdown">
-            <!-- Foto de Perfil -->
-            <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-              <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
-            </a>
+          <!-- Perfil e Notificações -->
+          <div class="d-flex align-items-center">
+            <!-- Menu de Notificações -->
+            <div class="dropdown me-3">
+              <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-bell" style="font-size: 24px;"></i>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end text-small">
+                <li><a class="dropdown-item" href="#">Notificação 1</a></li>
+                <li><a class="dropdown-item" href="#">Notificação 2</a></li>
+                <li><a class="dropdown-item" href="#">Notificação 3</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#">Ver todas as notificações</a></li>
+              </ul>
+            </div>
 
-            <!-- Menu Dropdown -->
-            <ul class="dropdown-menu text-small">
-              <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#settingsModal">Opções</a></li>
-              <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#userModal">Perfil</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Sign out</a></li>
-            </ul>
+            <!-- Foto de Perfil -->
+            <div class="dropdown">
+              <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle" style="font-size: 32px;"></i>
+                <!-- <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle"> -->
+              </a>
+
+              <!-- Menu Dropdown -->
+              <ul class="dropdown-menu text-small">
+                <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#settingsModal">Opções</a></li>
+                <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#userModal">Perfil</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Sign out</a></li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -59,8 +78,8 @@
 
 
 <!-- Conteudo Principal -->
-<main id="main" class="flex-fill bg-white vh-100" data-bs-theme="auto">
-  <body data-bs-theme="auto">
+<main id="main" class="flex-fill bg-white min-vh-100" data-bs-theme="auto">
+  <body class="min-vh-100" data-bs-theme="auto">
     <router-outlet></router-outlet>
   </body>
 
