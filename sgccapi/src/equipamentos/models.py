@@ -1,5 +1,5 @@
 from django.db import models  # Importa o módulo models do Django
-from usuarios.models import Servidor  # Importa o modelo Servidor de outro app
+from usuarios.models import Servidor, Setor  # Importa o modelo Servidor
 
 
 # Modelo para representar os tipos de equipamentos
@@ -46,9 +46,12 @@ class Equipamento(models.Model):
         max_length=255, choices=SITUACAO_CHOICES, default='EM_USO'
         )
     sala = models.IntegerField(null=True, blank=True)
+    setor = models.ForeignKey(
+        Setor, on_delete=models.SET_NULL, null=True, blank=True
+        )
     # Relaciona com TipoEquipamento, sem excluir o tipo caso ele seja removido
     tipo = models.ForeignKey(
-        TipoEquipamento, on_delete=models.DO_NOTHING, null=True, blank=True
+        TipoEquipamento, on_delete=models.SET_NULL, null=True, blank=True
     )
     # Relaciona com Servidor, definindo um valor padrão
     # caso o servidor seja removido
@@ -72,10 +75,9 @@ class Equipamento(models.Model):
 # Modelo para registrar manutenções dos equipamentos
 class Manutencao(models.Model):
     codigo = models.IntegerField(null=True, blank=True)
-    data_inicio = models.DateTimeField(
-        auto_now_add=True, blank=True, null=True
+    data = models.DateField(
+        auto_now_add=False, auto_now=False, blank=True, null=True
         )
-    data_fim = models.DateField(blank=True, null=True)
     descricao = models.CharField(max_length=255, null=True, blank=True)
     # Relaciona com Equipamento, excluindo manutenção
     # caso o equipamento seja removido
@@ -112,7 +114,9 @@ class Componente(models.Model):
     codigo = models.IntegerField()
     nome = models.CharField(max_length=255)
     descricao = models.CharField(max_length=255)
-    tipo = models.ForeignKey(TipoComponente, on_delete=models.DO_NOTHING)
+    tipo = models.ForeignKey(
+        TipoComponente, on_delete=models.SET_NULL, blank=True, null=True
+        )
     fabricante = models.CharField(max_length=255)
     tamanho_mem = models.IntegerField(blank=True, null=True)
     n_serie = models.CharField(max_length=255, blank=True, null=True)

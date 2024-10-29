@@ -1,126 +1,142 @@
-from rest_framework.views import APIView  # Para criar views baseadas em classes
-from rest_framework.response import Response  # Para enviar respostas HTTP
-from rest_framework import status  # Constantes de status HTTP
-from rest_framework.exceptions import AuthenticationFailed  # Exceção de autenticação
-from rest_framework import viewsets  # ViewSet para CRUD automático
-from .serializers import (  # Importa os serializers necessários
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
+from django.http import HttpResponse
+from rest_framework import viewsets
+from .serializers import (
     AgenciaSerializer,
     SetorSerializer,
     ServidorSerializer,
     UserSerializer,
-    SolicitacaoSerializer,
+    SolicitacaoSerializer
 )
 from .models import User, Servidor, Agencia, Setor, Solicitacao
-import jwt  # Biblioteca para manipulação de JSON Web Tokens
-import datetime  # Para manipulação de datas e tempos
+import jwt
+import csv
+import datetime
+# import os
+
+# SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')
 
 
-# View para registrar novos usuários
 class RegisterView(APIView):
     def post(self, request):
-        # Captura a flag de superusuário, se enviada
         is_superuser = request.data.get('is_superuser', False)
-        # Valida os dados usando o serializer de User
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # Salva o novo usuário no banco de dados
         serializer.save(is_superuser=is_superuser)
-        # Retorna os dados do usuário criado com status 201 (Criado)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-# View para login de usuários
 class LoginView(APIView):
     def post(self, request):
-        # Captura email e senha fornecidos no request
         email = request.data['email']
         password = request.data['password']
-        # Busca um usuário com o email fornecido
         user = User.objects.filter(email=email).first()
-
         if user is None:
-            # Caso o usuário não exista, lança uma exceção de autenticação
             raise AuthenticationFailed('User not found!')
-
         if not user.check_password(password):
-            # Verifica a senha, se for inválida, lança exceção de autenticação
             raise AuthenticationFailed('Incorrect password!')
-
-        # Cria o payload do JWT com o ID do usuário e tempo de expiração
         payload = {
             'id': user.id,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
             'iat': datetime.datetime.utcnow()
         }
-
-        # Gera o token JWT
+        # SECRET_KEY
         token = jwt.encode(payload, 'secret', algorithm='HS256')
         response = Response()
-        # Define um cookie HttpOnly com o token JWT
         response.set_cookie(key='jwt', value=token, httponly=True)
-        # Retorna o token no corpo da resposta
         response.data = {
             'jwt': token
         }
         return response
 
 
-# View para obter informações do usuário autenticado
 class UserView(APIView):
     def get(self, request):
-        # Recupera o token JWT dos cookies
         token = request.COOKIES.get('jwt')
-
         if not token:
-            # Se o token não estiver presente, lança exceção de autenticação
             raise AuthenticationFailed('Unauthenticated!')
-
         try:
-            # Decodifica o token para obter o payload
             payload = jwt.decode(token, 'secret', algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
-            # Se o token expirou, lança exceção de autenticação
-            raise AuthenticationFailed('Unauthenticated!')
-
-        # Busca o usuário com o ID do payload
+            raise AuthenticationFailed('Unauthenticated!')   
         user = User.objects.filter(id=payload['id']).first()
-        # Serializa os dados do usuário e os retorna
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
 
-# View para logout de usuários
 class LogoutView(APIView):
     def post(self, request):
-        # Cria uma resposta e remove o cookie com o token JWT
         response = Response()
         response.delete_cookie('jwt')
-        # Retorna uma mensagem de sucesso
         response.data = {
             'message': 'success'
         }
         return response
 
 
-# ViewSet para CRUD de Agencias
 class AgenciaViewSet(viewsets.ModelViewSet):
-    queryset = Agencia.objects.all()  # Retorna todas as Agencias
-    serializer_class = AgenciaSerializer  # Usa o serializer de Agencia
+    queryset = Agencia.objects.all()
+    serializer_class = AgenciaSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['nome', 'numero']
 
 
-# ViewSet para CRUD de Setores
 class SetorViewSet(viewsets.ModelViewSet):
-    queryset = Setor.objects.all()  # Retorna todos os Setores
-    serializer_class = SetorSerializer  # Usa o serializer de Setor
+    queryset = Setor.objects.all()
+    serializer_class = SetorSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['codigo', 'nome', 'agencia']
 
 
-# ViewSet para CRUD de Servidores
 class ServidorViewSet(viewsets.ModelViewSet):
-    queryset = Servidor.objects.all()  # Retorna todos os Servidores
-    serializer_class = ServidorSerializer  # Usa o serializer de Servidor
+    queryset = Servidor.objects.all()
+    serializer_class = ServidorSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = [
+        'inscricao_institucional', 'nome_completo', 'setor', 'usuario', 'chefe'
+        ]
 
 
-# ViewSet para CRUD de Solicitações
 class SolicitacaoViewSet(viewsets.ModelViewSet):
-    queryset = Solicitacao.objects.all()  # Retorna todas as Solicitações
-    serializer_class = SolicitacaoSerializer  # Usa o serializer de Solicitacao
+    queryset = Solicitacao.objects.all()
+    serializer_class = SolicitacaoSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['user', 'data', 'status', 'descricao']
+
+
+class ExportServidoresCSVView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        setor_id = request.query_params.get('setor_id')
+        if not setor_id:
+            return HttpResponse(
+                status=400, content="Parâmetro 'setor_id' é obrigatório."
+                )
+        try:
+            setor = Setor.objects.get(id=setor_id)
+        except Setor.DoesNotExist:
+            return HttpResponse(status=404, content="Setor não encontrado.")
+
+        servidores = Servidor.objects.filter(setor=setor)
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="servidores_setor_{setor_id}.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['Nome Completo', 'Inscrição Institucional', 'Chefe'])
+
+        for servidor in servidores:
+            writer.writerow([servidor.nome_completo, servidor.inscricao_institucional, servidor.chefe])
+
+        return response
+    
