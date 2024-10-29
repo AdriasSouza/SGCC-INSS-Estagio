@@ -51,25 +51,37 @@ O primeiro comando recebe as atualizações mais recentes do repositório remoto
 
 3. Ative a venv:
    ```bash
-   .\venv\Scripts\activate
+   .venv\Scripts\activate
    ```
    
 5. Instale as dependencias
    ```bash
    pip install -r requiriments.txt
    ```
+   Se der erro, execute o comando abaixo da linha de erro, ex:
+   ```bash
+   C:\Repositorio\sgccapi\.venv\Scripts\python.exe -m pip install -r requiriments.txt
+   ```
 
-6. Faça as migrações do banco de dados
+6. Navegue até o diretório do backend:
+   ```bash
+   cd src
+   ```
+
+7. Faça as migrações do banco de dados
   ```bash
   python manage.py makemigrations
   ```
+  ```bash
+  python manage.py migrate
+  ```
 
-7. Rode o server
+8. Rode o server
   ```bash
   python manage.py runserver 
   ```
 
-8. Baixe e utilize o Postman para testar as requisições
+9. Baixe e utilize o Postman para testar as requisições
   - Postman
   - https://www.postman.com/downloads/
 
