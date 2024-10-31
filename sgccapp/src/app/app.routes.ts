@@ -8,18 +8,19 @@ import { ServidoresComponent } from './components/servidores/servidores.componen
 import { UsuariosComponent } from './components/usuarios/usuarios.component';
 import { ComponentesComponent } from './components/componentes/componentes.component';
 import { RequisicoesComponent } from './components/requisicoes/requisicoes.component';
-
+import { authGuard } from './service/auth.guard';
 
 export const routes: Routes = [
-    { path: '', canActivate: [], children: [
-        { path: 'equipamentos', component: EquipamentoComponent },
-        { path: 'login', component: LoginComponent },
-        { path: 'manutencao', component: ManutencaoComponent},
-        { path: 'componentes', component: ComponentesComponent},
-        { path: 'agencias', component: AgenciasComponent},
-        { path: 'servidores', component: ServidoresComponent},
-        { path: 'usuarios', component: UsuariosComponent},
-        { path: 'relatorios', component: RelatoriosComponent},
-        { path: 'requisicoes', component: RequisicoesComponent}
-    ] },
+  { path: '', canActivate: [authGuard], children: [
+    { path: 'equipamentos', component: EquipamentoComponent },
+    { path: 'manutencao', component: ManutencaoComponent },
+    { path: 'componentes', component: ComponentesComponent },
+    { path: 'agencias', component: AgenciasComponent },
+    { path: 'servidores', component: ServidoresComponent },
+    { path: 'usuarios', component: UsuariosComponent },
+    { path: 'relatorios', component: RelatoriosComponent },
+    { path: 'requisicoes', component: RequisicoesComponent }
+  ] },
+  { path: 'login', component: LoginComponent },
+  { path: '**', redirectTo: '' }
 ];

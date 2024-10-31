@@ -1,0 +1,7 @@
+<tr>
+    <th scope="col" *ngFor="let coluna of colunas"
+        (click)="ordenar(coluna.campo)"
+        [ngClass]="definirClasse(coluna.campo)">
+        {{coluna.descricao}}
+    </th>
+</tr>
