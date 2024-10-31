@@ -93,167 +93,120 @@
   <!-- Tabela -->
   <div class="table-responsive min-vh-100">
     <table class="table table-striped table-bordered" *ngIf="!loading">
-      <thead class="table-active">
-        <tr>
-          <th scope="col">Plaqueta</th>
-          <th scope="col">Nome</th>
-          <th scope="col">Marca</th>
-          <th scope="col">Tipo</th>
-          <th scope="col">Setor</th>
-          <th scope="col">Responsável</th>
-          <th scope="col">Sala</th>
-          <th scope="col">Estado</th>
-          <th scope="col">Situação</th>
-          <th scope="col">Data de Entrada</th>
-          <th scope="col">Ações</th>
-        </tr>
+      <thead app-thead-ordenacao
+        [colunas]="colunas"
+        (ordenacaoAtualizada)="ordenar($event)">
       </thead>
       <tbody>
-        <tr *ngFor="let equipamento of equipamentosFiltrados; let i = index">
-          <td>{{ equipamento.plaqueta }}</td>
-          <td>{{ equipamento.nome }}</td>
-          <td>{{ equipamento.marca }}</td>
-          <td>{{ equipamento.tipo }}</td>
-          <td>{{ equipamento.setor }}</td>
-          <td>{{ equipamento.responsavel }}</td>
-          <td>{{ equipamento.sala }}</td>
-          <td>{{ equipamento.estado }}</td>
-          <td>{{ equipamento.situacao }}</td>
-            <td>{{ equipamento.data | date:'dd/MM/yyyy' }}</td>
-            <td title="Ações" class="text-center">
-              <!-- Bootstrap Dropdown -->
-              <div class="dropdown">
-                <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="dropdownMenuButton{{i}}" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" (click)="toggleDropdown(i)">
-                  <i class="bi bi-menu-down"></i>
-                </button>
-                <!-- Dropdown menu -->
-                <ul class="dropdown-menu" [class.show]="showDropdown[i]" [attr.aria-labelledby]="'dropdownMenuButton' + i">
-                  <li><a class="dropdown-item" href="#" (click)="openEditModal(i)" (click)="toggleDropdown(i)">Editar</a></li>
-                  <li><a class="dropdown-item" href="#" (click)="openDeleteModal(equipamento) " (click)="toggleDropdown(i)">Excluir</a></li>
-                  <li><a class="dropdown-item" href="#" (click)="openManutencaoModal(equipamento)" (click)="toggleDropdown(i)">Registrar Manutenção</a></li>
-                </ul>
-              </div>
-            </td>
+        <tr *ngFor="let equipamento of registros">
+          <td>{{equipamento.plaqueta}}</td>
+          <td>{{equipamento.nome}}</td>
+          <td>{{equipamento.marca}}</td>
+          <td>{{equipamento.tipo?.nome}}</td>
+          <td>{{equipamento.setor?.nome}}</td>
+          <td>{{equipamento.servidor?.nome_completo}}</td>
+          <td>{{equipamento.sala}}</td>
+          <td>{{equipamento.estado}}</td>
+          <td>{{equipamento.situacao}}</td>
+          <td>{{equipamento.data_aquisicao | date}}</td>
+          <td>
+            <button class="btn btn-warning btn-sm" (click)="openEditModal(equipamento.id)">Editar</button>
+            <button class="btn btn-danger btn-sm" (click)="openDeleteModal(equipamento.id)">Excluir</button>
+          </td>
+        </tr>
       </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="11">
+            <!-- <span *ngIf="registros.length > 0">Total de registros: {{ respostaPaginada.totalElements }}</span> -->
+            <span *ngIf="registros.length == 0">Nenhum registro encontrado</span>
+          </td>
+        </tr>
+      </tfoot>
     </table>
   </div>
+  <!-- <div id="paginacao">
+    <div>
+      <label for="tamanhoPagina">Itens por página</label>
+      <select name="tamanhoPagina" id="tamanhoPagina" [(ngModel)]="requisicaoPaginada.size" (change)="mudarTamanhoPagina()">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+      </select>
+    </div>
+    <ngb-pagination [collectionSize]="respostaPaginada.totalElements" [pageSize]="requisicaoPaginada.size" (pageChange)="mudarPagina($event)" [boundaryLinks]="true"></ngb-pagination>
+  </div> -->
 
   <!-- Models -->
-   <!-- Modal de Adição de Equipamento -->
-   <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+  <!-- Adicionar Equipamento Modal -->
+  <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="addModalLabel">Adicionar Equipamento</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form #addForm="ngForm" (ngSubmit)="addEquipamento(addForm)" [class.was-validated]="addForm.submitted">
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="plaqueta" class="form-label">Plaqueta</label>
-                <input type="text" class="form-control" id="plaqueta" name="plaqueta" ngModel required placeholder="Insira a plaqueta">
-                <div class="invalid-feedback">
-                  Por favor, insira uma plaqueta.
-                </div>
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="nome" class="form-label">Nome</label>
-                <input type="text" class="form-control" id="nome" name="nome" ngModel required placeholder="Insira o nome">
-                <div class="invalid-feedback">
-                  Por favor, insira um nome.
-                </div>
-              </div>
+          <form #addForm="ngForm">
+            <div class="mb-3">
+              <label for="plaqueta" class="form-label">Plaqueta</label>
+              <input type="text" class="form-control" id="plaqueta" name="plaqueta" ngModel required>
             </div>
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="marca" class="form-label">Marca</label>
-                <input type="text" class="form-control" id="marca" name="marca" ngModel required placeholder="Insira a marca">
-                <div class="invalid-feedback">
-                  Por favor, insira uma marca.
-                </div>
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="tipo" class="form-label">Tipo</label>
-                <select class="form-select" id="tipo" name="tipo" ngModel required>
-                  <option value="">Selecione um Tipo</option>
-                  <option value="Computador">Computador</option>
-                  <option value="Impressora">Impressora</option>
-                  <option value="Monitor">Monitor</option>
-                  <option value="Projetor">Projetor</option>
-                </select>
-                <div class="invalid-feedback">
-                  Por favor, selecione um tipo.
-                </div>
-              </div>
+            <div class="mb-3">
+              <label for="nome" class="form-label">Nome</label>
+              <input type="text" class="form-control" id="nome" name="nome" ngModel required>
             </div>
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="setor" class="form-label">Setor</label>
-                <input type="text" class="form-control" id="setor" name="setor" ngModel required placeholder="Insira o setor">
-                <div class="invalid-feedback">
-                  Por favor, insira um setor.
-                </div>
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="responsavel" class="form-label">Responsável</label>
-                <input type="text" class="form-control" id="responsavel" name="responsavel" ngModel required placeholder="Insira o responsável">
-                <div class="invalid-feedback">
-                  Por favor, insira um responsável.
-                </div>
-              </div>
+            <div class="mb-3">
+              <label for="marca" class="form-label">Marca</label>
+              <input type="text" class="form-control" id="marca" name="marca" ngModel required>
             </div>
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="sala" class="form-label">Sala</label>
-                <input type="text" class="form-control" id="sala" name="sala" ngModel required placeholder="Insira a sala">
-                <div class="invalid-feedback">
-                  Por favor, insira uma sala.
-                </div>
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="estado" class="form-label">Estado</label>
-                <select class="form-select" id="estado" name="estado" ngModel required>
-                  <option value="">Selecione um Estado</option>
-                  <option value="Defasado">Defasado</option>
-                  <option value="Atenção">Atenção</option>
-                  <option value="Bom">Bom</option>
-                  <option value="Novo">Novo</option>
-                </select>
-                <div class="invalid-feedback">
-                  Por favor, selecione um estado.
-                </div>
-              </div>
+            <div class="mb-3">
+              <label for="tipo" class="form-label">Tipo</label>
+              <input type="text" class="form-control" id="tipo" name="tipo" ngModel required>
             </div>
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="situacao" class="form-label">Situação</label>
-                <select class="form-select" id="situacao" name="situacao" ngModel required>
-                  <option value="">Selecione uma Situação</option>
-                  <option value="Em uso">Em uso</option>
-                  <option value="Reserva">Reserva</option>
-                  <option value="Manutenção">Manutenção</option>
-                  <option value="Baixa">Baixa</option>
-                  <option value="Alienação">Alienação</option>
-                  <option value="Perdido">Perdido</option>
-                  <option value="Roubado">Roubado</option>
-                </select>
-                <div class="invalid-feedback">
-                  Por favor, selecione uma situação.
-                </div>
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="data" class="form-label">Data de entrada</label>
-                <input type="date" class="form-control" id="data" name="data" ngModel required>
-                <div class="invalid-feedback">
-                  Por favor, insira uma data.
-                </div>
-              </div>
+            <div class="mb-3">
+              <label for="setor" class="form-label">Setor</label>
+              <select class="form-select" id="setor" name="setorId" ngModel required>
+                <!-- <option *ngFor="let setor of setores" [value]="setor.id">{{ setor.nome }}</option> -->
+              </select>
             </div>
-            <div class="d-flex justify-content-end">
-              <button type="submit" class="btn btn-primary me-2">Adicionar</button>
-              <button type="button" class="btn btn-secondary" (click)="cancelAdd(addForm)">Cancelar</button>
+            <div class="mb-3">
+              <label for="responsavel" class="form-label">Responsável</label>
+              <select class="form-select" id="responsavel" name="servidorId" ngModel required>
+                <!-- <option *ngFor="let servidor of servidores" [value]="servidor.id">{{ servidor.nome_completo }}</option> -->
+              </select>
             </div>
+            <div class="mb-3">
+              <label for="sala" class="form-label">Sala</label>
+              <input type="text" class="form-control" id="sala" name="sala" ngModel required>
+            </div>
+            <div class="mb-3">
+              <label for="estado" class="form-label">Estado</label>
+              <select class="form-select" id="estado" name="estado" ngModel required>
+                <option value="DEFASADO">Defasado</option>
+                <option value="ATENÇÃO">Atenção</option>
+                <option value="BOM">Bom</option>
+                <option value="NOVO">Novo</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="situacao" class="form-label">Situação</label>
+              <select class="form-select" id="situacao" name="situacao" ngModel required>
+                <option value="EM_USO">Em uso</option>
+                <option value="RESERVA">Reserva</option>
+                <option value="MANUTENCAO">Manutenção</option>
+                <option value="BAIXA">Baixa</option>
+                <option value="ALIENACAO">Alienação</option>
+                <option value="PERDIDO">Perdido</option>
+                <option value="ROUBADO">Roubado</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="data_aquisicao" class="form-label">Data de Aquisição</label>
+              <input type="date" class="form-control" id="data_aquisicao" name="data_aquisicao" ngModel required>
+            </div>
+            <button type="submit" class="btn btn-primary">Adicionar</button>
+            <button type="button" class="btn btn-secondary" (click)="cancelAdd(addForm)">Cancelar</button>
           </form>
         </div>
       </div>
@@ -287,7 +240,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form [formGroup]="editForm" (ngSubmit)="editEquipamento()">
+          <form [formGroup]="editForm">
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label for="editPlaqueta" class="form-label">Plaqueta</label>
@@ -314,7 +267,7 @@
               </div>
               <div class="col-md-6 mb-3">
                 <label for="editTipo" class="form-label">Tipo</label>
-                <select class="form-select" id="editTipo" formControlName="tipo" (change)="onEditTipoChange($event)">
+                <select class="form-select" id="editTipo" formControlName="tipo">
                   <option value="">Selecione um Tipo</option>
                   <option value="Computador">Computador</option>
                   <option value="Impressora">Impressora</option>
@@ -430,7 +383,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="cancelDelete()">Cancelar</button>
-        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Confirmar</button>
+        <button type="button" class="btn btn-danger">Confirmar</button>
       </div>
     </div>
   </div>
@@ -463,7 +416,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form [formGroup]="manutencaoForm" (ngSubmit)="registrarManutencao()">
+        <form [formGroup]="manutencaoForm">
           <div class="mb-3">
             <label for="responsavel" class="form-label">Responsável</label>
             <input type="text" class="form-control" id="responsavel" formControlName="responsavel" placeholder="Insira o responsável">
