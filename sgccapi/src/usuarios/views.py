@@ -2,7 +2,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAdminUser,
+    SAFE_METHODS,
+    BasePermission
+    )
+from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import HttpResponse
 from rest_framework import viewsets
@@ -23,6 +29,8 @@ import datetime
 
 
 class RegisterView(APIView):
+    permission_classes = [IsAdminUser]
+    
     def post(self, request):
         is_superuser = request.data.get('is_superuser', False)
         serializer = UserSerializer(data=request.data)
@@ -77,12 +85,49 @@ class LogoutView(APIView):
             'message': 'success'
         }
         return response
+    
+
+# Filtros para a model Agencia
+class AgenciaFilter(filters.FilterSet):
+    nome = filters.CharFilter(lookup_expr='icontains')
+    numero = filters.NumberFilter()
+
+    class Meta:
+        model = Agencia
+        fields = ['nome', 'numero']
+
+
+# Filtros para a model Setor
+class SetorFilter(filters.FilterSet):
+    codigo = filters.NumberFilter()
+    nome = filters.CharFilter(lookup_expr='icontains')
+    agencia = filters.ModelChoiceFilter(queryset=Agencia.objects.all())
+
+    class Meta:
+        model = Setor
+        fields = ['codigo', 'nome', 'agencia']
+
+
+# Filtros para a model Servidor
+class ServidorFilter(filters.FilterSet):
+    inscricao_institucional = filters.CharFilter(lookup_expr='icontains')
+    nome_completo = filters.CharFilter(lookup_expr='icontains')
+    setor = filters.ModelChoiceFilter(queryset=Setor.objects.all())
+
+    class Meta:
+        model = Servidor
+        fields = ['inscricao_institucional', 'nome_completo', 'setor']
+
+
+class ReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        return request.method in SAFE_METHODS
 
 
 class AgenciaViewSet(viewsets.ModelViewSet):
     queryset = Agencia.objects.all()
     serializer_class = AgenciaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser | ReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['nome', 'numero']
 
@@ -90,7 +135,7 @@ class AgenciaViewSet(viewsets.ModelViewSet):
 class SetorViewSet(viewsets.ModelViewSet):
     queryset = Setor.objects.all()
     serializer_class = SetorSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser | ReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['codigo', 'nome', 'agencia']
 
@@ -98,7 +143,7 @@ class SetorViewSet(viewsets.ModelViewSet):
 class ServidorViewSet(viewsets.ModelViewSet):
     queryset = Servidor.objects.all()
     serializer_class = ServidorSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser | ReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = [
         'inscricao_institucional', 'nome_completo', 'setor', 'usuario', 'chefe'
