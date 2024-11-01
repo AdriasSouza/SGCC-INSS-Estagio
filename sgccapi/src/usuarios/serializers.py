@@ -37,24 +37,16 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        password = validated_data.pop('password', None)
-        instance = self.Meta.model(**validated_data)
-        if password is not None:
-            instance.set_password(password)
-        instance.save()
-        return instance
-
+        user = UserData.objects.create(email=validated_data['email'],
+                                       name=validated_data['name']
+                                         )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
     def update(self, instance, validated_data):
-        instance.email = validated_data.get('email', instance.email)
-        password = validated_data.get('password')
-        if password:
-            instance.set_password(password)
-        instance.id_servidor = validated_data.get(
-            'id_servidor', instance.id_servidor
-            )
-        instance.save()
-        return instance
-
+        if 'password' in validated_data:
+            instance.set_password(validated_data.pop('password'))
+        return super().update(instance, validated_data)
 
 class SolicitacaoSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())

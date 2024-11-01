@@ -6,10 +6,14 @@ from .views import (
     ServidorViewSet,  # ViewSet para o modelo Servidor
     SolicitacaoViewSet,  # ViewSet para o modelo Solicitacao
     RegisterView,     # View para registrar novos usuários
-    LoginView,        # View para login de usuários
-    UserView,         # View para obter informações do usuário logado
+    UserUpdateView,    # View para dar update nas informações do usuario
+    UserDataView,         # View para obter informações do usuário logado
     LogoutView,       # View para logout de usuários
     ExportServidoresCSVView  # View para exportar CSV dos Servidores socorro
+)
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
 )
 
 # Cria um roteador padrão que gerenciará automaticamente as URLs
@@ -26,9 +30,13 @@ urlpatterns = [
     # Rota para registrar novos usuários
     path('register/', RegisterView.as_view()),
     # Rota para login de usuários
-    path('login/', LoginView.as_view()),
+    path('login/', TokenObtainPairView.as_view()),
+    # Rota para dar refresh no token
+    path('login/refresh/', TokenRefreshView.as_view()),
     # Rota para obter informações do usuário logado
-    path('user/', UserView.as_view()),
+    path('user_data/', UserDataView.as_view()),
+    # Rota para update de usuario
+    path('user_update/', UserUpdateView.as_view()),
     # Rota para logout de usuários
     path('logout/', LogoutView.as_view()),
     # Rota para exportar CSV de setores
