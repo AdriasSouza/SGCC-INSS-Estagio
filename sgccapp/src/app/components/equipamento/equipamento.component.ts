@@ -14,6 +14,7 @@ import { ETipoAlerta } from '../../model/e-tipo-alerta';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { TheadOrdenacaoComponent } from '../thead-ordenacao/thead-ordenacao.component';
 import { BarraComandosComponent } from '../barra-comandos/barra-comandos.component';
+import { RespostaPaginada } from '../../model/resposta-paginada';
 
 declare var bootstrap: any;
 
@@ -27,7 +28,7 @@ declare var bootstrap: any;
 export class EquipamentoComponent implements IList<Equipamento>, OnInit {
 
   constructor(
-    private fb: FormBuilder, 
+    private fb: FormBuilder,
     private http: HttpClient,
     private servico: EquipamentoService, // Adicionando o serviço EquipamentoService como,
     private servicoAlerta: AlertaService // Adicionando o serviço AlertaService
@@ -94,8 +95,11 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
   get(termoBusca?: string): void {
     this.termoBusca = termoBusca;
     this.servico.get(termoBusca).subscribe({
-      next: (resposta: Equipamento[]) => {
-        this.registros = resposta;
+      next: (resposta: RespostaPaginada<Equipamento>) => {
+        this.registros = resposta.results; // Extrai os registros da resposta paginada
+      },
+      error: (err) => {
+        console.error('Erro ao buscar equipamentos:', err); // Você pode querer lidar com erros aqui
       }
     });
   }

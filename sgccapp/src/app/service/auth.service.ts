@@ -8,21 +8,25 @@ import { catchError, tap } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://127.0.0.1:8000/api/usuarios/login/';
+  private apiUrl = 'http://127.0.0.1:8000/api/';
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  login(email: string, password: string): Observable<any> {
-    return this.http.post<any>(this.apiUrl, { email, password }).pipe(
-      tap(response => {
-        localStorage.setItem('token', response.jwt);
-      }),
-      catchError(this.handleError<any>('login'))
+  login(username: string, password: string) {
+    return this.http.post(`${this.apiUrl} usuarios/login/`, { username, password }).subscribe(
+      (res: any) => {
+        localStorage.setItem('access_token', res.access);
+        localStorage.setItem('refresh_token', res.refresh);
+        this.router.navigate(['/equipamentos']); // Redireciona o usuário após o login
+      },
+      (error) => {
+        console.error('Erro no login:', error);
+      }
     );
   }
-
   logout(): void {
-    localStorage.removeItem('token');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     this.router.navigate(['/login']);
   }
 
@@ -30,10 +34,22 @@ export class AuthService {
     return !!localStorage.getItem('token');
   }
 
-  private handleError<T>(operation = 'operation', result?: T) {
-    return (error: any): Observable<T> => {
-      console.error(error);
-      return of(result as T);
-    };
+  refreshAccessToken() {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (refreshToken) {
+      return this.http.post(`${this.apiUrl}/login/refresh/`, { refresh: refreshToken }).subscribe(
+        (res: any) => {
+          localStorage.setItem('access_token', res.access);
+        },
+        (error) => {
+          console.error('Erro ao renovar o token:', error);
+          this.logout();
+        }
+      );
+    }
+  }
+
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('access_token');
   }
 }

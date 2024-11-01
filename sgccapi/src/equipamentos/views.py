@@ -83,7 +83,7 @@ class EquipComponenteFilter(FilterSet):
 
 
 class TipoEquipamentoViewSet(viewsets.ModelViewSet):
-    queryset = TipoEquipamento.objects.all()
+    queryset = TipoEquipamento.objects.all().order_by('id')
     serializer_class = TipoEquipamentoSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -91,7 +91,7 @@ class TipoEquipamentoViewSet(viewsets.ModelViewSet):
 
 
 class EquipamentoViewSet(viewsets.ModelViewSet):
-    queryset = Equipamento.objects.all()
+    queryset = Equipamento.objects.all().order_by('id')
     serializer_class = EquipamentoSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -99,7 +99,7 @@ class EquipamentoViewSet(viewsets.ModelViewSet):
 
 
 class ManutencaoViewSet(viewsets.ModelViewSet):
-    queryset = Manutencao.objects.all()
+    queryset = Manutencao.objects.all().order_by('id')
     serializer_class = ManutencaoSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -107,7 +107,7 @@ class ManutencaoViewSet(viewsets.ModelViewSet):
 
 
 class TipoComponenteViewSet(viewsets.ModelViewSet):
-    queryset = TipoComponente.objects.all()
+    queryset = TipoComponente.objects.all().order_by('id')
     serializer_class = TipoComponenteSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -115,7 +115,7 @@ class TipoComponenteViewSet(viewsets.ModelViewSet):
 
 
 class ComponenteViewSet(viewsets.ModelViewSet):
-    queryset = Componente.objects.all()
+    queryset = Componente.objects.all().order_by('id')
     serializer_class = ComponenteSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -123,7 +123,7 @@ class ComponenteViewSet(viewsets.ModelViewSet):
 
 
 class EquipComponenteViewSet(viewsets.ModelViewSet):
-    queryset = EquipComponente.objects.all()
+    queryset = EquipComponente.objects.all().order_by('id')
     serializer_class = EquipComponenteSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -157,7 +157,7 @@ class ExportEquipamentosCSVView(APIView):
 
         equipamentos = Equipamento.objects.filter(
             data_aquisicao__range=[data_inicio, data_fim]
-            )
+            ).order_by('id')
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="equipamentos_{data_inicio}_a_{data_fim}.csv"'
@@ -208,7 +208,7 @@ class ExportManutencoesCSVView(APIView):
 
         manutencoes = Manutencao.objects.filter(
             data__range=[data_inicio, data_fim]
-            )
+            ).order_by('id')
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="manutencoes_{data_inicio}_a_{data_fim}.csv"'
@@ -251,7 +251,7 @@ class ExportComponentesCSVView(APIView):
 
         componentes = Componente.objects.filter(
             data_aquisicao__range=[data_inicio, data_fim]
-            )
+            ).order_by('id')
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="componentes_{data_inicio}_a_{data_fim}.csv"'

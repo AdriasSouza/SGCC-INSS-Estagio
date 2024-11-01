@@ -107,7 +107,7 @@ class ReadOnly(BasePermission):
 
 
 class AgenciaViewSet(viewsets.ModelViewSet):
-    queryset = Agencia.objects.all()
+    queryset = Agencia.objects.all().order_by('id')
     serializer_class = AgenciaSerializer
     permission_classes = [IsAdminUser | ReadOnly]
     filter_backends = [DjangoFilterBackend]
@@ -115,7 +115,7 @@ class AgenciaViewSet(viewsets.ModelViewSet):
 
 
 class SetorViewSet(viewsets.ModelViewSet):
-    queryset = Setor.objects.all()
+    queryset = Setor.objects.all().order_by('id')
     serializer_class = SetorSerializer
     permission_classes = [IsAdminUser | ReadOnly]
     filter_backends = [DjangoFilterBackend]
@@ -123,7 +123,7 @@ class SetorViewSet(viewsets.ModelViewSet):
 
 
 class ServidorViewSet(viewsets.ModelViewSet):
-    queryset = Servidor.objects.all()
+    queryset = Servidor.objects.all().order_by('id')
     serializer_class = ServidorSerializer
     permission_classes = [IsAdminUser | ReadOnly]
     filter_backends = [DjangoFilterBackend]
@@ -133,7 +133,7 @@ class ServidorViewSet(viewsets.ModelViewSet):
 
 
 class SolicitacaoViewSet(viewsets.ModelViewSet):
-    queryset = Solicitacao.objects.all()
+    queryset = Solicitacao.objects.all().order_by('id')
     serializer_class = SolicitacaoSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -154,7 +154,7 @@ class ExportServidoresCSVView(APIView):
         except Setor.DoesNotExist:
             return HttpResponse(status=404, content="Setor não encontrado.")
 
-        servidores = Servidor.objects.filter(setor=setor)
+        servidores = Servidor.objects.filter(setor=setor).order_by('id')
 
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="servidores_setor_{setor_id}.csv"'

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Equipamento } from '../model/equipamento.model';
 import { RequisicaoPaginada } from '../model/requisicao-paginada';
@@ -18,28 +18,35 @@ export class EquipamentoService implements IService<Equipamento> {
 
   apiUrl: string = environment.API_URL + '/api/gerenciamento/equipamento/';
 
-  get(termoBusca?: string | undefined, paginacao?: RequisicaoPaginada | undefined): Observable<Equipamento[]> {
-    let url = this.apiUrl + "?";
+  get(termoBusca?: string, paginacao?: RequisicaoPaginada): Observable<RespostaPaginada<Equipamento>> {
+    let params = new HttpParams();
+
     if (termoBusca) {
-      url += "termoBusca=" + termoBusca;
+      params = params.set('termoBusca', termoBusca);
     }
-    // Adicionar o token JWT no cabeçalho da requisição
-    const token = localStorage.getItem('token');
+
+    if (paginacao) {
+      params = params.set('page', paginacao.page.toString());
+      params = params.set('pageSize', paginacao.pageSize.toString());
+    }
+
+    const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get<Equipamento[]>(url, { headers });
+
+    return this.http.get<RespostaPaginada<Equipamento>>(this.apiUrl, { headers, params });
   }
 
   getById(id: number): Observable<Equipamento> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    let url = this.apiUrl + id;
+    const url = this.apiUrl + id;
     return this.http.get<Equipamento>(url, { headers });
   }
 
   save(objeto: Equipamento): Observable<Equipamento> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    let url = this.apiUrl;
+    const url = this.apiUrl;
     if (objeto.id) {
       return this.http.put<Equipamento>(url, objeto, { headers });
     } else {
@@ -48,67 +55,9 @@ export class EquipamentoService implements IService<Equipamento> {
   }
 
   delete(id: number): Observable<void> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    let url = this.apiUrl + id;
+    const url = this.apiUrl + id;
     return this.http.delete<void>(url, { headers });
   }
 }
-
-
-// import { Injectable } from '@angular/core';
-// import { IService } from './i-service';
-// import { HttpClient } from '@angular/common/http';
-// import { Equipamento } from '../model/equipamento.model';
-// import { environment } from '../environments/environment';
-// import { RequisicaoPaginada } from '../model/requisicao-paginada';
-// import { Observable } from 'rxjs';
-// import { RespostaPaginada } from '../model/resposta-paginada';
-
-// @Injectable({
-//   providedIn: 'root'
-// })
-// export class EquipamentoService implements IService<Equipamento>{
-
-//   constructor(
-//     private http: HttpClient
-//   ) { }
-
-//   apiUrl: string = environment.API_URL + '/api/gerenciamento/equipamento/';
-
-//   get(termoBusca?: string | undefined, paginacao?: RequisicaoPaginada | undefined): Observable<RespostaPaginada<Equipamento>> {
-//     let url = this.apiUrl + "?";
-//     if (termoBusca) {
-//       url += "termoBusca=" + termoBusca;
-//     }
-//     if (paginacao) {
-//       url += "&page=" + paginacao.page;
-//       url += "&size=" + paginacao.size;
-//       paginacao.sort.forEach(campo => {
-//         url += "&sort=" + campo;
-//       });
-//     } else {
-//       url += "&unpaged=true";
-//     }
-//     return this.http.get<RespostaPaginada<Equipamento>>(url);
-//   }
-
-//   getById(id: number): Observable<Equipamento> {
-//     let url = this.apiUrl + id;
-//     return this.http.get<Equipamento>(url);
-//   }
-
-//   save(objeto: Equipamento): Observable<Equipamento> {
-//     let url = this.apiUrl;
-//     if (objeto.id) {
-//       return this.http.put<Equipamento>(url, objeto);
-//     } else {
-//       return this.http.post<Equipamento>(url, objeto);
-//     }
-//   }
-
-//   delete(id: number): Observable<void> {
-//     let url = this.apiUrl + id;
-//     return this.http.delete<void>(url);
-//   }
-// }

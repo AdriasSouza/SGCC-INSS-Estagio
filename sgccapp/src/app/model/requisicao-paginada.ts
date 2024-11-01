@@ -1,5 +1,5 @@
-export class RequisicaoPaginada {
-    page: number = 0;
-    size: number = 5;
-    sort: string[] = [];
+// src/app/model/requisicao-paginada.model.ts
+export interface RequisicaoPaginada {
+  page: number;        // Número da página
+  pageSize: number;    // Tamanho da página
 }

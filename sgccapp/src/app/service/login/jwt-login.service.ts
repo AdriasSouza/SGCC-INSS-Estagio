@@ -38,18 +38,28 @@ export class JwtLoginService implements ILoginService {
   }
 
   private renovarToken(): void {
-    const url = environment.API_URL + '/refresh';
-    this.http.get(url, { responseType: 'text' }).subscribe({
-      next: (token: string) => {
-        this.configurarSessaoUsuario(token);
-      }
-    })
+    const refreshToken = sessionStorage.getItem('refresh_token');
+    if (refreshToken) {
+      this.http.post(`${this.apiUrl}/login/refresh/`, { refresh: refreshToken }).subscribe({
+        next: (response: any) => {
+          const newAccessToken = response.access;
+          this.configurarSessaoUsuario(newAccessToken, refreshToken);
+        },
+        error: () => {
+          this.logout();
+        }
+      });
+    } else {
+      this.logout();
+    }
   }
 
   login(email: string, password: string): void {
-    this.http.post(`${this.apiUrl}/login/`, { email, password }, { responseType: 'text' }).subscribe({
-      next: (token: string) => {
-        this.configurarSessaoUsuario(token);
+    this.http.post(`${this.apiUrl}/login/`, { email, password }).subscribe({
+      next: (response: any) => {
+        const accessToken = response.access;
+        const refreshToken = response.refresh;
+        this.configurarSessaoUsuario(accessToken, refreshToken);
         this.agendarRenovacaoToken();
       },
       complete: () => {
@@ -58,15 +68,16 @@ export class JwtLoginService implements ILoginService {
     });
   }
 
-  private configurarSessaoUsuario(token: string) {
-    const payload = token.split('.')[1];
+  private configurarSessaoUsuario(accessToken: string, refreshToken: string) {
+    const payload = accessToken.split('.')[1];
     const payloadDecodificado = atob(payload);
     const conteudoToken = JSON.parse(payloadDecodificado);
     const tokenExp = conteudoToken.exp * 1000;
 
     const usuario = <User>{};
-    usuario.email = conteudoToken.nomeCompleto;
-    sessionStorage.setItem('token', token);
+    usuario.email = conteudoToken.email;
+    sessionStorage.setItem('access_token', accessToken);
+    sessionStorage.setItem('refresh_token', refreshToken);
     sessionStorage.setItem('usuario', JSON.stringify(usuario));
     sessionStorage.setItem('tokenExp', tokenExp.toString());
 
@@ -74,37 +85,36 @@ export class JwtLoginService implements ILoginService {
   }
 
   logout(): void {
-    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('refresh_token');
     sessionStorage.removeItem('usuario');
     sessionStorage.removeItem('tokenExp');
-    document.cookie = 'XSRF-TOKEN=; Max-Age=0; path=/';
     clearInterval(this.intervaloRenovacao);
     this.router.navigate(['/login']);
   }
 
   isLoggedIn(): boolean {
-    const token = sessionStorage.getItem('token');
-    if (token == null) {
-      return false;
-    }
+    const token = sessionStorage.getItem('access_token');
+    if (!token) return false;
 
     const tokenExp = sessionStorage.getItem('tokenExp');
     const tempoExpiracao = new Date(Number(tokenExp));
     const agora = new Date();
     const estaExpirado = tempoExpiracao < agora;
+
     if (estaExpirado) {
-      this.logout();
+      this.renovarToken();
+      return false; // O token expirou e será renovado
     }
 
-    return !estaExpirado;
+    return true;
   }
 
   getHeaders(request: HttpRequest<any>): HttpRequest<any> {
-    if (this.isLoggedIn()) {
+    const token = sessionStorage.getItem('access_token');
+    if (this.isLoggedIn() && token) {
       this.fezRequisicao = true;
-      const token = sessionStorage.getItem('token');
       return request.clone({
-        withCredentials: true,
         headers: request.headers.set('Authorization', 'Bearer ' + token)
       });
     }
