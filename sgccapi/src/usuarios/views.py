@@ -39,7 +39,7 @@ class RegisterView(APIView):
 
 
 class UserUpdateView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def put(self, request):
         user = request.user
@@ -51,7 +51,7 @@ class UserUpdateView(APIView):
 
 
 class UserDataView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
@@ -109,7 +109,7 @@ class ReadOnly(BasePermission):
 class AgenciaViewSet(viewsets.ModelViewSet):
     queryset = Agencia.objects.all()
     serializer_class = AgenciaSerializer
-    permission_classes = [IsAdminUser | ReadOnly]
+    # permission_classes = [IsAdminUser | ReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['nome', 'numero']
 
@@ -117,7 +117,7 @@ class AgenciaViewSet(viewsets.ModelViewSet):
 class SetorViewSet(viewsets.ModelViewSet):
     queryset = Setor.objects.all()
     serializer_class = SetorSerializer
-    permission_classes = [IsAdminUser | ReadOnly]
+    # permission_classes = [IsAdminUser | ReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['codigo', 'nome', 'agencia']
 
@@ -125,7 +125,7 @@ class SetorViewSet(viewsets.ModelViewSet):
 class ServidorViewSet(viewsets.ModelViewSet):
     queryset = Servidor.objects.all()
     serializer_class = ServidorSerializer
-    permission_classes = [IsAdminUser | ReadOnly]
+    # permission_classes = [IsAdminUser | ReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = [
         'inscricao_institucional', 'nome_completo', 'setor', 'usuario', 'chefe'
@@ -135,13 +135,13 @@ class ServidorViewSet(viewsets.ModelViewSet):
 class SolicitacaoViewSet(viewsets.ModelViewSet):
     queryset = Solicitacao.objects.all()
     serializer_class = SolicitacaoSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['user', 'data', 'status', 'descricao']
 
 
 class ExportServidoresCSVView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
         setor_id = request.query_params.get('setor_id')

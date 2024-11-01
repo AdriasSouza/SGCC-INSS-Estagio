@@ -85,7 +85,7 @@ class EquipComponenteFilter(FilterSet):
 class TipoEquipamentoViewSet(viewsets.ModelViewSet):
     queryset = TipoEquipamento.objects.all()
     serializer_class = TipoEquipamentoSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['nome', 'descricao']
 
@@ -93,7 +93,7 @@ class TipoEquipamentoViewSet(viewsets.ModelViewSet):
 class EquipamentoViewSet(viewsets.ModelViewSet):
     queryset = Equipamento.objects.all()
     serializer_class = EquipamentoSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_class = EquipamentoFilter  # Usando o filtro personalizado
 
@@ -101,7 +101,7 @@ class EquipamentoViewSet(viewsets.ModelViewSet):
 class ManutencaoViewSet(viewsets.ModelViewSet):
     queryset = Manutencao.objects.all()
     serializer_class = ManutencaoSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_class = ManutencaoFilter  # Usando o filtro personalizado
 
@@ -109,7 +109,7 @@ class ManutencaoViewSet(viewsets.ModelViewSet):
 class TipoComponenteViewSet(viewsets.ModelViewSet):
     queryset = TipoComponente.objects.all()
     serializer_class = TipoComponenteSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_class = TipoComponenteFilter  # Usando o filtro personalizado
 
@@ -117,7 +117,7 @@ class TipoComponenteViewSet(viewsets.ModelViewSet):
 class ComponenteViewSet(viewsets.ModelViewSet):
     queryset = Componente.objects.all()
     serializer_class = ComponenteSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_class = ComponenteFilter  # Usando o filtro personalizado
 
@@ -125,13 +125,13 @@ class ComponenteViewSet(viewsets.ModelViewSet):
 class EquipComponenteViewSet(viewsets.ModelViewSet):
     queryset = EquipComponente.objects.all()
     serializer_class = EquipComponenteSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_class = EquipComponenteFilter  # Usando o filtro personalizado
 
 
 class ExportEquipamentosCSVView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
         data_inicio = request.query_params.get('data_inicio')
@@ -182,7 +182,7 @@ class ExportEquipamentosCSVView(APIView):
 
 
 class ExportManutencoesCSVView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
         data_inicio = request.query_params.get('data_inicio')
@@ -225,7 +225,7 @@ class ExportManutencoesCSVView(APIView):
 
 
 class ExportComponentesCSVView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
         data_inicio = request.query_params.get('data_inicio')
