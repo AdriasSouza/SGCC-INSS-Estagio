@@ -1,7 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.permissions import (
     IsAuthenticated,
     IsAdminUser,
@@ -9,8 +8,6 @@ from rest_framework.permissions import (
     BasePermission
     )
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import HttpResponse
@@ -22,9 +19,8 @@ from .serializers import (
     UserSerializer,
     SolicitacaoSerializer
 )
-from .models import User, Servidor, Agencia, Setor, Solicitacao
+from .models import Servidor, Agencia, Setor, Solicitacao
 import csv
-import datetime
 # import os
 
 # SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')
@@ -60,13 +56,19 @@ class UserDataView(APIView):
 
 
 class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
-        response = Response()
-        response.delete_cookie('jwt')
-        response.data = {
-            'message': 'success'
-        }
-        return response
+        try:
+            refresh_token = request.data["refresh_token"]  # Obtenha o refresh token do corpo da requisição
+            token = RefreshToken(refresh_token)  # Crie um objeto RefreshToken
+            token.blacklist()  # Coloque o token na blacklist
+
+            return Response(status=status.HTTP_205_RESET_CONTENT)  # Retorne o status 205
+        except KeyError:
+            return Response({"detail": "Refresh token not provided."}, status=status.HTTP_400_BAD_REQUEST)  # Caso não forneça o token
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)  # Retorne a mensagem de errocd
     
 
 # Filtros para a model Agencia

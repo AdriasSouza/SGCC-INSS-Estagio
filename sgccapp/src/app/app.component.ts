@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http'; // Importando HttpClientModule
 import { User } from './model/user.model';
 import { ILoginService, LoginService } from './service/login/i-login.service';
+import { AuthService } from './service/auth.service';
 
 declare var bootstrap: any;
 
@@ -31,6 +32,7 @@ export class AppComponent {
 
   constructor(
     router: Router,
+    private authService: AuthService, // Injete o AuthService
     @Inject(LoginService) private loginService: ILoginService) {
 
   router.events.subscribe(evento => {
@@ -77,18 +79,38 @@ export class AppComponent {
     console.log('Dados do usuário salvos:', this.user);
   }
 
-  // Função de logout
+  // Função de logout simplificada que chama o AuthService
   confirmLogout() {
-    this.http.post('http://127.0.0.1:8000/api/usuarios/logout/', {}).subscribe({
+    this.authService.logout(); // Chama o logout do AuthService
+  }
+
+  // Função de logout
+  /* confirmLogout() {
+    const accessToken = localStorage.getItem('access_token'); // Pegando o token de acesso do armazenamento local
+
+    if (!accessToken) {
+      console.error('Token de acesso não encontrado.');
+      return;
+    }
+
+    this.http.post('http://127.0.0.1:8000/api/usuarios/logout/',
+      { refresh_token: localStorage.getItem('refresh_token') },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}` // Enviando o token de acesso no cabeçalho
+        }
+      }
+    ).subscribe({
       next: () => {
-        localStorage.removeItem('token'); // Remover o token de autenticação
+        localStorage.removeItem('access_token'); // Remover o token de acesso
+        localStorage.removeItem('refresh_token'); // Remover o token de atualização
         this.router.navigate(['/login']); // Redirecionar para a página de login
       },
       error: (error) => {
         console.error('Erro ao fazer logout:', error);
       }
     });
-  }
+  } */
 
   logout(): void {
     this.loginService.logout();
