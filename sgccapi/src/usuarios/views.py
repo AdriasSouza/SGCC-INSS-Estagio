@@ -21,9 +21,6 @@ from .serializers import (
 )
 from .models import Servidor, Agencia, Setor, Solicitacao
 import csv
-# import os
-
-# SECRET_KEY = os.getenv('SECRET_KEY', 'default_secret_key')
 
 
 class RegisterView(APIView):
