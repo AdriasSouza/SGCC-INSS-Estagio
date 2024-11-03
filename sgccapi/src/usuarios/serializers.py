@@ -9,12 +9,17 @@ class AgenciaSerializer(serializers.ModelSerializer):
 
 
 class SetorSerializer(serializers.ModelSerializer):
-    # Aninha o serializer de Agência com read_only=True para retorno do objeto completo
-    agencia = AgenciaSerializer(read_only=True)
+    agencia = serializers.PrimaryKeyRelatedField(
+        queryset=Agencia.objects.all())
 
     class Meta:
         model = Setor
         fields = ['id', 'codigo', 'nome', 'agencia']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['agencia'] = AgenciaSerializer(instance.agencia).data
+        return representation
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -38,19 +43,31 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ServidorSerializer(serializers.ModelSerializer):
-    # Aninha os serializers de Setor e User com read_only=True para retorno dos objetos completos
-    setor = SetorSerializer(read_only=True)
-    usuario = UserSerializer(read_only=True)
+    setor = serializers.PrimaryKeyRelatedField(queryset=Setor.objects.all())
+    usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta:
         model = Servidor
-        fields = ['id', 'inscricao_institucional', 'nome_completo', 'setor', 'usuario', 'chefe']
+        fields = [
+            'id', 'inscricao_institucional', 'nome_completo',
+            'setor', 'usuario', 'chefe'
+            ]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['setor'] = SetorSerializer(instance.setor).data
+        representation['usuario'] = UserSerializer(instance.usuario).data
+        return representation
 
 
 class SolicitacaoSerializer(serializers.ModelSerializer):
-    # Aninha o serializer de User com read_only=True para retorno do objeto completo
-    user = UserSerializer(read_only=True)
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta:
         model = Solicitacao
         fields = ['id', 'user', 'data', 'status', 'descricao']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['user'] = UserSerializer(instance.user).data
+        return representation
