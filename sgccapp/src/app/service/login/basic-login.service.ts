@@ -40,7 +40,7 @@ export class BasicLoginService implements ILoginService {
         this.usuarioAutenticado.next(usuario);
       },
       complete: () => {
-        this.router.navigate(['/']);
+        this.router.navigate(['/equipamentos']); // Redirecionar para /equipamentos após login bem-sucedido
       }
     });
 

@@ -1,24 +1,24 @@
-import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Equipamento } from '../model/equipamento.model';
+import { Injectable } from '@angular/core';
+import { Setor } from '../model/setor.model';
 import { RequisicaoPaginada } from '../model/requisicao-paginada';
 import { RespostaPaginada } from '../model/resposta-paginada';
-import { IService } from './i-service';
+import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
+import { IService } from './i-service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class EquipamentoService implements IService<Equipamento> {
+export class SetorService implements IService<Setor> {
 
   constructor(
     private http: HttpClient
   ) { }
 
-  apiUrl: string = environment.API_URL + '/api/gerenciamento/equipamento/';
+  apiUrl: string = environment.API_URL + '/api/usuarios/setores/';
 
-  get(termoBusca?: string | undefined, paginacao?: RequisicaoPaginada | undefined): Observable<RespostaPaginada<Equipamento>> {
+  get(termoBusca?: string, paginacao?: RequisicaoPaginada): Observable<RespostaPaginada<Setor>> {
     let params = new HttpParams();
 
     if (termoBusca) {
@@ -33,24 +33,24 @@ export class EquipamentoService implements IService<Equipamento> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
 
-    return this.http.get<RespostaPaginada<Equipamento>>(this.apiUrl, { headers, params });
+    return this.http.get<RespostaPaginada<Setor>>(this.apiUrl, { headers, params });
   }
 
-  getById(id: number): Observable<Equipamento> {
+  getById(id: number): Observable<Setor> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl + id;
-    return this.http.get<Equipamento>(url, { headers });
+    return this.http.get<Setor>(url, { headers });
   }
 
-  save(objeto: Equipamento): Observable<Equipamento> {
+  save(objeto: Setor): Observable<Setor> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl;
     if (objeto.id) {
-      return this.http.put<Equipamento>(url, objeto, { headers });
+      return this.http.put<Setor>(url, objeto, { headers });
     } else {
-      return this.http.post<Equipamento>(url, objeto, { headers });
+      return this.http.post<Setor>(url, objeto, { headers });
     }
   }
 

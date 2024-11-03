@@ -2,10 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http'; // Importando HttpClientModule
-import { Observable } from 'rxjs';
 import { Equipamento } from '../../model/equipamento.model'; // Importando o modelo Equipamento
-import { Setor } from '../../model/setor.model'; // Importando o modelo Setor
-import { Servidor } from '../../model/servidor.model'; // Importando o modelo Servidor
 import { EquipamentoService } from '../../service/equipamento.service';
 import { AlertaService } from '../../service/alerta.service';
 import { IList } from '../i-list';
@@ -30,8 +27,8 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
-    private servico: EquipamentoService, // Adicionando o serviço EquipamentoService como,
-    private servicoAlerta: AlertaService // Adicionando o serviço AlertaService
+    private servico: EquipamentoService, // Adicionando o serviço EquipamentoService como dependência
+    private servicoAlerta: AlertaService, // Adicionando o serviço AlertaService
   ) {
     this.editForm = this.fb.group({
       plaqueta: ['', Validators.required],
@@ -55,9 +52,11 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
 
   ngOnInit() {
     this.get();
+    console.log('EquipamentoComponent inicializado!');
   }
 
   registros: Equipamento[] = [];
+
   termoBusca: string | undefined = '';
   editForm: FormGroup;
   manutencaoForm: FormGroup;
@@ -66,7 +65,7 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
   loading: boolean = false;
 
   colunas: TheadOrdenacao = [
-    { campo: 'plaqueta', descricao: 'Data' },
+    { campo: 'plaqueta', descricao: 'Plaqueta' },
     { campo: 'nome', descricao: 'Nome' },
     { campo: 'marca', descricao: 'Marca' },
     { campo: 'tipo.nome', descricao: 'Tipo' },
@@ -97,6 +96,7 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
     this.servico.get(termoBusca).subscribe({
       next: (resposta: RespostaPaginada<Equipamento>) => {
         this.registros = resposta.results; // Extrai os registros da resposta paginada
+        console.log('registros:', this.registros); // Adiciona o console.log para ver os registros
       },
       error: (err) => {
         console.error('Erro ao buscar equipamentos:', err); // Você pode querer lidar com erros aqui

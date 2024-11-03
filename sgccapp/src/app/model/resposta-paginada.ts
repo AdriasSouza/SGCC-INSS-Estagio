@@ -1,4 +1,4 @@
-export interface RespostaPaginada<T> {
+export type RespostaPaginada<T> = {
   total: number;            // Total de itens
   page: number;            // Número da página atual
   pageSize: number;        // Tamanho da página

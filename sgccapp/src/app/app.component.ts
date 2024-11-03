@@ -30,6 +30,9 @@ export class AppComponent {
   private router: Router = inject(Router); // Injete o serviço de roteamento para poder redirecionar após o logout
   private http: HttpClient = inject(HttpClient); // Injete o HttpClient para fazer chamadas HTTP
 
+  // Ocultar os componentes do menu na tela de login
+  showComponents: boolean = true;
+
   constructor(
     router: Router,
     private authService: AuthService, // Injete o AuthService
@@ -44,6 +47,14 @@ export class AppComponent {
   this.loginService.usuarioAutenticado.subscribe({
     next: (usuario: User) => {
       this.usuario = usuario;
+    }
+  });
+
+  // Subscribing to router events to check the current route
+  this.router.events.subscribe(event => {
+    if (event instanceof NavigationEnd) {
+      // Hide components if the current route is '/login'
+      this.showComponents = event.url !== '/login';
     }
   });
 

@@ -63,7 +63,7 @@ export class JwtLoginService implements ILoginService {
         this.agendarRenovacaoToken();
       },
       complete: () => {
-        this.router.navigate(['/']);
+        this.router.navigate(['/equipamentos']); // Redirecionar para /equipamentos após login bem-sucedido
       }
     });
   }
