@@ -11,6 +11,10 @@ from usuarios.models import (
     Setor,
     Servidor
 )
+from usuarios.serializers import (
+    SetorSerializer,
+    ServidorSerializer
+)
 
 
 class TipoEquipamentoSerializer(serializers.ModelSerializer):
@@ -20,15 +24,9 @@ class TipoEquipamentoSerializer(serializers.ModelSerializer):
 
 
 class EquipamentoSerializer(serializers.ModelSerializer):
-    tipo = serializers.PrimaryKeyRelatedField(
-        queryset=TipoEquipamento.objects.all()
-        )
-    setor = serializers.PrimaryKeyRelatedField(
-        queryset=Setor.objects.all()
-        )
-    servidor = serializers.PrimaryKeyRelatedField(
-        queryset=Servidor.objects.all()
-        )
+    tipo = TipoEquipamentoSerializer(read_only=True)
+    setor = SetorSerializer(read_only=True)
+    servidor = ServidorSerializer(read_only=True)
 
     class Meta:
         model = Equipamento
@@ -39,12 +37,8 @@ class EquipamentoSerializer(serializers.ModelSerializer):
 
 
 class ManutencaoSerializer(serializers.ModelSerializer):
-    equipamento = serializers.PrimaryKeyRelatedField(
-        queryset=Equipamento.objects.all()
-        )
-    responsavel = serializers.PrimaryKeyRelatedField(
-        queryset=Servidor.objects.all()
-        )
+    equipamento = EquipamentoSerializer(read_only=True)
+    responsavel = ServidorSerializer(read_only=True)
 
     class Meta:
         model = Manutencao
@@ -60,9 +54,7 @@ class TipoComponenteSerializer(serializers.ModelSerializer):
 
 
 class ComponenteSerializer(serializers.ModelSerializer):
-    tipo = serializers.PrimaryKeyRelatedField(
-        queryset=TipoComponente.objects.all()
-        )
+    tipo = TipoComponenteSerializer(read_only=True)
 
     class Meta:
         model = Componente
@@ -73,12 +65,8 @@ class ComponenteSerializer(serializers.ModelSerializer):
 
 
 class EquipComponenteSerializer(serializers.ModelSerializer):
-    equip = serializers.PrimaryKeyRelatedField(
-        queryset=Equipamento.objects.all(), many=True
-        )
-    componente = serializers.PrimaryKeyRelatedField(
-        queryset=Componente.objects.all(), many=True
-        )
+    equip = EquipamentoSerializer(read_only=True, many=True)
+    componente = ComponenteSerializer(read_only=True, many=True)
 
     class Meta:
         model = EquipComponente

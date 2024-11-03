@@ -9,23 +9,12 @@ class AgenciaSerializer(serializers.ModelSerializer):
 
 
 class SetorSerializer(serializers.ModelSerializer):
-    agencia = serializers.PrimaryKeyRelatedField(
-        queryset=Agencia.objects.all()
-        )
-    
+    # Aninha o serializer de Agência com read_only=True para retorno do objeto completo
+    agencia = AgenciaSerializer(read_only=True)
+
     class Meta:
         model = Setor
         fields = ['id', 'codigo', 'nome', 'agencia']
-
-
-class ServidorSerializer(serializers.ModelSerializer):
-    setor = serializers.PrimaryKeyRelatedField(queryset=Setor.objects.all())
-    usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    
-    class Meta:
-        model = Servidor
-        fields = ['id', 'inscricao_institucional',
-                  'nome_completo', 'setor', 'usuario', 'chefe']
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -48,9 +37,20 @@ class UserSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class ServidorSerializer(serializers.ModelSerializer):
+    # Aninha os serializers de Setor e User com read_only=True para retorno dos objetos completos
+    setor = SetorSerializer(read_only=True)
+    usuario = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Servidor
+        fields = ['id', 'inscricao_institucional', 'nome_completo', 'setor', 'usuario', 'chefe']
+
+
 class SolicitacaoSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    
+    # Aninha o serializer de User com read_only=True para retorno do objeto completo
+    user = UserSerializer(read_only=True)
+
     class Meta:
         model = Solicitacao
         fields = ['id', 'user', 'data', 'status', 'descricao']
