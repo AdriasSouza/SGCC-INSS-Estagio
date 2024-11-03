@@ -39,8 +39,8 @@ class EquipamentoSerializer(serializers.ModelSerializer):
         """Usa um serializer aninhado para retornar dados completos em GET."""
         representation = super().to_representation(instance)
         representation['tipo'] = TipoEquipamentoSerializer(instance.tipo).data
-        representation['setor'] = SetorSerializer(instance.tipo).data
-        representation['servidor'] = ServidorSerializer(instance.tipo).data
+        representation['setor'] = SetorSerializer(instance.setor).data
+        representation['servidor'] = ServidorSerializer(instance.servidor).data
         return representation
 
 
