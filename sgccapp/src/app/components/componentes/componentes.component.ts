@@ -1,225 +1,232 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
+import { CommonModule } from '@angular/common';
+import { HttpClient, HttpClientModule } from '@angular/common/http'; // Importando HttpClientModule
+import { Componente } from '../../model/componente.model'; // Importando o modelo Componente
+import { AlertaService } from '../../service/alerta.service';
+import { IList } from '../i-list';
+import { TheadOrdenacao } from '../thead-ordenacao/thead-ordenacao';
+import { ETipoAlerta } from '../../model/e-tipo-alerta';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { TheadOrdenacaoComponent } from '../thead-ordenacao/thead-ordenacao.component';
+import { BarraComandosComponent } from '../barra-comandos/barra-comandos.component';
+import { RespostaPaginada } from '../../model/resposta-paginada';
+import { ComponenteService } from '../../service/componete.service';
 
 declare var bootstrap: any;
 
-// Interface para simular o comportamento do model
-interface Componente {
-  codigo: string;
-  descricao: string;
-  tipo: string;
-  fabricante: string;
-  tamanho?: number; // Apenas para peças de memória
-  numeroSerie: string;
-}
-
 @Component({
-  selector: 'app-componentes',
+  selector: 'app-componente',
   standalone: true,
-  imports: [FormsModule, CommonModule, ReactiveFormsModule],
+  imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent, BarraComandosComponent], // Adicionando HttpClientModule
   templateUrl: './componentes.component.html',
   styleUrls: ['./componentes.component.scss']
 })
-export class ComponentesComponent implements OnInit {
-  componentes: Componente[] = [
-    { codigo: 'PC01', descricao: 'Memória RAM DDR4', tipo: 'Memória RAM', fabricante: 'Kingston', tamanho: 16, numeroSerie: 'SN123' },
-    { codigo: 'PC02', descricao: 'Processador Intel i7', tipo: 'Processador', fabricante: 'Intel', numeroSerie: 'SN124' },
-    { codigo: 'PC03', descricao: 'Placa Mãe Gigabyte', tipo: 'Placa Mãe', fabricante: 'Gigabyte', numeroSerie: 'SN125' },
-    { codigo: 'PC04', descricao: 'Memória Interna SSD', tipo: 'Memória Interna', fabricante: 'Samsung', tamanho: 512, numeroSerie: 'SN126' },
-  ];
+export class ComponentesComponent implements IList<Componente>, OnInit {
 
-  // Lista com o Conteudo do filtro
-  tipo = ['Memória RAM', 'Processador', 'Placa Mãe', 'Memória Interna'];
-  fabricante = ['Intel', 'Kingston', 'Gigabyte'];
-  tamanho = ['4', '8', '16'];
-
-  selectedTipo: string = '';
-  selectedFabricante: string = '';
-  searchTerm: string = '';
-  mensagemAlerta: string = '';
-  busca: string = '';
-
-  // Filtros
-  filtros = {
-    codigo: '',
-    descricao: '',
-    tipo: '',
-    fabricante: '',
-    tamanho: ''
-  };
-
-  componentesFiltradas: Componente[] = [];
-  componenteParaExcluir: Componente | null = null;
-  componenteParaEditar: Componente | null = null;
-  tipoSelecionado: string = '';
-  editTipoSelecionado: string = '';
-  editIndex: number | null = null;
-  editForm: FormGroup;
-  novaComponente: Componente = { codigo: '', descricao: '', tipo: 'Memória RAM', fabricante: '', tamanho: undefined, numeroSerie: '' };
-  isEditMode = false;
-  currentComponente: any = {};
-  mostrarFiltros: boolean = false;
-
-
-
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private http: HttpClient,
+    private servico: ComponenteService, // Adicionando o serviço ComponenteService como dependência
+    private servicoAlerta: AlertaService, // Adicionando o serviço AlertaService
+  ) {
     this.editForm = this.fb.group({
+      codigo: ['', Validators.required],
+      nome: ['', Validators.required],
       descricao: ['', Validators.required],
       tipo: ['', Validators.required],
-      tamanho: [''],
-      numeroSerie: ['', Validators.required]
+      fabricante: ['', Validators.required],
+      tamanho_mem: [''],
+      n_serie: [''],
+      data_aquisicao: ['', Validators.required]
+    });
+
+    this.addForm = this.fb.group({
+      codigo: ['', Validators.required],
+      nome: ['', Validators.required],
+      descricao: ['', Validators.required],
+      tipo: ['', Validators.required],
+      fabricante: ['', Validators.required],
+      tamanho_mem: [''],
+      n_serie: [''],
+      data_aquisicao: ['', Validators.required]
     });
   }
 
-  ngOnInit(): void {
-    this.componentesFiltradas = this.componentes;
+  ngOnInit() {
+    this.get();
+    console.log('ComponentesComponent inicializado!');
+    console.log('registros:', this.registros); // Adiciona o console.log para ver os registros
   }
 
+  registros: Componente[] = [];
+  termoBusca: string | undefined = '';
+  filtroCodigo: string = '';
+  filtroNome: string = '';
+  filtroDescricao: string = '';
+  filtroFabricante: string = '';
+  filtroTipo: string = '';
+  filtroTamanhoMem: string = '';
+  filtroNumeroSerie: string = '';
+  filtroDataAquisicao: string = '';
+  editForm: FormGroup;
+  addForm: FormGroup;
+  mostrarFiltros: boolean = false;
+  showDropdown: boolean[] = [];
+  loading: boolean = false;
+  componenteSelecionado: Componente | null = null;
+
+  colunas: TheadOrdenacao = [
+    { campo: 'codigo', descricao: 'Código' },
+    { campo: 'nome', descricao: 'Nome' },
+    { campo: 'descricao', descricao: 'Descrição' },
+    { campo: 'tipo.nome', descricao: 'Tipo' },
+    { campo: 'fabricante', descricao: 'Fabricante' },
+    { campo: 'tamanho_mem', descricao: 'Tamanho Memória' },
+    { campo: 'n_serie', descricao: 'Número de Série' },
+    { campo: 'data_aquisicao', descricao: 'Data de Aquisição' },
+    { campo: '', descricao: 'Ações' },
+  ]
+
+  //Função para esconder e mostrar os filtros
   toggleFiltros() {
     this.mostrarFiltros = !this.mostrarFiltros;
   }
 
-
-  atualizarBusca(): void {
-    this.componentesFiltradas = this.componentes.filter(peca =>
-      (this.busca === '' || peca.codigo.toLowerCase().includes(this.busca.toLowerCase()) ||
-        peca.descricao.toLowerCase().includes(this.busca.toLowerCase()) ||
-        peca.numeroSerie.toLowerCase().includes(this.busca.toLowerCase())) &&
-      (this.filtros.tipo === '' || peca.tipo === this.filtros.tipo) &&
-      (this.filtros.fabricante === '' || peca.fabricante === this.filtros.fabricante) &&
-      (this.filtros.tamanho === '' || peca.tamanho === +this.filtros.tamanho)
-    );
+  toggleDropdown(index: number) {
+    this.showDropdown[index] = !this.showDropdown[index];
   }
 
-  // Funções dos Modais
-  
-  // Modal de Delete
-  openDeleteModal(componente: Componente) {
-    this.componenteParaExcluir = componente;
+  ordenar(ordenacao: string[]): void {
+    this.get(this.termoBusca);
+  }
+
+  get(termoBusca?: string): void {
+    this.termoBusca = termoBusca;
+    this.servico.get(termoBusca).subscribe({
+      next: (resposta: RespostaPaginada<Componente>) => {
+        this.registros = resposta.results; // Extrai os registros da resposta paginada
+        console.log('registros:', this.registros); // Adiciona o console.log para ver os registros
+      },
+      error: (err) => {
+        console.error('Erro ao buscar componentes:', err); // Você pode querer lidar com erros aqui
+      }
+    });
+  }
+
+  registrosFiltrados(): Componente[] {
+    return this.registros.filter(componente => {
+      return (!this.filtroCodigo || componente.codigo.toString().includes(this.filtroCodigo)) &&
+             (!this.filtroNome || componente.nome.includes(this.filtroNome)) &&
+             (!this.filtroDescricao || componente.descricao.includes(this.filtroDescricao)) &&
+             (!this.filtroFabricante || componente.fabricante.includes(this.filtroFabricante)) &&
+             (!this.filtroTipo || componente.tipo?.nome.includes(this.filtroTipo)) &&
+             (!this.filtroTamanhoMem || componente.tamanho_mem?.toString().includes(this.filtroTamanhoMem)) &&
+             (!this.filtroNumeroSerie || componente.n_serie?.includes(this.filtroNumeroSerie)) &&
+             (!this.filtroDataAquisicao || componente.data_aquisicao.toString().includes(this.filtroDataAquisicao));
+    });
+  }
+
+  delete(id: number): void {
+    if (confirm('Confirma a exclusão do componente?')) {
+      this.servico.delete(id).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Componente excluído com sucesso!"
+          });
+        }
+      });
+    }
+  }
+
+  openDeleteModal(id: number) {
+    this.componenteSelecionado = this.registros.find(componente => componente.id === id) || null;
     const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
     deleteModal.show();
   }
 
   confirmDelete() {
-    if (this.componenteParaExcluir) {
-      const index = this.componentesFiltradas.indexOf(this.componenteParaExcluir);
-      if (index > -1) {
-        this.componentesFiltradas.splice(index, 1);
-      }
+    if (this.componenteSelecionado) {
+      this.delete(this.componenteSelecionado.id);
       const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
       deleteModal.hide();
-      const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-      successModal.show();
     }
   }
 
-  // Modal de adição
   openAddModal() {
     const addModal = new bootstrap.Modal(document.getElementById('addModal'));
     addModal.show();
   }
 
-  addComponente(form: NgForm) {
-    if (form.valid) {
-      const novoComponente: Componente = {
-        codigo: this.gerarCodigo(),
-        descricao: form.value.descricao,
-        tipo: form.value.tipo,
-        fabricante: form.value.fabricante,
-        tamanho: form.value.tamanho,
-        numeroSerie: form.value.numeroSerie
-      };
-
-      if (this.componentesFiltradas.some(c => c.numeroSerie === novoComponente.numeroSerie)) {
-        const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
-        errorModal.show();
-      } else {
-        this.componentesFiltradas.push(novoComponente);
-        const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
-        addModal.hide();
-      }
-    } else {
-      // Exibir mensagens de validação
-      Object.keys(form.controls).forEach(field => {
-        const control = form.controls[field];
-        control.markAsTouched({ onlySelf: true });
+  confirmAdd() {
+    if (this.addForm.valid) {
+      const novoComponente: Componente = this.addForm.value;
+      this.servico.save(novoComponente).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Componente adicionado com sucesso!"
+          });
+          const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+          addModal.hide();
+        }
       });
     }
   }
 
-  // Modal de edição
-  openEditModal(index: number) {
-    this.editIndex = index;
-    this.componenteParaEditar = { ...this.componentesFiltradas[index] };
-    this.editTipoSelecionado = this.componenteParaEditar.tipo;
-    this.editForm.patchValue(this.componenteParaEditar);
+  openEditModal(componente: Componente) {
+    this.componenteSelecionado = componente;
+    this.editForm.patchValue({
+      codigo: componente.codigo,
+      nome: componente.nome,
+      descricao: componente.descricao,
+      tipo: componente.tipo?.id || '',
+      fabricante: componente.fabricante,
+      tamanho_mem: componente.tamanho_mem || '',
+      n_serie: componente.n_serie || '',
+      data_aquisicao: componente.data_aquisicao
+    });
     const editModal = new bootstrap.Modal(document.getElementById('editModal'));
     editModal.show();
   }
 
-  editComponente() {
-    if (this.editForm.valid && this.componenteParaEditar !== null && this.editIndex !== null) {
-      const formValues = this.editForm.value;
-      const originalValues = this.componentesFiltradas[this.editIndex];
-
-      if (JSON.stringify(formValues) === JSON.stringify(originalValues)) {
-        const noChangesModal = new bootstrap.Modal(document.getElementById('noChangesModal'));
-        noChangesModal.show();
-      } else {
-        this.componentesFiltradas[this.editIndex] = { ...this.componenteParaEditar, ...formValues };
-        const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
-        editModal.hide();
-        const editSuccessModal = new bootstrap.Modal(document.getElementById('editSuccessModal'));
-        editSuccessModal.show();
-      }
-    } else {
-      // Exibir mensagens de validação
-      Object.keys(this.editForm.controls).forEach(field => {
-        const control = this.editForm.get(field);
-        control?.markAsTouched({ onlySelf: true });
+  confirmEdit() {
+    if (this.componenteSelecionado && this.editForm.valid) {
+      const componenteAtualizado: Componente = {
+        ...this.componenteSelecionado,
+        ...this.editForm.value
+      };
+      this.servico.save(componenteAtualizado).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Componente editado com sucesso!"
+          });
+          const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+          editModal.hide();
+        }
       });
     }
   }
 
-  onEditTipoChange(event: any) {
-    this.editTipoSelecionado = event.target.value;
-  }
-
-
-
-  // Funções para gerar codigo e tipo selecionado
-
-  gerarCodigo(): string {
-    return 'C' + (this.componentesFiltradas.length + 1).toString().padStart(4, '0');
-  }
-
-  onTipoChange(event: any) {
-    this.tipoSelecionado = event.target.value;
-  }
-
-  // Botões para cancelar a ação
   cancelAdd(form: NgForm) {
-    form.resetForm();
+    form.reset();
     const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
     addModal.hide();
-    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
-    cancelModal.show();
-  }
-
-  cancelDelete() {
-    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-    deleteModal.hide();
-    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
-    cancelModal.show();
   }
 
   cancelEdit() {
     this.editForm.reset();
     const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
     editModal.hide();
-    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
-    cancelModal.show();
+  }
+
+  cancelDelete() {
+    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+    deleteModal.hide();
   }
 }

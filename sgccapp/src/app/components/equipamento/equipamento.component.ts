@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http'; // Importando HttpClientModule
@@ -12,7 +12,12 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { TheadOrdenacaoComponent } from '../thead-ordenacao/thead-ordenacao.component';
 import { BarraComandosComponent } from '../barra-comandos/barra-comandos.component';
 import { RespostaPaginada } from '../../model/resposta-paginada';
-import { ILoginService, LoginService } from '../../service/login/i-login.service';
+import { SetorService } from '../../service/setor.service'; // Importando o serviço SetorService
+import { TipoEquipamentoService } from '../../service/tipo-equipamento.service'; // Importando o serviço TipoEquipamentoService
+import { ServidorService } from '../../service/servidor.service'; // Importando o serviço ServidorService
+import { Setor } from '../../model/setor.model'; // Importando o modelo Setor
+import { TipoEquipamento } from '../../model/tipo-equipamento.model'; // Importando o modelo TipoEquipamento
+import { Servidor } from '../../model/servidor.model'; // Importando o modelo Servidor
 
 declare var bootstrap: any;
 
@@ -30,39 +35,66 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
     private http: HttpClient,
     private servico: EquipamentoService, // Adicionando o serviço EquipamentoService como dependência
     private servicoAlerta: AlertaService, // Adicionando o serviço AlertaService
+    private setorService: SetorService, // Adicionando o serviço SetorService
+    private tipoEquipamentoService: TipoEquipamentoService, // Adicionando o serviço TipoEquipamentoService
+    private servidorService: ServidorService // Adicionando o serviço ServidorService
   ) {
     this.editForm = this.fb.group({
+      id: [''],
       plaqueta: ['', Validators.required],
       nome: ['', Validators.required],
       marca: ['', Validators.required],
       tipo: ['', Validators.required],
       setor: ['', Validators.required],
-      responsavel: ['', Validators.required],
+      servidor: ['', Validators.required],
       sala: ['', Validators.required],
       estado: ['', Validators.required],
       situacao: ['', Validators.required],
       data_aquisicao: ['', Validators.required]
     });
 
-    this.manutencaoForm = this.fb.group({
-      responsavel: ['', Validators.required],
-      dataManutencao: ['', Validators.required],
-      descricao: ['', Validators.required]
+    this.addForm = this.fb.group({
+      plaqueta: ['', Validators.required],
+      nome: ['', Validators.required],
+      marca: ['', Validators.required],
+      tipo: ['', Validators.required],
+      setor: ['', Validators.required],
+      servidor: ['', Validators.required],
+      sala: ['', Validators.required],
+      estado: ['', Validators.required],
+      situacao: ['', Validators.required],
+      data_aquisicao: ['', Validators.required]
     });
   }
 
   ngOnInit() {
     this.get();
+    this.loadFilterOptions();
+    this.loadSelectOptions();
     console.log('EquipamentoComponent inicializado!');
   }
 
   registros: Equipamento[] = [];
   termoBusca: string | undefined = '';
+  filtroMarca: string = '';
+  filtroTipo: string = '';
+  filtroSetor: string = '';
+  filtroEstado: string = '';
+  filtroSituacao: string = '';
+  filtroDataInicio: string = '';
+  filtroDataFim: string = '';
+  marcas: string[] = [];
+  tipos: TipoEquipamento[] = [];
+  setores: Setor[] = [];
+  servidores: Servidor[] = [];
+  estados: string[] = ['DEFASADO', 'ATENÇÃO', 'BOM', 'NOVO'];
+  situacoes: string[] = ['EM_USO', 'RESERVA', 'MANUTENCAO', 'BAIXA', 'ALIENACAO', 'PERDIDO', 'ROUBADO'];
   editForm: FormGroup;
-  manutencaoForm: FormGroup;
+  addForm: FormGroup;
   mostrarFiltros: boolean = false;
   showDropdown: boolean[] = [];
   loading: boolean = false;
+  equipamentoSelecionado: Equipamento | null = null;
 
   colunas: TheadOrdenacao = [
     { campo: 'plaqueta', descricao: 'Plaqueta' },
@@ -104,14 +136,74 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
     });
   }
 
+  registrosFiltrados(): Equipamento[] {
+    const dataInicio = this.filtroDataInicio ? new Date(this.filtroDataInicio) : null;
+    const dataFim = this.filtroDataFim ? new Date(this.filtroDataFim) : null;
+
+    return this.registros.filter(equipamento => {
+      const dataAquisicao = new Date(equipamento.data_aquisicao!);
+
+      return (!this.filtroMarca || equipamento.marca?.includes(this.filtroMarca)) &&
+             (!this.filtroTipo || equipamento.tipo?.nome?.includes(this.filtroTipo)) &&
+             (!this.filtroSetor || equipamento.setor?.nome?.includes(this.filtroSetor)) &&
+             (!this.filtroEstado || equipamento.estado.includes(this.filtroEstado)) &&
+             (!this.filtroSituacao || equipamento.situacao.includes(this.filtroSituacao)) &&
+             (!dataInicio || dataAquisicao >= dataInicio) &&
+             (!dataFim || dataAquisicao <= dataFim);
+    });
+  }
+
+  loadFilterOptions() {
+    this.servico.get().subscribe({
+      next: (resposta: RespostaPaginada<Equipamento>) => {
+        const equipamentos = resposta.results;
+        this.marcas = [...new Set(equipamentos.map(e => e.marca).filter((marca): marca is string => !!marca))];
+        this.tipos = [...new Set(equipamentos.map(e => e.tipo).filter((tipo): tipo is TipoEquipamento => !!tipo))];
+        this.setores = [...new Set(equipamentos.map(e => e.setor).filter((setor): setor is Setor => !!setor))];
+      },
+      error: (err) => {
+        console.error('Erro ao carregar opções de filtro:', err);
+      }
+    });
+  }
+
+  loadSelectOptions() {
+    this.tipoEquipamentoService.get().subscribe({
+      next: (resposta: RespostaPaginada<TipoEquipamento>) => {
+        this.tipos = resposta.results;
+      },
+      error: (err) => {
+        console.error('Erro ao carregar tipos de equipamento:', err);
+      }
+    });
+
+    this.setorService.get().subscribe({
+      next: (resposta: RespostaPaginada<Setor>) => {
+        this.setores = resposta.results;
+      },
+      error: (err) => {
+        console.error('Erro ao carregar setores:', err);
+      }
+    });
+
+    this.servidorService.get().subscribe({
+      next: (resposta: RespostaPaginada<Servidor>) => {
+        this.servidores = resposta.results;
+      },
+      error: (err) => {
+        console.error('Erro ao carregar servidores:', err);
+      }
+    });
+  }
+
   delete(id: number): void {
-    if (confirm('Confirma a exclusão da especialidade?')) {
+    if (confirm('Confirma a exclusão do equipamento?')) {
       this.servico.delete(id).subscribe({
         complete: () => {
           this.get();
           this.servicoAlerta.enviarAlerta({
             tipo: ETipoAlerta.SUCESSO,
-            mensagem: "Especialidade excluída com sucesso!"
+            mensagem: "Equipamento excluído com sucesso!"
           });
         }
       });
@@ -119,84 +211,102 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
   }
 
   openDeleteModal(id: number) {
+    this.equipamentoSelecionado = this.registros.find(equipamento => equipamento.id === id) || null;
     const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
     deleteModal.show();
   }
 
-
-  // confirmDelete() {
-  //   if (this.equipamentoParaExcluir) {
-  //     this.deleteEquipamento(this.equipamentoParaExcluir.id).subscribe(() => {
-  //       this.loadEquipamentos();
-  //       const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-  //       deleteModal.hide();
-  //       const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-  //       successModal.show();
-  //     });
-  //   }
-  // }
+  confirmDelete() {
+    if (this.equipamentoSelecionado) {
+      this.delete(this.equipamentoSelecionado.id);
+      const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+      deleteModal.hide();
+    }
+  }
 
   openAddModal() {
     const addModal = new bootstrap.Modal(document.getElementById('addModal'));
     addModal.show();
   }
 
-  cancelAdd(form: NgForm) {
-    form.reset();
-    const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
-    addModal.hide();
-    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
-    cancelModal.show();
+  confirmAdd() {
+    if (this.addForm.valid) {
+      const novoEquipamento: Equipamento = {
+        ...this.addForm.value,
+        tipo: { id: this.addForm.value.tipo },
+        setor: { id: this.addForm.value.setor },
+        servidor: { id: this.addForm.value.servidor }
+      };
+      this.servico.save(novoEquipamento).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Equipamento adicionado com sucesso!"
+          });
+          const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+          addModal.hide();
+        }
+      });
+    }
   }
 
-  openEditModal(index: number) {
+  openEditModal(equipamento: Equipamento) {
+    this.equipamentoSelecionado = equipamento;
+    this.editForm.patchValue({
+      id: equipamento.id,
+      plaqueta: equipamento.plaqueta,
+      nome: equipamento.nome,
+      marca: equipamento.marca,
+      tipo: equipamento.tipo?.id,
+      setor: equipamento.setor?.id,
+      servidor: equipamento.servidor?.id,
+      sala: equipamento.sala,
+      estado: equipamento.estado,
+      situacao: equipamento.situacao,
+      data_aquisicao: equipamento.data_aquisicao
+    });
     const editModal = new bootstrap.Modal(document.getElementById('editModal'));
     editModal.show();
   }
 
-
-  openManutencaoModal(equipamento: Equipamento) {
-    const manutencaoModal = new bootstrap.Modal(document.getElementById('manutencaoModal'));
-    manutencaoModal.show();
+  confirmEdit() {
+    if (this.equipamentoSelecionado && this.editForm.valid) {
+      const equipamentoAtualizado: Equipamento = {
+        ...this.equipamentoSelecionado,
+        ...this.editForm.value,
+        tipo: { id: this.editForm.value.tipo },
+        setor: { id: this.editForm.value.setor },
+        servidor: { id: this.editForm.value.servidor }
+      };
+      this.servico.save(equipamentoAtualizado).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Equipamento editado com sucesso!"
+          });
+          const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+          editModal.hide();
+        }
+      });
+    }
   }
 
-  // registrarManutencao() {
-  //   if (this.manutencaoForm.valid) {
-  //     const manutencaoData = this.manutencaoForm.value;
-  //     console.log('Registrar manutenção para o equipamento:', this.equipamentoParaManutencao, manutencaoData);
-  //     const manutencaoModal = bootstrap.Modal.getInstance(document.getElementById('manutencaoModal'));
-  //     manutencaoModal.hide();
-  //   } else {
-  //     Object.keys(this.manutencaoForm.controls).forEach(field => {
-  //       const control = this.manutencaoForm.get(field);
-  //       control?.markAsTouched({ onlySelf: true });
-  //     });
-  //   }
-  // }
-
-  // onEditTipoChange(event: any) {
-  //   this.editTipoSelecionado = event.target.value;
-  // }
+  cancelAdd(form: NgForm) {
+    form.reset();
+    const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+    addModal.hide();
+  }
 
   cancelEdit() {
     this.editForm.reset();
     const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
     editModal.hide();
-    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
-    cancelModal.show();
   }
 
   cancelDelete() {
     const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
     deleteModal.hide();
-    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
-    cancelModal.show();
-  }
-
-  cancelManutencao() {
-    const manutencaoModal = bootstrap.Modal.getInstance(document.getElementById('manutencaoModal'));
-    manutencaoModal.hide();
-    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
-    cancelModal.show();
   }
 }

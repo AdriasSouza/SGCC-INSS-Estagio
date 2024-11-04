@@ -47,6 +47,7 @@ export class AgenciaService implements IService<Agencia> {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl;
     if (objeto.id) {
+      const url = this.apiUrl + objeto.id + '/';
       return this.http.put<Agencia>(url, objeto, { headers });
     } else {
       return this.http.post<Agencia>(url, objeto, { headers });
@@ -56,7 +57,7 @@ export class AgenciaService implements IService<Agencia> {
   delete(id: number): Observable<void> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    const url = this.apiUrl + id;
+    const url = this.apiUrl + id + '/';
     return this.http.delete<void>(url, { headers });
   }
 }

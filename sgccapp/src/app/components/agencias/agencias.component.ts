@@ -32,16 +32,12 @@ export class AgenciasComponent implements IList<Agencia>, OnInit {
   ) {
     this.editForm = this.fb.group({
       nome: ['', Validators.required],
-      codigo: ['', Validators.required],
-
+      numero: ['', Validators.required],
     });
 
     this.addForm = this.fb.group({
       nome: ['', Validators.required],
-      codigo: ['', Validators.required],
-      // Considerar para uma atualização futura
-      // endereco: ['', Validators.required],
-      // telefone: ['', Validators.required]
+      numero: ['', Validators.required],
     });
   }
 
@@ -52,18 +48,19 @@ export class AgenciasComponent implements IList<Agencia>, OnInit {
 
   registros: Agencia[] = [];
   termoBusca: string | undefined = '';
+  filtroNome: string = '';
+  filtroNumero: string = '';
   editForm: FormGroup;
   addForm: FormGroup;
   mostrarFiltros: boolean = false;
   showDropdown: boolean[] = [];
   loading: boolean = false;
+  agenciaSelecionada: Agencia | null = null;
 
   colunas: TheadOrdenacao = [
     { campo: 'nome', descricao: 'Nome' },
-    { campo: 'numero', descricao: 'Código' }
-    // { campo: 'endereco', descricao: 'Endereço' },
-    // { campo: 'telefone', descricao: 'Telefone' },
-    // { campo: '', descricao: 'Ações' },
+    { campo: 'numero', descricao: 'Número' },
+    { campo: '', descricao: 'Ações' }
   ]
 
   //Função para esconder e mostrar os filtros
@@ -92,6 +89,13 @@ export class AgenciasComponent implements IList<Agencia>, OnInit {
     });
   }
 
+  registrosFiltrados(): Agencia[] {
+    return this.registros.filter(agencia => {
+      return (!this.filtroNome || agencia.nome.includes(this.filtroNome)) &&
+             (!this.filtroNumero || agencia.numero.toString().includes(this.filtroNumero));
+    });
+  }
+
   delete(id: number): void {
     if (confirm('Confirma a exclusão da agência?')) {
       this.servico.delete(id).subscribe({
@@ -107,8 +111,17 @@ export class AgenciasComponent implements IList<Agencia>, OnInit {
   }
 
   openDeleteModal(id: number) {
+    this.agenciaSelecionada = this.registros.find(agencia => agencia.id === id) || null;
     const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
     deleteModal.show();
+  }
+
+  confirmDelete() {
+    if (this.agenciaSelecionada) {
+      this.delete(this.agenciaSelecionada.id);
+      const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+      deleteModal.hide();
+    }
   }
 
   openAddModal() {
@@ -116,31 +129,67 @@ export class AgenciasComponent implements IList<Agencia>, OnInit {
     addModal.show();
   }
 
+  confirmAdd() {
+    if (this.addForm.valid) {
+      const novaAgencia: Agencia = this.addForm.value;
+      this.servico.save(novaAgencia).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Agência adicionada com sucesso!"
+          });
+          const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+          addModal.hide();
+        }
+      });
+    }
+  }
+
+  openEditModal(agencia: Agencia) {
+    this.agenciaSelecionada = agencia;
+    this.editForm.patchValue({
+      nome: agencia.nome,
+      numero: agencia.numero
+    });
+    const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+    editModal.show();
+  }
+
+  confirmEdit() {
+    if (this.agenciaSelecionada && this.editForm.valid) {
+      const agenciaAtualizada: Agencia = {
+        ...this.agenciaSelecionada,
+        ...this.editForm.value
+      };
+      this.servico.save(agenciaAtualizada).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Agência editada com sucesso!"
+          });
+          const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+          editModal.hide();
+        }
+      });
+    }
+  }
+
   cancelAdd(form: NgForm) {
     form.reset();
     const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
     addModal.hide();
-    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
-    cancelModal.show();
-  }
-
-  openEditModal(index: number) {
-    const editModal = new bootstrap.Modal(document.getElementById('editModal'));
-    editModal.show();
   }
 
   cancelEdit() {
     this.editForm.reset();
     const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
     editModal.hide();
-    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
-    cancelModal.show();
   }
 
   cancelDelete() {
     const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
     deleteModal.hide();
-    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
-    cancelModal.show();
   }
 }

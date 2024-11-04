@@ -1,87 +1,94 @@
 <style>
-    .form-control, .form-select {
-      border-width: 3px; /* Aumentando a espessura da borda */
-    }
+  .form-control, .form-select {
+    border-width: 3px; /* Aumentando a espessura da borda */
+  }
 </style>
 
 <div class="container mt-4">
+  <!-- Título da página -->
   <h3 class="fw-bold mb-4">Gestão de Componentes</h3>
   <h5 class="mb-4">Lista dos componentes principais dos computadores</h5>
 
-  <!-- Botão para adicionar nova peça -->
-  <button class="btn btn-primary mb-3" (click)="openAddModal()">Adicionar Componente</button>
+  <!-- Contêiner flexível para os botões -->
+  <div class="d-flex justify-content-between mb-3">
+    <!-- Botão para ocultar e abrir os filtros -->
+    <button class="btn btn-secondary" (click)="toggleFiltros()">
+      {{ mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
+    </button>
 
-  <!-- Campo de busca -->
-  <div class="mb-3">
-    <label for="searchInput" class="form-label">Buscar Componente</label>
-    <input type="text" id="searchInput" class="form-control" placeholder="Código, número de série ou descrição" [(ngModel)]="busca" (input)="atualizarBusca()"/>
+    <!-- Botão para adicionar nova peça -->
+    <button class="btn btn-primary" (click)="openAddModal()">Adicionar Componente</button>
   </div>
 
-  <!-- Botão para ocultar e abrir os filtros -->
-  <button class="btn btn-secondary mb-3" (click)="toggleFiltros()">
-    {{ mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
-  </button>
-
   <!-- Filtros para a tabela -->
-  <div class="row mb-3" *ngIf="mostrarFiltros">   
-    <div class="col-md-4 mb-3">
-      <label for="tipoSelect" class="form-label">Tipo</label>
-      <select id="tipoSelect" class="form-select" [(ngModel)]="filtros.tipo" (change)="atualizarBusca()">
-        <option value="">Todos os Tipos</option>
-        <option value="Memória RAM">Memória RAM</option>
-        <option value="Memória Interna">Memória Interna</option>
-        <option value="Processador">Processador</option>
-        <option value="Placa Mãe">Placa Mãe</option>
-      </select>
+  <div class="row mb-3" *ngIf="mostrarFiltros">
+    <div class="col-md-3 mb-3">
+      <label for="filterCodigo" class="form-label">Código</label>
+      <input type="text" id="filterCodigo" class="form-control" [(ngModel)]="filtroCodigo">
     </div>
-    <div class="col-md-4 mb-3">
-      <label for="fabricanteSelect" class="form-label">Fabricante</label>
-      <select id="fabricanteSelect" class="form-select" [(ngModel)]="filtros.fabricante" (change)="atualizarBusca()">
-        <option value="">Todos os Fabricantes</option>
-        <option value="Fabricante A">Fabricante A</option>
-        <option value="Fabricante B">Fabricante B</option>
-      </select>
+    <div class="col-md-3 mb-3">
+      <label for="filterNome" class="form-label">Nome</label>
+      <input type="text" id="filterNome" class="form-control" [(ngModel)]="filtroNome">
     </div>
-    <div class="col-md-4 mb-3">
-      <label for="tamanhoSelect" class="form-label">Tamanho (GB)</label>
-      <select id="tamanhoSelect" class="form-select" [(ngModel)]="filtros.tamanho" (change)="atualizarBusca()">
-        <option value="">Todos os Tamanhos</option>
-        <option value="4">4 GB</option>
-        <option value="8">8 GB</option>
-        <option value="16">16 GB</option>
-      </select>
+    <div class="col-md-3 mb-3">
+      <label for="filterDescricao" class="form-label">Descrição</label>
+      <input type="text" id="filterDescricao" class="form-control" [(ngModel)]="filtroDescricao">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="filterTipo" class="form-label">Tipo</label>
+      <input type="text" id="filterTipo" class="form-control" [(ngModel)]="filtroTipo">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="filterFabricante" class="form-label">Fabricante</label>
+      <input type="text" id="filterFabricante" class="form-control" [(ngModel)]="filtroFabricante">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="filterTamanhoMem" class="form-label">Tamanho Memória</label>
+      <input type="text" id="filterTamanhoMem" class="form-control" [(ngModel)]="filtroTamanhoMem">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="filterNumeroSerie" class="form-label">Número de Série</label>
+      <input type="text" id="filterNumeroSerie" class="form-control" [(ngModel)]="filtroNumeroSerie">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="filterDataAquisicao" class="form-label">Data de Aquisição</label>
+      <input type="date" id="filterDataAquisicao" class="form-control" [(ngModel)]="filtroDataAquisicao">
     </div>
   </div>
 
   <!-- Tabela de Componentes -->
-<table class="table table-striped table-bordered">
-  <thead class="table-active">
-    <tr>
-      <th scope="col">Código</th>
-      <th scope="col">Descrição</th>
-      <th scope="col">Tipo</th>
-      <th scope="col">Fabricante</th>
-      <th scope="col">Tamanho</th>
-      <th scope="col">Número de Série</th>
-      <th scope="col">Ações</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let componente of componentesFiltradas; let i = index">
-      <td>{{ componente.codigo }}</td>
-      <td>{{ componente.descricao }}</td>
-      <td>{{ componente.tipo }}</td>
-      <td>{{ componente.fabricante }}</td>
-      <td>{{ componente.tamanho }}</td>
-      <td>{{ componente.numeroSerie }}</td>
-      <td>
-        <button class="btn btn-sm btn-primary me-2" (click)="openEditModal(i)">Editar</button>
-        <button class="btn btn-sm btn-danger" (click)="openDeleteModal(componente)">Excluir</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
-  <!-- Modais -->
+  <div class="table-responsive min-vh-100">
+    <table class="table table-striped table-bordered">
+      <thead class="table-active" app-thead-ordenacao
+        [colunas]="colunas"
+        (ordenacaoAtualizada)="ordenar($event)">
+      </thead>
+      <tbody>
+        <tr *ngFor="let componente of registrosFiltrados()">
+          <td>{{ componente.codigo }}</td>
+          <td>{{ componente.nome }}</td>
+          <td>{{ componente.descricao }}</td>
+          <td>{{ componente.tipo?.nome }}</td>
+          <td>{{ componente.fabricante }}</td>
+          <td>{{ componente.tamanho_mem }}</td>
+          <td>{{ componente.n_serie }}</td>
+          <td>{{ componente.data_aquisicao | date }}</td>
+          <td>
+            <button class="btn btn-sm btn-primary me-2 mb-2" (click)="openEditModal(componente)">Editar</button>
+            <button class="btn btn-sm btn-danger mb-2" (click)="openDeleteModal(componente.id)">Excluir</button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="9">
+            <span *ngIf="registros.length == 0">Nenhum registro encontrado</span>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
 
 <!-- Modal de Adição de Componente -->
 <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
@@ -92,61 +99,42 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form #addForm="ngForm" (ngSubmit)="addComponente(addForm)" [class.was-validated]="addForm.submitted">
+        <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
           <div class="mb-3">
-            <label for="descricao" class="form-label">Descrição</label>
-            <input type="text" class="form-control" id="descricao" name="descricao" ngModel required placeholder="Insira a descrição">
-            <div class="invalid-feedback">
-              Por favor, insira uma descrição.
-            </div>
+            <label for="addCodigo" class="form-label">Código</label>
+            <input type="text" class="form-control" id="addCodigo" formControlName="codigo">
           </div>
           <div class="mb-3">
-            <label for="tipo" class="form-label">Tipo</label>
-            <select class="form-select" id="tipo" name="tipo" ngModel required (change)="onTipoChange($event)">
-              <option value="">Selecione um Tipo</option>
-              <option value="Memória RAM">Memória RAM</option>
-              <option value="Memória Interna">Memória Interna</option>
-              <option value="Processador">Processador</option>
-              <option value="Placa Mãe">Placa Mãe</option>
-            </select>
-            <div class="invalid-feedback">
-              Por favor, selecione um tipo.
-            </div>
-          </div>
-          <div class="mb-3" *ngIf="tipoSelecionado === 'Memória RAM' || tipoSelecionado === 'Memória Interna'">
-            <label for="tamanho" class="form-label">Tamanho</label>
-            <input type="number" class="form-control" id="tamanho" name="tamanho" ngModel placeholder="Insira o tamanho">
+            <label for="addNome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="addNome" formControlName="nome">
           </div>
           <div class="mb-3">
-            <label for="numeroSerie" class="form-label">Número de Série</label>
-            <input type="text" class="form-control" id="numeroSerie" name="numeroSerie" ngModel required placeholder="Insira o número de série">
-            <div class="invalid-feedback">
-              Por favor, insira um número de série.
-            </div>
+            <label for="addDescricao" class="form-label">Descrição</label>
+            <input type="text" class="form-control" id="addDescricao" formControlName="descricao">
+          </div>
+          <div class="mb-3">
+            <label for="addTipo" class="form-label">Tipo</label>
+            <input type="text" class="form-control" id="addTipo" formControlName="tipo">
+          </div>
+          <div class="mb-3">
+            <label for="addFabricante" class="form-label">Fabricante</label>
+            <input type="text" class="form-control" id="addFabricante" formControlName="fabricante">
+          </div>
+          <div class="mb-3">
+            <label for="addTamanhoMem" class="form-label">Tamanho Memória</label>
+            <input type="text" class="form-control" id="addTamanhoMem" formControlName="tamanho_mem">
+          </div>
+          <div class="mb-3">
+            <label for="addNumeroSerie" class="form-label">Número de Série</label>
+            <input type="text" class="form-control" id="addNumeroSerie" formControlName="n_serie">
+          </div>
+          <div class="mb-3">
+            <label for="addDataAquisicao" class="form-label">Data de Aquisição</label>
+            <input type="date" class="form-control" id="addDataAquisicao" formControlName="data_aquisicao">
           </div>
           <button type="submit" class="btn btn-primary me-2">Adicionar</button>
-          <button type="button" class="btn btn-secondary" (click)="cancelAdd(addForm)">Cancelar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-<!-- Modal de Erro de Número de Série -->
-<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="errorModalLabel">Erro</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        O número de série já existe na tabela.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
       </div>
     </div>
   </div>
@@ -161,132 +149,59 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form [formGroup]="editForm" (ngSubmit)="editComponente()">
+        <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
+          <div class="mb-3">
+            <label for="editCodigo" class="form-label">Código</label>
+            <input type="text" class="form-control" id="editCodigo" formControlName="codigo">
+          </div>
+          <div class="mb-3">
+            <label for="editNome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="editNome" formControlName="nome">
+          </div>
           <div class="mb-3">
             <label for="editDescricao" class="form-label">Descrição</label>
-            <input type="text" class="form-control" id="editDescricao" formControlName="descricao" placeholder="Insira a descrição">
-            <div *ngIf="editForm.get('descricao')?.invalid && editForm.get('descricao')?.touched" class="invalid-feedback">
-              Por favor, insira uma descrição.
-            </div>
+            <input type="text" class="form-control" id="editDescricao" formControlName="descricao">
           </div>
           <div class="mb-3">
             <label for="editTipo" class="form-label">Tipo</label>
-            <select class="form-select" id="editTipo" formControlName="tipo" (change)="onEditTipoChange($event)">
-              <option value="">Selecione um Tipo</option>
-              <option value="Memória RAM">Memória RAM</option>
-              <option value="Memória Interna">Memória Interna</option>
-              <option value="Processador">Processador</option>
-              <option value="Placa Mãe">Placa Mãe</option>
-            </select>
-            <div *ngIf="editForm.get('tipo')?.invalid && editForm.get('tipo')?.touched" class="invalid-feedback">
-              Por favor, selecione um tipo.
-            </div>
+            <input type="text" class="form-control" id="editTipo" formControlName="tipo">
           </div>
-          <div class="mb-3" *ngIf="editTipoSelecionado === 'Memória RAM' || editTipoSelecionado === 'Memória Interna'">
-            <label for="editTamanho" class="form-label">Tamanho</label>
-            <input type="number" class="form-control" id="editTamanho" formControlName="tamanho" placeholder="Insira o tamanho">
+          <div class="mb-3">
+            <label for="editFabricante" class="form-label">Fabricante</label>
+            <input type="text" class="form-control" id="editFabricante" formControlName="fabricante">
+          </div>
+          <div class="mb-3">
+            <label for="editTamanhoMem" class="form-label">Tamanho Memória</label>
+            <input type="text" class="form-control" id="editTamanhoMem" formControlName="tamanho_mem">
           </div>
           <div class="mb-3">
             <label for="editNumeroSerie" class="form-label">Número de Série</label>
-            <input type="text" class="form-control" id="editNumeroSerie" formControlName="numeroSerie" placeholder="Insira o número de série">
-            <div *ngIf="editForm.get('numeroSerie')?.invalid && editForm.get('numeroSerie')?.touched" class="invalid-feedback">
-              Por favor, insira um número de série.
-            </div>
+            <input type="text" class="form-control" id="editNumeroSerie" formControlName="n_serie">
           </div>
-          <button type="submit" class="btn btn-primary me-2" [disabled]="editForm.invalid">Salvar</button>
-          <button type="button" class="btn btn-secondary" (click)="cancelEdit()">Cancelar</button>
+          <div class="mb-3">
+            <label for="editDataAquisicao" class="form-label">Data de Aquisição</label>
+            <input type="date" class="form-control" id="editDataAquisicao" formControlName="data_aquisicao">
+          </div>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </form>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal de Confirmação de Edição -->
-<div class="modal fade" id="editSuccessModal" tabindex="-1" aria-labelledby="editSuccessModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="editSuccessModalLabel">Sucesso</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Item editado com sucesso.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de Nenhuma Alteração Realizada -->
-<div class="modal fade" id="noChangesModal" tabindex="-1" aria-labelledby="noChangesModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="noChangesModalLabel">Aviso</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Nenhuma alteração foi realizada.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de Operação Cancelada -->
-<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="cancelModalLabel">Operação Cancelada</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Operação cancelada pelo usuário.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de Confirmação de Exclusão -->
+<!-- Modal de Exclusão de Componente -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="deleteModalLabel">Confirmação de Exclusão</h5>
+        <h5 class="modal-title" id="deleteModalLabel">Excluir Componente</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        Deseja excluir o item selecionado?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="cancelDelete()">Cancelar</button>
-        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Confirmar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de Sucesso de Exclusão -->
-<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="successModalLabel">Sucesso</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        Item excluído com sucesso.
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        <p>Tem certeza que deseja excluir este componente?</p>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Excluir</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
       </div>
     </div>
   </div>

@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { EquipamentoComponent } from './components/equipamento/equipamento.component';
 import { LoginComponent } from './components/login/login.component';
-import { ManutencaoComponent } from './components/manutencao/manutencao.component';
 import { RelatoriosComponent } from './components/relatorios/relatorios.component';
 import { AgenciasComponent } from './components/agencias/agencias.component';
 import { ServidoresComponent } from './components/servidores/servidores.component';
@@ -13,7 +12,6 @@ import { SolicitacaoComponent } from './components/solicitacao/solicitacao.compo
 export const routes: Routes = [
   { path: '', canActivate: [authGuard], children: [
     { path: 'equipamentos', component: EquipamentoComponent },
-    { path: 'manutencao', component: ManutencaoComponent },
     { path: 'componentes', component: ComponentesComponent },
     { path: 'agencias', component: AgenciasComponent },
     { path: 'servidores', component: ServidoresComponent },
