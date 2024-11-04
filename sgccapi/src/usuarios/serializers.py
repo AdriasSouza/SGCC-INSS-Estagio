@@ -10,7 +10,7 @@ class AgenciaSerializer(serializers.ModelSerializer):
 
 class SetorSerializer(serializers.ModelSerializer):
     agencia = serializers.PrimaryKeyRelatedField(
-        queryset=Agencia.objects.all())
+        queryset=Agencia.objects.all(), required=False, allow_null=True)
 
     class Meta:
         model = Setor
@@ -18,7 +18,7 @@ class SetorSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['agencia'] = AgenciaSerializer(instance.agencia).data
+        representation['agencia'] = AgenciaSerializer(instance.agencia).data if instance.agencia else None
         return representation
 
 
@@ -43,8 +43,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ServidorSerializer(serializers.ModelSerializer):
-    setor = serializers.PrimaryKeyRelatedField(queryset=Setor.objects.all())
-    usuario = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    setor = serializers.PrimaryKeyRelatedField(
+        queryset=Setor.objects.all(), required=False, allow_null=True)
+    usuario = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), required=False, allow_null=True)
 
     class Meta:
         model = Servidor
@@ -55,8 +57,8 @@ class ServidorSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['setor'] = SetorSerializer(instance.setor).data
-        representation['usuario'] = UserSerializer(instance.usuario).data
+        representation['setor'] = SetorSerializer(instance.setor).data if instance.setor else None
+        representation['usuario'] = UserSerializer(instance.usuario).data if instance.usuario else None
         return representation
 
 
