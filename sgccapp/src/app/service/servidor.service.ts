@@ -47,9 +47,17 @@ export class ServidorService implements IService<Servidor> {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl;
     if (objeto.id) {
+      const url = this.apiUrl + objeto.id + '/';
       return this.http.put<Servidor>(url, objeto, { headers });
     } else {
-      return this.http.post<Servidor>(url, objeto, { headers });
+      // Criar um objeto com os campos necessários
+      const servidorData = {
+        inscricao_institucional: objeto.inscricao_institucional,
+        nome_completo: objeto.nome_completo,
+        chefe: objeto.chefe
+      };
+      console.log('servidorData:', servidorData);
+      return this.http.post<Servidor>(url, servidorData, { headers });
     }
   }
 
