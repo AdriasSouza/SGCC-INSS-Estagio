@@ -19,7 +19,7 @@ from .serializers import (
     UserSerializer,
     SolicitacaoSerializer
 )
-from .models import Servidor, Agencia, Setor, Solicitacao
+from .models import Servidor, Agencia, Setor, Solicitacao, User
 import csv
 
 
@@ -47,9 +47,19 @@ class UserDataView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
+        # Verifica se o parâmetro 'all' está presente e é verdadeiro na URL
+        get_all = request.query_params.get('all', 'false').lower() == 'true'
+        
+        if get_all:
+            # Retorna todos os usuários
+            users = User.objects.all()
+            serializer = UserSerializer(users, many=True)
+            return Response(serializer.data)
+        else:
+            # Retorna apenas os dados do usuário logado
+            user = request.user
+            serializer = UserSerializer(user)
+            return Response(serializer.data)
 
 
 class LogoutView(APIView):

@@ -61,6 +61,22 @@ class UserManager(BaseUserManager):
             raise ValueError('Superuser must have is_superuser = True')
 
         return self.create_user(email, password, **extra_fields)
+    
+
+class Servidor(models.Model):
+    inscricao_institucional = models.CharField(max_length=255)
+    nome_completo = models.CharField(max_length=255)
+    setor = models.ForeignKey(
+        Setor, on_delete=models.SET_NULL, blank=True, null=True
+        )
+    chefe = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.nome_completo
+
+    class Meta:
+        verbose_name = 'Servidor'
+        verbose_name_plural = 'Servidores'
 
 
 # Modelo de usuário customizado, com email como campo de login.
@@ -69,6 +85,8 @@ class User(AbstractUser):
     # Relaciona o usuário a um servidor. Pode ser nulo.
     password = models.CharField(max_length=255)
     username = None  # Desabilita o campo username, email será usado
+    servidor = models.ForeignKey(
+        Servidor, on_delete=models.SET_NULL, null=True, blank=True)
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -92,28 +110,6 @@ class User(AbstractUser):
         verbose_name_plural = 'Usuários'
 
 
-# Modelo que representa um servidor, ligado a um setor.
-class Servidor(models.Model):
-    inscricao_institucional = models.CharField(max_length=255)
-    nome_completo = models.CharField(max_length=255)
-    # Relaciona o servidor com um setor. Se o setor for deletado, o campo
-    # será nulo.
-    usuario = models.ForeignKey(
-        User, on_delete=models.SET_NULL, blank=True, null=True
-        )
-    setor = models.ForeignKey(
-        Setor, on_delete=models.SET_NULL, blank=True, null=True
-        )
-    chefe = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.nome_completo
-
-    class Meta:
-        verbose_name = 'Servidor'
-        verbose_name_plural = 'Servidores'
-
-
 # Modelo para representar uma solicitação feita por um usuário.
 class Solicitacao(models.Model):
     # Relaciona a solicitação a um usuário. A remoção do usuário não
@@ -135,6 +131,7 @@ class Solicitacao(models.Model):
         )
     # Descrição da solicitação
     descricao = models.CharField(max_length=255)
+    justificativa = models.CharField(max_length=255)
 
     def __str__(self):
         return f"Solicitação {self.id} - {self.user.email}"

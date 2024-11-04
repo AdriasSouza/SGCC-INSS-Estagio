@@ -22,43 +22,50 @@ class SetorSerializer(serializers.ModelSerializer):
         return representation
 
 
+class ServidorSerializer(serializers.ModelSerializer):
+    setor = serializers.PrimaryKeyRelatedField(
+        queryset=Setor.objects.all(), required=False, allow_null=True)
+
+    class Meta:
+        model = Servidor
+        fields = ['id', 'inscricao_institucional',
+                  'nome_completo', 'setor', 'chefe']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['setor'] = SetorSerializer(instance.setor).data if instance.setor else None
+        return representation
+
+
 class UserSerializer(serializers.ModelSerializer):
+    servidor = serializers.PrimaryKeyRelatedField(
+        queryset=Servidor.objects.all(), required=False, allow_null=True)
+
     class Meta:
         model = User
-        fields = ['id', 'email', 'password']
+        fields = ['id', 'email', 'password', 'is_active',
+                  'is_staff', 'is_superuser', 'servidor']
         extra_kwargs = {
             'password': {'write_only': True},
         }
 
     def create(self, validated_data):
-        user = User.objects.create(email=validated_data['email'])
-        user.set_password(validated_data['password'])
+        password = validated_data.pop('password', None)
+        user = User(**validated_data)
+        if password:
+            user.set_password(password)
         user.save()
         return user
     
     def update(self, instance, validated_data):
-        if 'password' in validated_data:
-            instance.set_password(validated_data.pop('password'))
+        password = validated_data.pop('password', None)
+        if password:
+            instance.set_password(password)
         return super().update(instance, validated_data)
-
-
-class ServidorSerializer(serializers.ModelSerializer):
-    setor = serializers.PrimaryKeyRelatedField(
-        queryset=Setor.objects.all(), required=False, allow_null=True)
-    usuario = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), required=False, allow_null=True)
-
-    class Meta:
-        model = Servidor
-        fields = [
-            'id', 'inscricao_institucional', 'nome_completo',
-            'setor', 'usuario', 'chefe'
-            ]
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['setor'] = SetorSerializer(instance.setor).data if instance.setor else None
-        representation['usuario'] = UserSerializer(instance.usuario).data if instance.usuario else None
+        representation['servidor'] = ServidorSerializer(instance.servidor).data if instance.servidor else None
         return representation
 
 
@@ -67,7 +74,7 @@ class SolicitacaoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Solicitacao
-        fields = ['id', 'user', 'data', 'status', 'descricao']
+        fields = ['id', 'user', 'data', 'status', 'descricao', 'justificativa']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
