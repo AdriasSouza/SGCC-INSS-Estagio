@@ -27,6 +27,8 @@ class EquipamentoSerializer(serializers.ModelSerializer):
     tipo = serializers.PrimaryKeyRelatedField(queryset=TipoEquipamento.objects.all())
     setor = serializers.PrimaryKeyRelatedField(queryset=Setor.objects.all())
     servidor = serializers.PrimaryKeyRelatedField(queryset=Servidor.objects.all())
+    estado = serializers.CharField(source='get_estado_display')
+    situacao = serializers.CharField(source='get_situacao_display')
 
     class Meta:
         model = Equipamento

@@ -71,6 +71,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class SolicitacaoSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    status = serializers.CharField(source='get_status_display')
 
     class Meta:
         model = Solicitacao
