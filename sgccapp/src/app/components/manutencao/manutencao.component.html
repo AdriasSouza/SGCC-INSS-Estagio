@@ -6,140 +6,67 @@
 
 <div class="container mt-4">
   <!-- Título da página -->
-  <h3 class="fw-bold mb-4">Histórico de Manutenções</h3>
-  <h5 class="mb-4">Registro de manutenções dos equipamentos</h5>
+  <h3 class="fw-bold mb-4">Gestão de Manutenções</h3>
+  <h5 class="mb-4">Lista das manutenções realizadas nos equipamentos</h5>
 
-  <!-- Campo de busca -->
-  <div class="mb-3">
-    <label for="searchInput" class="form-label">Buscar Manutenção</label>
-    <input type="text" id="searchInput" class="form-control" placeholder="Número da manutenção, nome do equipamento ou responsável" (input)="onSearch($event)" />
+  <!-- Contêiner flexível para os botões -->
+  <div class="d-flex justify-content-between mb-3">
+    <!-- Botão para ocultar e abrir os filtros -->
+    <button class="btn btn-secondary mb-3" (click)="toggleFiltros()">
+      {{ mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
+    </button>
+
+    <!-- Botão para adicionar nova manutenção -->
+    <button class="btn btn-primary mb-3" (click)="openAddModal()">Adicionar Manutenção</button>
   </div>
 
-  <!-- Botão para ocultar e abrir os filtros -->
-  <button class="btn btn-secondary mb-3" (click)="toggleFiltros()">
-    {{ mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
-  </button>
-
-  <!-- Filtros -->
-  <div class="row" *ngIf="mostrarFiltros">
-    <div class="col-md-4 mb-3">
-      <label for="equipamentoSelect" class="form-label">Equipamento</label>
-      <select id="equipamentoSelect" class="form-select" (change)="onFilterChange()">
-        <option value="">Todos os Equipamentos</option>
-        <option *ngFor="let equipamento of equipamentos">{{ equipamento }}</option>
-      </select>
+  <!-- Filtros para a tabela -->
+  <div class="row mb-3" *ngIf="mostrarFiltros">
+    <div class="col-md-3 mb-3">
+      <label for="filterCodigo" class="form-label">Código</label>
+      <input type="text" id="filterCodigo" class="form-control" [(ngModel)]="filtroCodigo">
     </div>
-
-    <div class="col-md-4 mb-3">
-      <label for="responsavelSelect" class="form-label">Responsável</label>
-      <select id="responsavelSelect" class="form-select" (change)="onFilterChange()">
-        <option value="">Todos os Responsáveis</option>
-        <option *ngFor="let responsavel of responsaveis">{{ responsavel }}</option>
-      </select>
+    <div class="col-md-3 mb-3">
+      <label for="filterEquipamento" class="form-label">Equipamento</label>
+      <input type="text" id="filterEquipamento" class="form-control" [(ngModel)]="filtroEquipamento">
     </div>
-
-    <div class="col-md-4 mb-3">
-      <label for="dataSelect" class="form-label">Data da Manutenção</label>
-      <input type="date" id="dataSelect" class="form-control" (change)="onFilterChange()" />
+    <div class="col-md-3 mb-3">
+      <label for="filterResponsavel" class="form-label">Responsável</label>
+      <input type="text" id="filterResponsavel" class="form-control" [(ngModel)]="filtroResponsavel">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="filterDescricao" class="form-label">Descrição</label>
+      <input type="text" id="filterDescricao" class="form-control" [(ngModel)]="filtroDescricao">
     </div>
   </div>
 
-  <!-- Tabela -->
-  <div class="table-responsive">
+  <!-- Tabela de Manutenções -->
+  <div class="table-responsive min-vh-100">
     <table class="table table-striped table-bordered">
-      <thead class="table-active">
-        <tr>
-          <th scope="col">Nº da Manutenção</th>
-          <th scope="col">Plaqueta</th>
-          <th scope="col">Equipamento</th>
-          <th scope="col">Responsável</th>
-          <th scope="col">Data da Manutenção</th>
-          <th scope="col">Ações</th>
-        </tr>
+      <thead class="table-active" app-thead-ordenacao
+        [colunas]="colunas"
+        (ordenacaoAtualizada)="ordenar($event)">
       </thead>
       <tbody>
-        <tr *ngFor="let manutencao of manutencoesFiltradas" (click)="openManutencaoModal(manutencao)">
-          <td>{{ manutencao.numero }}</td>
-          <td>{{ manutencao.equipamento.plaqueta }}</td>
-          <td>{{ manutencao.equipamento.nome }}</td>
-          <td>{{ manutencao.responsavel }}</td>
+        <tr *ngFor="let manutencao of registrosFiltrados()">
+          <td>{{ manutencao.codigo }}</td>
+          <td>{{ manutencao.equipamento?.nome }}</td>
+          <td>{{ manutencao.responsavel?.nome_completo }}</td>
           <td>{{ manutencao.data | date }}</td>
+          <td>{{ manutencao.descricao }}</td>
           <td>
-            <button class="btn btn-sm btn-primary me-2" (click)="openEditModal(manutencao)">Editar</button>
-            <button class="btn btn-sm btn-danger" (click)="removeManutencao(manutencao)">Excluir</button>
+            <button class="btn btn-sm btn-primary me-2 mb-2" (click)="openEditModal(manutencao)">Editar</button>
+            <button class="btn btn-sm btn-danger mb-2" (click)="openDeleteModal(manutencao.id)">Excluir</button>
           </td>
         </tr>
       </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="6">
+            <span *ngIf="registros.length == 0">Nenhum registro encontrado</span>
+          </td>
+        </tr>
+      </tfoot>
     </table>
-  </div>
-
-  <!-- Modal de Detalhes da Manutenção -->
-  <div class="modal fade" id="manutencaoModal" tabindex="-1" aria-labelledby="manutencaoModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="manutencaoModalLabel">Detalhes da Manutenção</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="numero" class="form-label">Nº da Manutenção</label>
-              <input type="text" class="form-control" id="numero" [value]="manutencaoSelecionada?.numero" readonly>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="plaqueta" class="form-label">Plaqueta</label>
-              <input type="text" class="form-control" id="plaqueta" [value]="manutencaoSelecionada?.equipamento?.plaqueta" readonly>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="equipamento" class="form-label">Equipamento</label>
-              <input type="text" class="form-control" id="equipamento" [value]="manutencaoSelecionada?.equipamento?.nome" readonly>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="responsavel" class="form-label">Responsável</label>
-              <input type="text" class="form-control" id="responsavel" [value]="manutencaoSelecionada?.responsavel" readonly>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="data" class="form-label">Data da Manutenção</label>
-              <input type="text" class="form-control" id="data" [value]="manutencaoSelecionada?.data | date" readonly>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="descricao" class="form-label">Descrição</label>
-              <textarea class="form-control" id="descricao" rows="3" [value]="manutencaoSelecionada?.descricao" readonly></textarea>
-            </div>
-          </div>
-          <h5>Componentes do Equipamento</h5>
-          <div class="table-responsive">
-            <table class="table table-striped table-bordered">
-              <thead class="table-active">
-                <tr>
-                  <th scope="col">Código</th>
-                  <th scope="col">Descrição</th>
-                  <th scope="col">Tipo</th>
-                  <th scope="col">Fabricante</th>
-                  <th scope="col">Número de Série</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let componente of manutencaoSelecionada?.equipamento?.componentes">
-                  <td>{{ componente.codigo }}</td>
-                  <td>{{ componente.descricao }}</td>
-                  <td>{{ componente.tipo }}</td>
-                  <td>{{ componente.fabricante }}</td>
-                  <td>{{ componente.numeroSerie }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-        </div>
-      </div>
-    </div>
   </div>
 </div>

@@ -1,176 +1,211 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { HttpClient, HttpClientModule } from '@angular/common/http'; // Importando HttpClientModule
+import { Manutencao } from '../../model/manutencao.model'; // Importando o modelo Manutencao
+import { ManutencaoService } from '../../service/manutencao.service';
+import { AlertaService } from '../../service/alerta.service';
+import { IList } from '../i-list';
+import { TheadOrdenacao } from '../thead-ordenacao/thead-ordenacao';
+import { ETipoAlerta } from '../../model/e-tipo-alerta';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { TheadOrdenacaoComponent } from '../thead-ordenacao/thead-ordenacao.component';
+import { BarraComandosComponent } from '../barra-comandos/barra-comandos.component';
+import { RespostaPaginada } from '../../model/resposta-paginada';
 
 declare var bootstrap: any;
-
-// Interface para simular o comportamento do model
-interface Componente {
-  codigo: string;
-  descricao: string;
-  tipo: string;
-  fabricante: string;
-  numeroSerie: string;
-}
-
-interface Equipamento {
-  plaqueta: string;
-  nome: string;
-  componentes: Componente[];
-}
-
-interface Manutencao {
-  numero: number;
-  equipamento: Equipamento;
-  responsavel: string;
-  data: Date;
-  descricao: string;
-}
 
 @Component({
   selector: 'app-manutencao',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent, BarraComandosComponent], // Adicionando HttpClientModule
   templateUrl: './manutencao.component.html',
   styleUrls: ['./manutencao.component.scss']
 })
-export class ManutencaoComponent implements OnInit {
-  manutencoes: Manutencao[] = [
-    {
-      numero: 1,
-      equipamento: {
-        plaqueta: 'E-001',
-        nome: 'Computador Dell',
-        componentes: [
-          { codigo: 'C-001', descricao: 'Memória RAM', tipo: 'Memória', fabricante: 'Kingston', numeroSerie: '12345' },
-          { codigo: 'C-002', descricao: 'HD', tipo: 'Armazenamento', fabricante: 'Seagate', numeroSerie: '67890' }
-        ]
-      },
-      responsavel: 'João Silva',
-      data: new Date('2024-01-15'),
-      descricao: 'Troca de memória RAM e HD.'
-    },
-    {
-      numero: 2,
-      equipamento: {
-        plaqueta: 'E-002',
-        nome: 'Monitor LG',
-        componentes: [
-          { codigo: 'C-003', descricao: 'Tela', tipo: 'Display', fabricante: 'LG', numeroSerie: '54321' }
-        ]
-      },
-      responsavel: 'Maria Souza',
-      data: new Date('2024-02-12'),
-      descricao: 'Substituição da tela.'
-    },
-    {
-      numero: 3,
-      equipamento: {
-        plaqueta: 'E-003',
-        nome: 'Impressora HP',
-        componentes: [
-          { codigo: 'C-004', descricao: 'Cartucho de Tinta', tipo: 'Consumível', fabricante: 'HP', numeroSerie: '98765' }
-        ]
-      },
-      responsavel: 'Carlos Ferreira',
-      data: new Date('2024-03-08'),
-      descricao: 'Troca do cartucho de tinta.'
-    },
-    {
-      numero: 4,
-      equipamento: {
-        plaqueta: 'E-001',
-        nome: 'Computador Dell',
-        componentes: [
-          { codigo: 'C-001', descricao: 'Memória RAM', tipo: 'Memória', fabricante: 'Kingston', numeroSerie: '12345' },
-          { codigo: 'C-002', descricao: 'HD', tipo: 'Armazenamento', fabricante: 'Seagate', numeroSerie: '67890' }
-        ]
-      },
-      responsavel: 'Paula Costa',
-      data: new Date('2024-04-10'),
-      descricao: 'Atualização de software.'
-    }
-  ];
+export class ManutencaoComponent implements IList<Manutencao>, OnInit {
 
-  equipamentos = ['Computador Dell', 'Monitor LG', 'Impressora HP'];
-  responsaveis = ['João Silva', 'Maria Souza', 'Carlos Ferreira', 'Paula Costa'];
-  
-  manutencoesFiltradas: Manutencao[] = [];
-  manutencaoSelecionada: Manutencao | null = null;
+  constructor(
+    private fb: FormBuilder,
+    private http: HttpClient,
+    private servico: ManutencaoService, // Adicionando o serviço ManutencaoService como dependência
+    private servicoAlerta: AlertaService, // Adicionando o serviço AlertaService
+  ) {
+    this.editForm = this.fb.group({
+      codigo: ['', Validators.required],
+      equipamento: ['', Validators.required],
+      responsavel: ['', Validators.required],
+      data: ['', Validators.required],
+      descricao: ['', Validators.required]
+    });
 
-  selectedEquipamento: string = '';
-  selectedResponsavel: string = '';
-  selectedDate: string = '';
-  searchTerm: string = '';
-  mostrarFiltros: boolean = false;
-
-  currentManutencao: Manutencao | null = null;
-  isEditMode: boolean = false;
-
-  ngOnInit(): void {
-    this.onFilterChange();
-  }
-
-  openManutencaoModal(manutencao: Manutencao) {
-    this.manutencaoSelecionada = manutencao;
-    const manutencaoModal = new bootstrap.Modal(document.getElementById('manutencaoModal'));
-    manutencaoModal.show();
-  }
-
-  onFilterChange() {
-    this.manutencoesFiltradas = this.manutencoes.filter(manutencao => {
-      return (!this.selectedEquipamento || manutencao.equipamento.nome === this.selectedEquipamento) &&
-             (!this.selectedResponsavel || manutencao.responsavel === this.selectedResponsavel) &&
-             (!this.selectedDate || manutencao.data.toISOString().split('T')[0] === this.selectedDate) &&
-             (!this.searchTerm || 
-               manutencao.numero.toString().includes(this.searchTerm) ||
-               manutencao.equipamento.nome.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-               manutencao.responsavel.toLowerCase().includes(this.searchTerm.toLowerCase()));
+    this.addForm = this.fb.group({
+      codigo: ['', Validators.required],
+      equipamento: ['', Validators.required],
+      responsavel: ['', Validators.required],
+      data: ['', Validators.required],
+      descricao: ['', Validators.required]
     });
   }
 
+  ngOnInit() {
+    this.get();
+    console.log('ManutencaoComponent inicializado!');
+  }
+
+  registros: Manutencao[] = [];
+  termoBusca: string | undefined = '';
+  filtroCodigo: string = '';
+  filtroEquipamento: string = '';
+  filtroResponsavel: string = '';
+  filtroDescricao: string = '';
+  editForm: FormGroup;
+  addForm: FormGroup;
+  mostrarFiltros: boolean = false;
+  showDropdown: boolean[] = [];
+  loading: boolean = false;
+  manutencaoSelecionada: Manutencao | null = null;
+
+  colunas: TheadOrdenacao = [
+    { campo: 'codigo', descricao: 'Código' },
+    { campo: 'equipamento.nome', descricao: 'Equipamento' },
+    { campo: 'responsavel.nome_completo', descricao: 'Responsável' },
+    { campo: 'data', descricao: 'Data' },
+    { campo: 'descricao', descricao: 'Descrição' },
+    { campo: '', descricao: 'Ações' },
+  ]
+
+  //Função para esconder e mostrar os filtros
   toggleFiltros() {
     this.mostrarFiltros = !this.mostrarFiltros;
   }
 
-  onSearch(event: Event) {
-    const target = event.target as HTMLInputElement;
-    this.searchTerm = target.value;
-    this.onFilterChange();
+  toggleDropdown(index: number) {
+    this.showDropdown[index] = !this.showDropdown[index];
+  }
+
+  ordenar(ordenacao: string[]): void {
+    this.get(this.termoBusca);
+  }
+
+  get(termoBusca?: string): void {
+    this.termoBusca = termoBusca;
+    this.servico.get(termoBusca).subscribe({
+      next: (resposta: RespostaPaginada<Manutencao>) => {
+        this.registros = resposta.results; // Extrai os registros da resposta paginada
+        console.log('registros:', this.registros); // Adiciona o console.log para ver os registros
+      },
+      error: (err) => {
+        console.error('Erro ao buscar manutenções:', err); // Você pode querer lidar com erros aqui
+      }
+    });
+  }
+
+  registrosFiltrados(): Manutencao[] {
+    return this.registros.filter(manutencao => {
+      return (!this.filtroCodigo || manutencao.codigo?.toString().includes(this.filtroCodigo)) &&
+             (!this.filtroEquipamento || manutencao.equipamento?.nome?.includes(this.filtroEquipamento)) &&
+             (!this.filtroResponsavel || manutencao.responsavel?.nome_completo?.includes(this.filtroResponsavel)) &&
+             (!this.filtroDescricao || manutencao.descricao?.includes(this.filtroDescricao));
+    });
+  }
+
+  delete(id: number): void {
+    if (confirm('Confirma a exclusão da manutenção?')) {
+      this.servico.delete(id).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Manutenção excluída com sucesso!"
+          });
+        }
+      });
+    }
+  }
+
+  openDeleteModal(id: number) {
+    this.manutencaoSelecionada = this.registros.find(manutencao => manutencao.id === id) || null;
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+  }
+
+  confirmDelete() {
+    if (this.manutencaoSelecionada) {
+      this.delete(this.manutencaoSelecionada.id);
+      const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+      deleteModal.hide();
+    }
   }
 
   openAddModal() {
-    this.isEditMode = false;
-    this.currentManutencao = { numero: 0, equipamento: { plaqueta: '', nome: '', componentes: [] }, responsavel: '', data: new Date(), descricao: '' };
+    const addModal = new bootstrap.Modal(document.getElementById('addModal'));
+    addModal.show();
+  }
+
+  confirmAdd() {
+    if (this.addForm.valid) {
+      const novaManutencao: Manutencao = this.addForm.value;
+      this.servico.save(novaManutencao).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Manutenção adicionada com sucesso!"
+          });
+          const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+          addModal.hide();
+        }
+      });
+    }
   }
 
   openEditModal(manutencao: Manutencao) {
-    this.isEditMode = true;
-    this.currentManutencao = { ...manutencao };
+    this.manutencaoSelecionada = manutencao;
+    this.editForm.patchValue({
+      codigo: manutencao.codigo,
+      equipamento: manutencao.equipamento?.id,
+      responsavel: manutencao.responsavel?.id,
+      data: manutencao.data,
+      descricao: manutencao.descricao
+    });
+    const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+    editModal.show();
   }
 
-  saveManutencao() {
-    if (this.isEditMode) {
-      const index = this.manutencoes.findIndex(m => m.numero === this.currentManutencao?.numero);
-      if (index !== -1) {
-        this.manutencoes[index] = this.currentManutencao as Manutencao;
-      }
-    } else {
-      const newNumero = this.manutencoes.length > 0 ? Math.max(...this.manutencoes.map(m => m.numero)) + 1 : 1;
-      this.currentManutencao!.numero = newNumero;
-      this.manutencoes.push(this.currentManutencao as Manutencao);
+  confirmEdit() {
+    if (this.manutencaoSelecionada && this.editForm.valid) {
+      const manutencaoAtualizada: Manutencao = {
+        ...this.manutencaoSelecionada,
+        ...this.editForm.value
+      };
+      this.servico.save(manutencaoAtualizada).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Manutenção editada com sucesso!"
+          });
+          const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+          editModal.hide();
+        }
+      });
     }
-    this.resetModal();
-    this.onFilterChange();
   }
 
-  removeManutencao(manutencao: Manutencao) {
-    this.manutencoes = this.manutencoes.filter(m => m.numero !== manutencao.numero);
-    this.onFilterChange();
+  cancelAdd(form: NgForm) {
+    form.reset();
+    const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+    addModal.hide();
   }
 
-  resetModal() {
-    this.currentManutencao = null;
-    this.isEditMode = false;
+  cancelEdit() {
+    this.editForm.reset();
+    const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+    editModal.hide();
+  }
+
+  cancelDelete() {
+    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+    deleteModal.hide();
   }
 }

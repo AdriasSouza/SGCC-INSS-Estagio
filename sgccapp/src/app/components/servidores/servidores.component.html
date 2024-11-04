@@ -11,13 +11,15 @@
 
   <!-- Contêiner flexível para os botões -->
   <div class="d-flex justify-content-between mb-3">
+
     <!-- Botão para ocultar e abrir os filtros -->
-    <button class="btn btn-secondary" (click)="toggleFiltros()">
+    <button class="btn btn-secondary mb-3" (click)="toggleFiltros()">
       {{ mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
     </button>
-
+  
     <!-- Botão para adicionar novo servidor -->
-    <button class="btn btn-primary" (click)="openAddModal()">Adicionar Servidor</button>
+    <button class="btn btn-primary mb-3" (click)="openAddModal()">Adicionar Servidor</button>
+
   </div>
 
   <!-- Filtros -->
