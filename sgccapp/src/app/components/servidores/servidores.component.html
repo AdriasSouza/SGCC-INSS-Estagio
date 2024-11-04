@@ -42,42 +42,41 @@
     </div>
   </div>
 
-  <!-- Spinner de Carregamento -->
-  <div class="text-center my-4">
-    <div class="spinner-border" role="status" *ngIf="loading">
-      <span class="visually-hidden">Loading...</span>
-    </div>
+<!-- Spinner de Carregamento -->
+<div class="text-center my-4">
+  <div class="spinner-border" role="status" *ngIf="loading">
+    <span class="visually-hidden">Loading...</span>
   </div>
+</div>
 
-  <!-- Tabela de Servidores -->
-  <div class="table-responsive min-vh-100">
-    <table class="table table-striped table-bordered" *ngIf="!loading">
-      <thead class="table-active" app-thead-ordenacao
-        [colunas]="colunas"
-        (ordenacaoAtualizada)="ordenar($event)">
-      </thead>
-      <tbody>
-        <tr *ngFor="let servidor of registrosFiltrados()">
-          <td>{{ servidor.inscricao_institucional }}</td>
-          <td>{{ servidor.nome_completo }}</td>
-          <td>{{ servidor.usuario?.email }}</td>
-          <td>{{ servidor.setor?.nome }}</td>
-          <td>{{ servidor.setor?.agencia?.nome }}</td>
-          <td>
-            <button class="btn btn-sm btn-primary me-2 mb-2" (click)="openEditModal(servidor)">Editar</button>
-            <button class="btn btn-sm btn-danger mb-2" (click)="openDeleteModal(servidor.id)">Excluir</button>
-          </td>
-        </tr>
-      </tbody>
-      <tfoot>
-        <tr>
-          <td colspan="6">
-            <span *ngIf="registros.length == 0">Nenhum registro encontrado</span>
-          </td>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
+<!-- Tabela de Servidores -->
+<div class="table-responsive min-vh-100">
+  <table class="table table-striped table-bordered" *ngIf="!loading">
+    <thead class="table-active" app-thead-ordenacao
+      [colunas]="colunas"
+      (ordenacaoAtualizada)="ordenar($event)">
+    </thead>
+    <tbody>
+      <tr *ngFor="let servidor of registrosFiltrados()">
+        <td>{{ servidor.inscricao_institucional }}</td>
+        <td>{{ servidor.nome_completo }}</td>
+        <td>{{ servidor.usuario?.email }}</td>
+        <td>{{ servidor.setor?.nome }}</td>
+        <td>{{ servidor.setor?.agencia?.nome }}</td>
+        <td>
+          <button class="btn btn-sm btn-primary me-2 mb-2" (click)="openEditModal(servidor)">Editar</button>
+          <button class="btn btn-sm btn-danger mb-2" (click)="openDeleteModal(servidor.id)">Excluir</button>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="6">
+          <span *ngIf="registros.length == 0">Nenhum registro encontrado</span>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
 </div>
 
 <!-- Modal de Adição de Servidor -->
@@ -91,21 +90,30 @@
       <div class="modal-body">
         <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
           <div class="mb-3">
-            <label for="addInscricaoInstitucional" class="form-label">Inscrição Institucional</label>
-            <input type="text" class="form-control" id="addInscricaoInstitucional" formControlName="inscricao_institucional">
+            <label for="addInscricao" class="form-label">Inscrição Institucional</label>
+            <input type="text" class="form-control" id="addInscricao" formControlName="inscricao_institucional">
           </div>
           <div class="mb-3">
-            <label for="addNomeCompleto" class="form-label">Nome Completo</label>
-            <input type="text" class="form-control" id="addNomeCompleto" formControlName="nome_completo">
+            <label for="addNome" class="form-label">Nome Completo</label>
+            <input type="text" class="form-control" id="addNome" formControlName="nome_completo">
           </div>
           <div class="mb-3">
             <label for="addChefe" class="form-label">Chefe</label>
-            <select class="form-select" id="addChefe" formControlName="chefe">
-              <option value="true">Sim</option>
-              <option value="false">Não</option>
+            <input type="checkbox" class="form-check-input" id="addChefe" formControlName="chefe">
+          </div>
+          <div class="mb-3">
+            <label for="addSetor" class="form-label">Setor</label>
+            <select id="addSetor" class="form-select" formControlName="setor">
+              <option *ngFor="let setor of setores" [value]="setor.id">{{ setor.nome }}</option>
             </select>
           </div>
-          <button type="submit" class="btn btn-primary me-2">Adicionar</button>
+          <div class="mb-3">
+            <label for="addAgencia" class="form-label">Agência</label>
+            <select id="addAgencia" class="form-select" formControlName="agencia">
+              <option *ngFor="let setor of setores" [value]="setor.agencia?.id">{{ setor.agencia?.nome }}</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Adicionar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </form>
       </div>
@@ -124,41 +132,32 @@
       <div class="modal-body">
         <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
           <div class="mb-3">
-            <label for="editInscricaoInstitucional" class="form-label">Inscrição Institucional</label>
-            <input type="text" class="form-control" id="editInscricaoInstitucional" formControlName="inscricao_institucional">
+            <label for="editInscricao" class="form-label">Inscrição Institucional</label>
+            <input type="text" class="form-control" id="editInscricao" formControlName="inscricao_institucional">
           </div>
           <div class="mb-3">
-            <label for="editNomeCompleto" class="form-label">Nome Completo</label>
-            <input type="text" class="form-control" id="editNomeCompleto" formControlName="nome_completo">
+            <label for="editNome" class="form-label">Nome Completo</label>
+            <input type="text" class="form-control" id="editNome" formControlName="nome_completo">
           </div>
           <div class="mb-3">
-            <label for="editUsuario" class="form-label">Usuário</label>
-            <input type="text" class="form-control" id="editUsuario" formControlName="usuario">
+            <label for="editChefe" class="form-label">Chefe</label>
+            <input type="checkbox" class="form-check-input" id="editChefe" formControlName="chefe">
           </div>
           <div class="mb-3">
             <label for="editSetor" class="form-label">Setor</label>
-            <input type="text" class="form-control" id="editSetor" formControlName="setor">
+            <select id="editSetor" class="form-select" formControlName="setor">
+              <option *ngFor="let setor of setores" [value]="setor.id">{{ setor.nome }}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="editAgencia" class="form-label">Agência</label>
+            <select id="editAgencia" class="form-select" formControlName="agencia">
+              <option *ngFor="let setor of setores" [value]="setor.agencia?.id">{{ setor.agencia?.nome }}</option>
+            </select>
           </div>
           <button type="submit" class="btn btn-primary">Salvar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de Exclusão de Servidor -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="deleteModalLabel">Excluir Servidor</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>Tem certeza que deseja excluir este servidor?</p>
-        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Excluir</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
       </div>
     </div>
   </div>

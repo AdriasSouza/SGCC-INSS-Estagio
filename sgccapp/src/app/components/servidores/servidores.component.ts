@@ -12,6 +12,10 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { TheadOrdenacaoComponent } from '../thead-ordenacao/thead-ordenacao.component';
 import { BarraComandosComponent } from '../barra-comandos/barra-comandos.component';
 import { RespostaPaginada } from '../../model/resposta-paginada';
+import { SetorService } from '../../service/setor.service'; // Importando o serviço SetorService
+import { UserService } from '../../service/user.service'; // Importando o serviço UserService
+import { Setor } from '../../model/setor.model'; // Importando o modelo Setor
+import { User } from '../../model/user.model'; // Importando o modelo User
 
 declare var bootstrap: any;
 
@@ -20,7 +24,7 @@ declare var bootstrap: any;
   standalone: true,
   imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent, BarraComandosComponent], // Adicionando HttpClientModule
   templateUrl: './servidores.component.html',
-  styleUrls: ['./servidores.component.css']
+  styleUrls: ['./servidores.component.scss']
 })
 export class ServidoresComponent implements IList<Servidor>, OnInit {
 
@@ -29,23 +33,30 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
     private http: HttpClient,
     private servico: ServidorService, // Adicionando o serviço ServidorService como dependência
     private servicoAlerta: AlertaService, // Adicionando o serviço AlertaService
+    private setorService: SetorService, // Adicionando o serviço SetorService
+    private userService: UserService // Adicionando o serviço UserService
   ) {
     this.editForm = this.fb.group({
+      id: [''],
       inscricao_institucional: ['', Validators.required],
       nome_completo: ['', Validators.required],
-      usuario: [''],
-      setor: ['', Validators.required]
+      chefe: [false],
+      setor: ['', Validators.required],
+      agencia: ['', Validators.required]
     });
 
     this.addForm = this.fb.group({
       inscricao_institucional: ['', Validators.required],
       nome_completo: ['', Validators.required],
-      chefe: ['', Validators.required]
+      chefe: [false],
+      setor: ['', Validators.required],
+      agencia: ['', Validators.required]
     });
   }
 
   ngOnInit() {
     this.get();
+    this.loadSelectOptions();
     console.log('ServidoresComponent inicializado!');
   }
 
@@ -55,6 +66,8 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
   filtroNome: string = '';
   filtroUsuario: string = '';
   filtroSetor: string = '';
+  setores: Setor[] = [];
+  usuarios: User[] = [];
   editForm: FormGroup;
   addForm: FormGroup;
   mostrarFiltros: boolean = false;
@@ -67,7 +80,7 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
     { campo: 'nome_completo', descricao: 'Nome Completo' },
     { campo: 'usuario.email', descricao: 'Usuário' },
     { campo: 'setor.nome', descricao: 'Setor' },
-    { campo: 'setor.agencia', descricao: 'Agência' },
+    { campo: 'setor.agencia.nome', descricao: 'Agencia' },
     { campo: '', descricao: 'Ações' },
   ]
 
@@ -106,6 +119,26 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
     });
   }
 
+  loadSelectOptions() {
+    this.setorService.get().subscribe({
+      next: (resposta: RespostaPaginada<Setor>) => {
+        this.setores = resposta.results;
+      },
+      error: (err) => {
+        console.error('Erro ao carregar setores:', err);
+      }
+    });
+
+    this.userService.get().subscribe({
+      next: (resposta: RespostaPaginada<User>) => {
+        this.usuarios = resposta.results;
+      },
+      error: (err) => {
+        console.error('Erro ao carregar usuários:', err);
+      }
+    });
+  }
+
   delete(id: number): void {
     if (confirm('Confirma a exclusão do servidor?')) {
       this.servico.delete(id).subscribe({
@@ -141,7 +174,11 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
 
   confirmAdd() {
     if (this.addForm.valid) {
-      const novoServidor: Servidor = this.addForm.value;
+      const novoServidor: Servidor = {
+        ...this.addForm.value,
+        setor: { id: this.addForm.value.setor },
+        agencia: { id: this.addForm.value.agencia }
+      };
       this.servico.save(novoServidor).subscribe({
         complete: () => {
           this.get();
@@ -159,10 +196,12 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
   openEditModal(servidor: Servidor) {
     this.servidorSelecionado = servidor;
     this.editForm.patchValue({
+      id: servidor.id,
       inscricao_institucional: servidor.inscricao_institucional,
       nome_completo: servidor.nome_completo,
-      usuario: servidor.usuario?.id || '',
-      setor: servidor.setor?.id || ''
+      chefe: servidor.chefe,
+      setor: servidor.setor?.id,
+      agencia: servidor.setor?.agencia?.id
     });
     const editModal = new bootstrap.Modal(document.getElementById('editModal'));
     editModal.show();
@@ -172,7 +211,9 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
     if (this.servidorSelecionado && this.editForm.valid) {
       const servidorAtualizado: Servidor = {
         ...this.servidorSelecionado,
-        ...this.editForm.value
+        ...this.editForm.value,
+        setor: { id: this.editForm.value.setor },
+        agencia: { id: this.editForm.value.agencia }
       };
       this.servico.save(servidorAtualizado).subscribe({
         complete: () => {

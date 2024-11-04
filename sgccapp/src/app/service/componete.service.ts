@@ -48,6 +48,7 @@ export class ComponenteService implements IService<Componente> {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl;
     if (objeto.id) {
+      const url = this.apiUrl + objeto.id + '/';
       return this.http.put<Componente>(url, objeto, { headers });
     } else {
       return this.http.post<Componente>(url, objeto, { headers });
@@ -57,7 +58,7 @@ export class ComponenteService implements IService<Componente> {
   delete(id: number): Observable<void> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    const url = this.apiUrl + id;
+    const url = this.apiUrl + id + '/';
     return this.http.delete<void>(url, { headers });
   }
 }
