@@ -4,102 +4,219 @@
   }
 </style>
 
-<!-- agency-management.component.html -->
-<div class="container mt-5">
-    <h2 class="mb-4">Gerenciamento de Agências, Setores e Salas</h2>
-  
-    <!-- Formulário para adicionar/editar uma agência -->
-    <form (ngSubmit)="saveAgency()" #agencyForm="ngForm">
-      <h4>Agência</h4>
-      <div class="mb-3">
-        <label for="agencyCode" class="form-label">Código</label>
-        <input type="text" class="form-control" id="agencyCode" [(ngModel)]="selectedAgency.codigo" name="agencyCode" required>
-      </div>
-  
-      <div class="mb-3">
-        <label for="agencyDescription" class="form-label">Descrição</label>
-        <input type="text" class="form-control" id="agencyDescription" [(ngModel)]="selectedAgency.descricao" name="agencyDescription" required>
-      </div>
-  
-      <button type="submit" class="btn btn-primary">{{ selectedAgency.id ? 'Atualizar' : 'Adicionar' }} Agência</button>
-      <button type="button" class="btn btn-secondary" (click)="resetAgencyForm()">Limpar</button>
-    </form>
-  
-    <!-- Lista de agências -->
-    <h4 class="mt-5">Lista de Agências</h4>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Código</th>
-          <th>Descrição</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let agency of agencies">
-          <td>{{ agency.id }}</td>
-          <td>{{ agency.codigo }}</td>
-          <td>{{ agency.descricao }}</td>
-          <td>
-            <button class="btn btn-warning" (click)="editAgency(agency)">Editar</button>
-            <button class="btn btn-danger" (click)="deleteAgency(agency.id)">Excluir</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  
-    <!-- Formulário para adicionar/editar um setor -->
-    <form (ngSubmit)="saveSector()" #sectorForm="ngForm" class="mt-5">
-      <h4>Setor</h4>
-      <div class="mb-3">
-        <label for="sectorCode" class="form-label">Código</label>
-        <input type="text" class="form-control" id="sectorCode" [(ngModel)]="selectedSector.codigo" name="sectorCode" required>
-      </div>
-  
-      <div class="mb-3">
-        <label for="sectorName" class="form-label">Nome do Setor</label>
-        <input type="text" class="form-control" id="sectorName" [(ngModel)]="selectedSector.nome_setor" name="sectorName" required>
-      </div>
-  
-      <div class="mb-3">
-        <label for="agencyId" class="form-label">Agência</label>
-        <select id="agencyId" class="form-select" [(ngModel)]="selectedSector.id_agencia" name="agencyId" required>
-          <option *ngFor="let agency of agencies" [value]="agency.id">{{ agency.descricao }}</option>
-        </select>
-      </div>
-  
-      <button type="submit" class="btn btn-primary">{{ selectedSector.id ? 'Atualizar' : 'Adicionar' }} Setor</button>
-      <button type="button" class="btn btn-secondary" (click)="resetSectorForm()">Limpar</button>
-    </form>
-  
-    <!-- Lista de setores -->
-    <h4 class="mt-5">Lista de Setores</h4>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Código</th>
-          <th>Nome do Setor</th>
-          <th>Agência</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let sector of sectors">
-          <td>{{ sector.id }}</td>
-          <td>{{ sector.codigo }}</td>
-          <td>{{ sector.nome_setor }}</td>
-          <td>{{ getAgencyDescription(sector.id_agencia) }}</td>
-          <td>
-            <button class="btn btn-warning" (click)="editSector(sector)">Editar</button>
-            <button class="btn btn-danger" (click)="deleteSector(sector.id)">Excluir</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  
-    <!-- Formulário para adicionar/editar uma sala (opcional) -->
-    <!-- Você pode adicionar aqui um formulário para gerenciar as salas seguindo o mesmo padrão -->
+<div class="container mt-4">
+  <!-- Título da página -->
+  <h3 class="fw-bold mb-4">Gestão de Agências</h3>
+  <h5 class="mb-4">Tabela com todas as agências registradas no sistema</h5>
+
+  <!-- Botão para adicionar nova agência -->
+  <button class="btn btn-primary mb-3" (click)="openAddModal()">Adicionar Agência</button>
+
+  <!-- Campo de busca -->
+  <div class="mb-3">
+    <label for="searchInput" class="form-label">Buscar Agência</label>
+    <input type="text" id="searchInput" class="form-control" placeholder="Nome ou Código"/>
   </div>
-  
+
+  <!-- Botão para ocultar e abrir os filtros -->
+  <button class="btn btn-secondary mb-3" (click)="toggleFiltros()">
+    {{ mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
+  </button>
+
+  <!-- Filtros -->
+  <div class="row mb-3" *ngIf="mostrarFiltros">
+    <div class="col-md-4 mb-3">
+      <label for="codigoSelect" class="form-label">Código</label>
+      <select id="codigoSelect" class="form-select">
+        <option value="">Todos os Códigos</option>
+        <option value="001">001</option>
+        <option value="002">002</option>
+      </select>
+    </div>
+
+    <div class="col-md-4 mb-3">
+      <label for="nomeSelect" class="form-label">Nome</label>
+      <select id="nomeSelect" class="form-select">
+        <option value="">Todos os Nomes</option>
+        <option value="Agência Central">Agência Central</option>
+        <option value="Agência Norte">Agência Norte</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Spinner de Carregamento -->
+  <div class="text-center my-4">
+    <div class="spinner-border" role="status" *ngIf="loading">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Tabela -->
+  <div class="table-responsive min-vh-100">
+    <table class="table table-striped table-bordered" *ngIf="!loading">
+      <thead app-thead-ordenacao
+        [colunas]="colunas"
+        (ordenacaoAtualizada)="ordenar($event)">
+      </thead>
+      <tbody>
+        <tr *ngFor="let agencia of registros">
+          <td>{{agencia.nome}}</td>
+          <td>{{agencia.numero}}</td>
+          <td>
+            <button class="btn btn-warning btn-sm" (click)="openEditModal(agencia.id)">Editar</button>
+            <button class="btn btn-danger btn-sm" (click)="openDeleteModal(agencia.id)">Excluir</button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3">
+            <span *ngIf="registros.length == 0">Nenhum registro encontrado</span>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- Modais -->
+  <!-- Adicionar Agência Modal -->
+  <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addModalLabel">Adicionar Agência</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form #addForm="ngForm">
+            <div class="mb-3">
+              <label for="nome" class="form-label">Nome</label>
+              <input type="text" class="form-control" id="nome" name="nome" ngModel required>
+            </div>
+            <div class="mb-3">
+              <label for="codigo" class="form-label">Código</label>
+              <input type="text" class="form-control" id="codigo" name="codigo" ngModel required>
+            </div>
+            <div class="mb-3">
+              <label for="endereco" class="form-label">Endereço</label>
+              <input type="text" class="form-control" id="endereco" name="endereco" ngModel required>
+            </div>
+            <div class="mb-3">
+              <label for="telefone" class="form-label">Telefone</label>
+              <input type="text" class="form-control" id="telefone" name="telefone" ngModel required>
+            </div>
+            <button type="submit" class="btn btn-primary">Adicionar</button>
+            <button type="button" class="btn btn-secondary" (click)="cancelAdd(addForm)">Cancelar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Edição de Agência -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel">Editar Agência</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="editForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="editNome" class="form-label">Nome</label>
+                <input type="text" class="form-control" id="editNome" formControlName="nome" placeholder="Insira o nome">
+                <div *ngIf="editForm.get('nome')?.invalid && editForm.get('nome')?.touched" class="invalid-feedback">
+                  Por favor, insira um nome.
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="editCodigo" class="form-label">Código</label>
+                <input type="text" class="form-control" id="editCodigo" formControlName="codigo" placeholder="Insira o código">
+                <div *ngIf="editForm.get('codigo')?.invalid && editForm.get('codigo')?.touched" class="invalid-feedback">
+                  Por favor, insira um código.
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="editEndereco" class="form-label">Endereço</label>
+                <input type="text" class="form-control" id="editEndereco" formControlName="endereco" placeholder="Insira o endereço">
+                <div *ngIf="editForm.get('endereco')?.invalid && editForm.get('endereco')?.touched" class="invalid-feedback">
+                  Por favor, insira um endereço.
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="editTelefone" class="form-label">Telefone</label>
+                <input type="text" class="form-control" id="editTelefone" formControlName="telefone" placeholder="Insira o telefone">
+                <div *ngIf="editForm.get('telefone')?.invalid && editForm.get('telefone')?.touched" class="invalid-feedback">
+                  Por favor, insira um telefone.
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end">
+              <button type="submit" class="btn btn-primary me-2" [disabled]="editForm.invalid">Salvar</button>
+              <button type="button" class="btn btn-secondary" (click)="cancelEdit()">Cancelar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação de Exclusão -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Confirmação de Exclusão</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Deseja excluir a agência selecionada?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="cancelDelete()">Cancelar</button>
+          <button type="button" class="btn btn-danger">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Sucesso de Exclusão -->
+  <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="successModalLabel">Sucesso</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Agência excluída com sucesso.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Operação Cancelada -->
+  <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="cancelModalLabel">Operação Cancelada</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Operação cancelada pelo usuário.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

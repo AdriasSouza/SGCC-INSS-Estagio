@@ -7,8 +7,8 @@ import { AgenciasComponent } from './components/agencias/agencias.component';
 import { ServidoresComponent } from './components/servidores/servidores.component';
 import { UsuariosComponent } from './components/usuarios/usuarios.component';
 import { ComponentesComponent } from './components/componentes/componentes.component';
-import { RequisicoesComponent } from './components/requisicoes/requisicoes.component';
 import { authGuard } from './service/auth.guard';
+import { SolicitacaoComponent } from './components/solicitacao/solicitacao.component';
 
 export const routes: Routes = [
   { path: '', canActivate: [authGuard], children: [
@@ -19,7 +19,7 @@ export const routes: Routes = [
     { path: 'servidores', component: ServidoresComponent },
     { path: 'usuarios', component: UsuariosComponent },
     { path: 'relatorios', component: RelatoriosComponent },
-    { path: 'requisicoes', component: RequisicoesComponent }
+    { path: 'solicitacao', component: SolicitacaoComponent }
   ] },
   { path: 'login', component: LoginComponent },
   { path: '**', redirectTo: '' }

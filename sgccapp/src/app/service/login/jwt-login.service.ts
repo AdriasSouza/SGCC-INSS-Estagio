@@ -28,7 +28,7 @@ export class JwtLoginService implements ILoginService {
   private intervaloRenovacao: any;
 
   private agendarRenovacaoToken(): void {
-    const intervalo = 1000 * 10;
+    const intervalo = 1000 * 60 * 60; // Ajustando o intervalo para 60 minutos
     this.intervaloRenovacao = setInterval(() => {
       if (this.fezRequisicao) {
         this.renovarToken();

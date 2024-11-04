@@ -1,25 +1,24 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Equipamento } from '../model/equipamento.model';
 import { RequisicaoPaginada } from '../model/requisicao-paginada';
 import { RespostaPaginada } from '../model/resposta-paginada';
 import { IService } from './i-service';
 import { environment } from '../environments/environment';
-import { User } from '../model/user.model';
+import { Solicitacao } from '../model/solicitacao.model';
 
 @Injectable({
   providedIn: 'root'
 })
-export class UserService implements IService<User> {
+export class SolicitacaoService implements IService<Solicitacao> {
 
   constructor(
     private http: HttpClient
   ) { }
 
-  apiUrl: string = environment.API_URL + '/api/usuarios/user_data/';
+  apiUrl: string = environment.API_URL + '/api/usuarios/solicitacoes/';
 
-  get(termoBusca?: string | undefined, paginacao?: RequisicaoPaginada | undefined): Observable<RespostaPaginada<User>> {
+  get(termoBusca?: string | undefined, paginacao?: RequisicaoPaginada | undefined): Observable<RespostaPaginada<Solicitacao>> {
     let params = new HttpParams();
 
     if (termoBusca) {
@@ -34,27 +33,41 @@ export class UserService implements IService<User> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
 
-    return this.http.get<RespostaPaginada<User>>(this.apiUrl, { headers, params });
+    return this.http.get<RespostaPaginada<Solicitacao>>(this.apiUrl, { headers, params });
   }
 
-  getById(id: number): Observable<User> {
+  getById(id: number): Observable<Solicitacao> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl + id;
-    return this.http.get<User>(url, { headers });
+    return this.http.get<Solicitacao>(url, { headers });
   }
 
-  save(objeto: User): Observable<User> {
+  save(objeto: Solicitacao): Observable<Solicitacao> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    const url = this.apiUrl;
+
+    // Verificar e converter data para Date se necessário
+    const data = objeto.data instanceof Date ? objeto.data : new Date(objeto.data);
+    
+    // Criar um objeto com os campos necessários
+    const solicitacaoData = {
+      user: objeto.user ? objeto.user.id : null,
+      data: data.toISOString(),
+      status: objeto.status,
+      descricao: objeto.descricao
+    };
+
+    console.log('Enviando dados para a API:', solicitacaoData); // Adiciona log para depuração
+
     if (objeto.id) {
-      return this.http.put<User>(url, objeto, { headers });
+      const url = this.apiUrl + objeto.id + '/';
+      return this.http.put<Solicitacao>(url, solicitacaoData, { headers });
     } else {
-      return this.http.post<User>(url, objeto, { headers });
+      return this.http.post<Solicitacao>(this.apiUrl, solicitacaoData, { headers });
     }
   }
-
+  
   delete(id: number): Observable<void> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);

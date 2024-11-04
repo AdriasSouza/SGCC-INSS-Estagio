@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http'; // Importando HttpClientModule
@@ -12,6 +12,7 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { TheadOrdenacaoComponent } from '../thead-ordenacao/thead-ordenacao.component';
 import { BarraComandosComponent } from '../barra-comandos/barra-comandos.component';
 import { RespostaPaginada } from '../../model/resposta-paginada';
+import { ILoginService, LoginService } from '../../service/login/i-login.service';
 
 declare var bootstrap: any;
 
@@ -56,7 +57,6 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
   }
 
   registros: Equipamento[] = [];
-
   termoBusca: string | undefined = '';
   editForm: FormGroup;
   manutencaoForm: FormGroup;

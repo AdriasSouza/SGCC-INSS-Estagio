@@ -1,120 +1,146 @@
-// agency-management.component.ts
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpClientModule } from '@angular/common/http'; // Importando HttpClientModule
+import { Agencia } from '../../model/agencia.model'; // Importando o modelo Agencia
+import { AgenciaService } from '../../service/agencia.service';
+import { AlertaService } from '../../service/alerta.service';
+import { IList } from '../i-list';
+import { TheadOrdenacao } from '../thead-ordenacao/thead-ordenacao';
+import { ETipoAlerta } from '../../model/e-tipo-alerta';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { TheadOrdenacaoComponent } from '../thead-ordenacao/thead-ordenacao.component';
+import { BarraComandosComponent } from '../barra-comandos/barra-comandos.component';
+import { RespostaPaginada } from '../../model/resposta-paginada';
 
-// models.ts
-
-interface Agencia {
-  id: number;
-  codigo: string;
-  descricao: string;
-}
-
-interface Setor {
-  id: number;
-  codigo: string;
-  nome_setor: string;
-  id_agencia: number;
-  id_servidor: number; // Você pode modificar isso se necessário
-  id_sala?: number; // Se a sala não for obrigatória, use '?'
-}
-
-interface Servidor {
-  id: number;
-  codigo: string;
-  nome_completo: string;
-  data_nascimento: Date;
-  id_setor: number;
-}
-
-interface Usuario {
-  id: number;
-  codigo: string;
-  senha: string;
-  email_institucional: string;
-  tipo_usuario: string;
-  id_servidor: number;
-}
+declare var bootstrap: any;
 
 @Component({
   selector: 'app-agencias',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent, BarraComandosComponent], // Adicionando HttpClientModule
   templateUrl: './agencias.component.html',
-  styleUrl: './agencias.component.css'
+  styleUrls: ['./agencias.component.css']
 })
-export class AgenciasComponent {
-  agencies: Agencia[] = []; // Especifica que agencies é uma lista de Agencia
-  sectors: Setor[] = []; // Especifica que sectors é uma lista de Setor
-  selectedAgency: Agencia = { id: 0, codigo: '', descricao: '' }; // Inicializa com uma agência padrão
-  selectedSector: Setor = { id: 0, codigo: '', nome_setor: '', id_agencia: 0, id_servidor: 0 }; // Inicializa com um setor padrão
+export class AgenciasComponent implements IList<Agencia>, OnInit {
 
-  // Método para salvar agência
-  saveAgency() {
-    if (this.selectedAgency.id) {
-      // Atualiza agência existente
-      const index = this.agencies.findIndex(a => a.id === this.selectedAgency.id);
-      if (index !== -1) {
-        this.agencies[index] = this.selectedAgency;
+  constructor(
+    private fb: FormBuilder,
+    private http: HttpClient,
+    private servico: AgenciaService, // Adicionando o serviço AgenciaService como dependência
+    private servicoAlerta: AlertaService, // Adicionando o serviço AlertaService
+  ) {
+    this.editForm = this.fb.group({
+      nome: ['', Validators.required],
+      codigo: ['', Validators.required],
+
+    });
+
+    this.addForm = this.fb.group({
+      nome: ['', Validators.required],
+      codigo: ['', Validators.required],
+      // Considerar para uma atualização futura
+      // endereco: ['', Validators.required],
+      // telefone: ['', Validators.required]
+    });
+  }
+
+  ngOnInit() {
+    this.get();
+    console.log('AgenciasComponent inicializado!');
+  }
+
+  registros: Agencia[] = [];
+  termoBusca: string | undefined = '';
+  editForm: FormGroup;
+  addForm: FormGroup;
+  mostrarFiltros: boolean = false;
+  showDropdown: boolean[] = [];
+  loading: boolean = false;
+
+  colunas: TheadOrdenacao = [
+    { campo: 'nome', descricao: 'Nome' },
+    { campo: 'numero', descricao: 'Código' }
+    // { campo: 'endereco', descricao: 'Endereço' },
+    // { campo: 'telefone', descricao: 'Telefone' },
+    // { campo: '', descricao: 'Ações' },
+  ]
+
+  //Função para esconder e mostrar os filtros
+  toggleFiltros() {
+    this.mostrarFiltros = !this.mostrarFiltros;
+  }
+
+  toggleDropdown(index: number) {
+    this.showDropdown[index] = !this.showDropdown[index];
+  }
+
+  ordenar(ordenacao: string[]): void {
+    this.get(this.termoBusca);
+  }
+
+  get(termoBusca?: string): void {
+    this.termoBusca = termoBusca;
+    this.servico.get(termoBusca).subscribe({
+      next: (resposta: RespostaPaginada<Agencia>) => {
+        this.registros = resposta.results; // Extrai os registros da resposta paginada
+        console.log('registros:', this.registros); // Adiciona o console.log para ver os registros
+      },
+      error: (err) => {
+        console.error('Erro ao buscar agências:', err); // Você pode querer lidar com erros aqui
       }
-    } else {
-      // Adiciona nova agência
-      this.selectedAgency.id = this.agencies.length + 1; // Geração simples de ID
-      this.agencies.push(this.selectedAgency);
+    });
+  }
+
+  delete(id: number): void {
+    if (confirm('Confirma a exclusão da agência?')) {
+      this.servico.delete(id).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Agência excluída com sucesso!"
+          });
+        }
+      });
     }
-    this.resetAgencyForm();
   }
 
-  // Método para editar agência
-  editAgency(agency: Agencia) {
-    this.selectedAgency = { ...agency };
+  openDeleteModal(id: number) {
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
   }
 
-  // Método para excluir agência
-  deleteAgency(id: number) {
-    this.agencies = this.agencies.filter(a => a.id !== id);
+  openAddModal() {
+    const addModal = new bootstrap.Modal(document.getElementById('addModal'));
+    addModal.show();
   }
 
-  // Reseta o formulário de agência
-  resetAgencyForm() {
-    this.selectedAgency = { id: 0, codigo: '', descricao: '' };
+  cancelAdd(form: NgForm) {
+    form.reset();
+    const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+    addModal.hide();
+    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+    cancelModal.show();
   }
 
-  // Método para salvar setor
-  saveSector() {
-    if (this.selectedSector.id) {
-      // Atualiza setor existente
-      const index = this.sectors.findIndex(s => s.id === this.selectedSector.id);
-      if (index !== -1) {
-        this.sectors[index] = this.selectedSector;
-      }
-    } else {
-      // Adiciona novo setor
-      this.selectedSector.id = this.sectors.length + 1; // Geração simples de ID
-      this.sectors.push(this.selectedSector);
-    }
-    this.resetSectorForm();
+  openEditModal(index: number) {
+    const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+    editModal.show();
   }
 
-  // Método para editar setor
-  editSector(sector: Setor) {
-    this.selectedSector = { ...sector };
+  cancelEdit() {
+    this.editForm.reset();
+    const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+    editModal.hide();
+    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+    cancelModal.show();
   }
 
-  // Método para excluir setor
-  deleteSector(id: number) {
-    this.sectors = this.sectors.filter(s => s.id !== id);
-  }
-
-  // Reseta o formulário de setor
-  resetSectorForm() {
-    this.selectedSector = { id: 0, codigo: '', nome_setor: '', id_agencia: 0, id_servidor: 0 };
-  }
-
-  // Método para obter descrição da agência
-  getAgencyDescription(agencyId: number): string {
-    const agency = this.agencies.find(a => a.id === agencyId);
-    return agency ? agency.descricao : 'N/A';
+  cancelDelete() {
+    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+    deleteModal.hide();
+    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+    cancelModal.show();
   }
 }

@@ -1,130 +1,207 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { HttpClient, HttpClientModule } from '@angular/common/http'; // Importando HttpClientModule
+import { Servidor } from '../../model/servidor.model'; // Importando o modelo Servidor
+import { ServidorService } from '../../service/servidor.service';
+import { AlertaService } from '../../service/alerta.service';
+import { IList } from '../i-list';
+import { TheadOrdenacao } from '../thead-ordenacao/thead-ordenacao';
+import { ETipoAlerta } from '../../model/e-tipo-alerta';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { TheadOrdenacaoComponent } from '../thead-ordenacao/thead-ordenacao.component';
+import { BarraComandosComponent } from '../barra-comandos/barra-comandos.component';
+import { RespostaPaginada } from '../../model/resposta-paginada';
 
 declare var bootstrap: any;
-
-// servidor.model.ts
-export interface Servidor {
-  inscricao: string;
-  nomeCompleto: string;
-  nomeSetor: string;
-  nomeAgencia: string;
-}
-
-export interface Setor {
-  codigo: string;
-  nome: string;
-}
-
-export interface Agencia {
-  codigo: string;
-  nome: string;
-  id: string;
-}
-
 
 @Component({
   selector: 'app-servidores',
   standalone: true,
-  imports: [FormsModule, CommonModule, ReactiveFormsModule],
+  imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent, BarraComandosComponent], // Adicionando HttpClientModule
   templateUrl: './servidores.component.html',
   styleUrls: ['./servidores.component.css']
 })
-export class ServidoresComponent implements OnInit {
-  servidores: Servidor[] = [];
-  setores: Setor[] = [];
-  agencias: Agencia[] = [];
-  servidorForm: FormGroup;
-  editIndex: number | null = null;
+export class ServidoresComponent implements IList<Servidor>, OnInit {
 
-  constructor(private fb: FormBuilder) {
-    this.servidorForm = this.fb.group({
-      inscricao: ['', Validators.required],
-      nomeCompleto: ['', Validators.required],
-      nomeSetor: ['', Validators.required],
-      nomeAgencia: ['', Validators.required]
+  constructor(
+    private fb: FormBuilder,
+    private http: HttpClient,
+    private servico: ServidorService, // Adicionando o serviço ServidorService como dependência
+    private servicoAlerta: AlertaService, // Adicionando o serviço AlertaService
+  ) {
+    this.editForm = this.fb.group({
+      inscricao_institucional: ['', Validators.required],
+      nome_completo: ['', Validators.required],
+      usuario: [''],
+      setor: ['', Validators.required]
+    });
+
+    this.addForm = this.fb.group({
+      inscricao_institucional: ['', Validators.required],
+      nome_completo: ['', Validators.required],
+      chefe: ['', Validators.required]
     });
   }
 
   ngOnInit() {
-    // Populando a tabela com alguns servidores
-    this.servidores = [
-      { inscricao: '001', nomeCompleto: 'João Silva', nomeSetor: 'TI', nomeAgencia: 'Agência Central' },
-      { inscricao: '002', nomeCompleto: 'Maria Souza', nomeSetor: 'RH', nomeAgencia: 'Agência Norte' },
-      { inscricao: '003', nomeCompleto: 'Carlos Ferreira', nomeSetor: 'Financeiro', nomeAgencia: 'Agência Sul' },
-      { inscricao: '004', nomeCompleto: 'Ana Paula', nomeSetor: 'Marketing', nomeAgencia: 'Agência Leste' }
-    ];
-
-    // Populando a lista de setores e agências
-    this.setores = [
-      { codigo: 'TI', nome: 'Tecnologia da Informação' },
-      { codigo: 'RH', nome: 'Recursos Humanos' },
-      { codigo: 'Financeiro', nome: 'Financeiro' },
-      { codigo: 'Marketing', nome: 'Marketing' }
-    ];
-
-    this.agencias = [
-      { codigo: '001', nome: 'Agência Central', id: '1' },
-      { codigo: '002', nome: 'Agência Norte', id: '2' },
-      { codigo: '003', nome: 'Agência Sul', id: '3' },
-      { codigo: '004', nome: 'Agência Leste', id: '4' }
-    ];
+    this.get();
+    console.log('ServidoresComponent inicializado!');
   }
 
-  openAddModal() {
-    this.servidorForm.reset();
-    const addModal = new bootstrap.Modal(document.getElementById('addModal'));
-    addModal.show();
+  registros: Servidor[] = [];
+  termoBusca: string | undefined = '';
+  filtroInscricao: string = '';
+  filtroNome: string = '';
+  filtroUsuario: string = '';
+  filtroSetor: string = '';
+  editForm: FormGroup;
+  addForm: FormGroup;
+  mostrarFiltros: boolean = false;
+  showDropdown: boolean[] = [];
+  loading: boolean = false;
+  servidorSelecionado: Servidor | null = null;
+
+  colunas: TheadOrdenacao = [
+    { campo: 'inscricao_institucional', descricao: 'Inscrição Institucional' },
+    { campo: 'nome_completo', descricao: 'Nome Completo' },
+    { campo: 'usuario.email', descricao: 'Usuário' },
+    { campo: 'setor.nome', descricao: 'Setor' },
+    { campo: 'setor.agencia', descricao: 'Agência' },
+    { campo: '', descricao: 'Ações' },
+  ]
+
+  //Função para esconder e mostrar os filtros
+  toggleFiltros() {
+    this.mostrarFiltros = !this.mostrarFiltros;
   }
 
-  addServidor() {
-    if (this.servidorForm.valid) {
-      const novoServidor: Servidor = this.servidorForm.value;
-      this.servidores.push(novoServidor);
-      const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
-      addModal.hide();
-    } else {
-      // Exibir mensagens de validação
-      Object.keys(this.servidorForm.controls).forEach(field => {
-        const control = this.servidorForm.get(field);
-        control?.markAsTouched({ onlySelf: true });
+  toggleDropdown(index: number) {
+    this.showDropdown[index] = !this.showDropdown[index];
+  }
+
+  ordenar(ordenacao: string[]): void {
+    this.get(this.termoBusca);
+  }
+
+  get(termoBusca?: string): void {
+    this.termoBusca = termoBusca;
+    this.servico.get(termoBusca).subscribe({
+      next: (resposta: RespostaPaginada<Servidor>) => {
+        this.registros = resposta.results; // Extrai os registros da resposta paginada
+        console.log('registros:', this.registros); // Adiciona o console.log para ver os registros
+      },
+      error: (err) => {
+        console.error('Erro ao buscar servidores:', err); // Você pode querer lidar com erros aqui
+      }
+    });
+  }
+
+  registrosFiltrados(): Servidor[] {
+    return this.registros.filter(servidor => {
+      return (!this.filtroInscricao || servidor.inscricao_institucional.includes(this.filtroInscricao)) &&
+             (!this.filtroNome || servidor.nome_completo.includes(this.filtroNome)) &&
+             (!this.filtroUsuario || servidor.usuario?.email.includes(this.filtroUsuario)) &&
+             (!this.filtroSetor || (servidor.setor?.nome && servidor.setor.nome.includes(this.filtroSetor)));
+    });
+  }
+
+  delete(id: number): void {
+    if (confirm('Confirma a exclusão do servidor?')) {
+      this.servico.delete(id).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Servidor excluído com sucesso!"
+          });
+        }
       });
     }
   }
 
-  openEditModal(index: number) {
-    this.editIndex = index;
-    this.servidorForm.patchValue(this.servidores[index]);
-    const editModal = new bootstrap.Modal(document.getElementById('editModal'));
-    editModal.show();
-  }
-
-  editServidor() {
-    if (this.servidorForm.valid && this.editIndex !== null) {
-      this.servidores[this.editIndex] = this.servidorForm.value;
-      const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
-      editModal.hide();
-    } else {
-      // Exibir mensagens de validação
-      Object.keys(this.servidorForm.controls).forEach(field => {
-        const control = this.servidorForm.get(field);
-        control?.markAsTouched({ onlySelf: true });
-      });
-    }
-  }
-
-  openDeleteModal(index: number) {
-    this.editIndex = index;
+  openDeleteModal(id: number) {
+    this.servidorSelecionado = this.registros.find(servidor => servidor.id === id) || null;
     const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
     deleteModal.show();
   }
 
-  deleteServidor() {
-    if (this.editIndex !== null) {
-      this.servidores.splice(this.editIndex, 1);
+  confirmDelete() {
+    if (this.servidorSelecionado) {
+      this.delete(this.servidorSelecionado.id);
       const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
       deleteModal.hide();
     }
+  }
+
+  openAddModal() {
+    const addModal = new bootstrap.Modal(document.getElementById('addModal'));
+    addModal.show();
+  }
+
+  confirmAdd() {
+    if (this.addForm.valid) {
+      const novoServidor: Servidor = this.addForm.value;
+      this.servico.save(novoServidor).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Servidor adicionado com sucesso!"
+          });
+          const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+          addModal.hide();
+        }
+      });
+    }
+  }
+
+  openEditModal(servidor: Servidor) {
+    this.servidorSelecionado = servidor;
+    this.editForm.patchValue({
+      inscricao_institucional: servidor.inscricao_institucional,
+      nome_completo: servidor.nome_completo,
+      usuario: servidor.usuario?.id || '',
+      setor: servidor.setor?.id || ''
+    });
+    const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+    editModal.show();
+  }
+
+  confirmEdit() {
+    if (this.servidorSelecionado && this.editForm.valid) {
+      const servidorAtualizado: Servidor = {
+        ...this.servidorSelecionado,
+        ...this.editForm.value
+      };
+      this.servico.save(servidorAtualizado).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Servidor editado com sucesso!"
+          });
+          const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+          editModal.hide();
+        }
+      });
+    }
+  }
+
+  cancelAdd(form: NgForm) {
+    form.reset();
+    const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+    addModal.hide();
+  }
+
+  cancelEdit() {
+    this.editForm.reset();
+    const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+    editModal.hide();
+  }
+
+  cancelDelete() {
+    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+    deleteModal.hide();
   }
 }

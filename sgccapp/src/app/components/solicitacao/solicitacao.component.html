@@ -1,0 +1,188 @@
+<style>
+  .form-control, .form-select {
+    border-width: 3px; /* Aumentando a espessura da borda */
+  }
+</style>
+
+<!-- requisicoes.component.html -->
+<div class="container mt-4">
+  <h3 class="fw-bold mb-4">Requisições de Equipamentos</h3>
+  <h5 class="mb-4">Tabela com todas as solicitações de equipamento</h5>
+
+  <!-- Botão para ocultar e abrir os filtros -->
+  <button class="btn btn-secondary mb-3" (click)="toggleFiltros()">
+    {{ mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
+  </button>
+
+  <!-- Filtros -->
+  <div class="row mb-3" *ngIf="mostrarFiltros">
+    <div class="col-md-4 mb-3">
+      <label for="filterEmail" class="form-label">Email</label>
+      <input type="text" id="filterEmail" class="form-control" [(ngModel)]="filtroEmail">
+    </div>
+    <div class="col-md-4 mb-3">
+      <label for="filterDescricao" class="form-label">Descrição</label>
+      <input type="text" id="filterDescricao" class="form-control" [(ngModel)]="filtroDescricao">
+    </div>
+    <div class="col-md-4 mb-3">
+      <label for="filterStatus" class="form-label">Status</label>
+      <select id="filterStatus" class="form-select" [(ngModel)]="filtroStatus">
+        <option value="">Todos</option>
+        <option value="ATENDIDO">Atendido</option>
+        <option value="ANALISE">Em Análise</option>
+        <option value="NEGADO">Negado</option>
+        <option value="ENCAMINHADO">Encaminhado</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Spinner de Carregamento -->
+  <div class="text-center my-4">
+    <div class="spinner-border" role="status" *ngIf="loading">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  
+  <!-- Tabela de Requisições -->
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered" *ngIf="!loading">
+      <thead class="table-active" app-thead-ordenacao
+        [colunas]="colunas"
+        (ordenacaoAtualizada)="ordenar($event)">
+      </thead>
+      <tbody>
+        <tr *ngFor="let solicitacao of registrosFiltrados()">
+          <td>{{solicitacao.user?.email}}</td>
+          <td>{{solicitacao.data | date}}</td>
+          <td>{{solicitacao.status}}</td>
+          <td>{{solicitacao.descricao}}</td>
+          <td>
+            <button class="btn btn-sm btn-success me-2 mb-2" 
+                    [disabled]="solicitacao.status === 'ATENDIDO'" 
+                    (click)="openApproveModal(solicitacao)">
+              <i class="bi bi-check-circle"></i> Aprovar
+            </button>
+            <button class="btn btn-sm btn-danger me-2 mb-2" 
+                    [disabled]="solicitacao.status === 'NEGADO'" 
+                    (click)="openRejectModal(solicitacao)">
+              <i class="bi bi-x-circle"></i> Rejeitar
+            </button>
+            <button class="btn btn-sm btn-primary mb-2" (click)="openEditModal(solicitacao)">
+              <i class="bi bi-pencil-square"></i> Editar
+            </button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5">
+            <span *ngIf="registros.length == 0">Nenhum registro encontrado</span>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- <button class="btn btn-sm btn-secondary me-2 mb-2" (click)="openForwardModal(solicitacao)">
+    <i class="bi bi-arrow-right-circle"></i> Encaminhar
+  </button> -->
+
+  <!-- Modal de Aprovação -->
+  <div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="approveModalLabel">Aprovar Solicitação</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="approveForm">
+            <div class="mb-3">
+              <label for="approveDescricao" class="form-label">Descrição</label>
+              <textarea class="form-control" id="approveDescricao" formControlName="descricao"></textarea>
+            </div>
+            <button type="button" class="btn btn-primary me-2" (click)="confirmApprove()">Confirmar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Rejeição -->
+  <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="rejectModalLabel">Rejeitar Solicitação</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="rejectForm">
+            <div class="mb-3">
+              <label for="rejectDescricao" class="form-label">Descrição</label>
+              <textarea class="form-control" id="rejectDescricao" formControlName="descricao"></textarea>
+            </div>
+            <button type="button" class="btn btn-primary me-2" (click)="confirmReject()">Confirmar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Encaminhamento -->
+  <div class="modal fade" id="forwardModal" tabindex="-1" aria-labelledby="forwardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="forwardModalLabel">Encaminhar Solicitação</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="forwardForm">
+            <div class="mb-3">
+              <label for="forwardServidor" class="form-label">Servidor</label>
+              <select class="form-select" id="forwardServidor" formControlName="servidor">
+                <option *ngFor="let servidor of servidores" [value]="servidor.id">{{ servidor.inscricao_institucional }} - {{ servidor.nome_completo }}</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-primary me-2" (click)="confirmForward()">Confirmar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Edição -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel">Editar Solicitação</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="editForm">
+            <div class="mb-3">
+              <label for="editStatus" class="form-label">Status</label>
+              <select class="form-select" id="editStatus" formControlName="status">
+                <option value="ANALISE">Em Análise</option>
+                <option value="ATENDIDO">Atendido</option>
+                <option value="NEGADO">Negado</option>
+                <!-- <option value="ENCAMINHADO">Encaminhado</option> -->
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="editDescricao" class="form-label">Descrição</label>
+              <textarea class="form-control" id="editDescricao" formControlName="descricao"></textarea>
+            </div>
+            <button type="button" class="btn btn-primary me-2" (click)="confirmEdit()">Salvar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -5,144 +5,158 @@
 </style>
 
 <div class="container mt-4">
-    <!-- Título da página -->
-  <h3 class="fw-bold mb-4">Servidores</h3>
-  <button class="btn btn-primary mb-3" (click)="openAddModal()">Adicionar Servidor</button>
+  <!-- Título da página -->
+  <h3 class="fw-bold mb-4">Lista de Servidores</h3>
+  <h5 class="mb-4">Tabela com todos os servidores e usuários</h5>
 
-    <!-- Tabela -->
-  <div class="table-responsive">
-    <table class="table table-striped table-bordered">
-      <thead class="table-active">
-        <tr>
-          <th scope="col">Inscrição</th>
-          <th scope="col">Nome Completo</th>
-          <th scope="col">Nome do Setor</th>
-          <th scope="col">Nome da Agência</th>
-          <th scope="col">Ações</th>
-        </tr>
+  <!-- Contêiner flexível para os botões -->
+  <div class="d-flex justify-content-between mb-3">
+    <!-- Botão para ocultar e abrir os filtros -->
+    <button class="btn btn-secondary" (click)="toggleFiltros()">
+      {{ mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
+    </button>
+
+    <!-- Botão para adicionar novo servidor -->
+    <button class="btn btn-primary" (click)="openAddModal()">Adicionar Servidor</button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="row mb-3" *ngIf="mostrarFiltros">
+    <div class="col-md-3 mb-3">
+      <label for="filterInscricao" class="form-label">Inscrição Institucional</label>
+      <input type="text" id="filterInscricao" class="form-control" [(ngModel)]="filtroInscricao">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="filterNome" class="form-label">Nome Completo</label>
+      <input type="text" id="filterNome" class="form-control" [(ngModel)]="filtroNome">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="filterUsuario" class="form-label">Usuário</label>
+      <input type="text" id="filterUsuario" class="form-control" [(ngModel)]="filtroUsuario">
+    </div>
+    <div class="col-md-3 mb-3">
+      <label for="filterSetor" class="form-label">Setor</label>
+      <input type="text" id="filterSetor" class="form-control" [(ngModel)]="filtroSetor">
+    </div>
+  </div>
+
+  <!-- Spinner de Carregamento -->
+  <div class="text-center my-4">
+    <div class="spinner-border" role="status" *ngIf="loading">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Tabela de Servidores -->
+  <div class="table-responsive min-vh-100">
+    <table class="table table-striped table-bordered" *ngIf="!loading">
+      <thead class="table-active" app-thead-ordenacao
+        [colunas]="colunas"
+        (ordenacaoAtualizada)="ordenar($event)">
       </thead>
       <tbody>
-        <tr *ngFor="let servidor of servidores; let i = index">
-          <td>{{ servidor.inscricao }}</td>
-          <td>{{ servidor.nomeCompleto }}</td>
-          <td>{{ servidor.nomeSetor }}</td>
-          <td>{{ servidor.nomeAgencia }}</td>
+        <tr *ngFor="let servidor of registrosFiltrados()">
+          <td>{{ servidor.inscricao_institucional }}</td>
+          <td>{{ servidor.nome_completo }}</td>
+          <td>{{ servidor.usuario?.email }}</td>
+          <td>{{ servidor.setor?.nome }}</td>
+          <td>{{ servidor.setor?.agencia?.nome }}</td>
           <td>
-            <button class="btn btn-sm btn-primary me-2" (click)="openEditModal(i)">Editar</button>
-            <button class="btn btn-sm btn-danger" (click)="openDeleteModal(i)">Excluir</button>
+            <button class="btn btn-sm btn-primary me-2 mb-2" (click)="openEditModal(servidor)">Editar</button>
+            <button class="btn btn-sm btn-danger mb-2" (click)="openDeleteModal(servidor.id)">Excluir</button>
           </td>
         </tr>
       </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="6">
+            <span *ngIf="registros.length == 0">Nenhum registro encontrado</span>
+          </td>
+        </tr>
+      </tfoot>
     </table>
   </div>
+</div>
 
-  <!-- Modal de Adição de Servidor -->
-  <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addModalLabel">Adicionar Servidor</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form [formGroup]="servidorForm" (ngSubmit)="addServidor()">
-            <div class="mb-3">
-              <label for="inscricao" class="form-label">Inscrição</label>
-              <input type="text" class="form-control" id="inscricao" formControlName="inscricao" placeholder="Insira a inscrição">
-              <div *ngIf="servidorForm.get('inscricao')?.invalid && servidorForm.get('inscricao')?.touched" class="invalid-feedback">
-                Por favor, insira uma inscrição.
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="nomeCompleto" class="form-label">Nome Completo</label>
-              <input type="text" class="form-control" id="nomeCompleto" formControlName="nomeCompleto" placeholder="Insira o nome completo">
-              <div *ngIf="servidorForm.get('nomeCompleto')?.invalid && servidorForm.get('nomeCompleto')?.touched" class="invalid-feedback">
-                Por favor, insira o nome completo.
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="nomeSetor" class="form-label">Nome do Setor</label>
-              <input type="text" class="form-control" id="nomeSetor" formControlName="nomeSetor" placeholder="Insira o nome do setor">
-              <div *ngIf="servidorForm.get('nomeSetor')?.invalid && servidorForm.get('nomeSetor')?.touched" class="invalid-feedback">
-                Por favor, insira o nome do setor.
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="nomeAgencia" class="form-label">Nome da Agência</label>
-              <input type="text" class="form-control" id="nomeAgencia" formControlName="nomeAgencia" placeholder="Insira o nome da agência">
-              <div *ngIf="servidorForm.get('nomeAgencia')?.invalid && servidorForm.get('nomeAgencia')?.touched" class="invalid-feedback">
-                Por favor, insira o nome da agência.
-              </div>
-            </div>
-            <button type="submit" class="btn btn-primary me-2" [disabled]="servidorForm.invalid">Adicionar</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          </form>
-        </div>
+<!-- Modal de Adição de Servidor -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addModalLabel">Adicionar Servidor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-    </div>
-  </div>
-
-  <!-- Modal de Edição de Servidor -->
-  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editModalLabel">Editar Servidor</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form [formGroup]="servidorForm" (ngSubmit)="editServidor()">
-            <div class="mb-3">
-              <label for="inscricao" class="form-label">Inscrição</label>
-              <input type="text" class="form-control" id="inscricao" formControlName="inscricao" placeholder="Insira a inscrição">
-              <div *ngIf="servidorForm.get('inscricao')?.invalid && servidorForm.get('inscricao')?.touched" class="invalid-feedback">
-                Por favor, insira uma inscrição.
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="nomeCompleto" class="form-label">Nome Completo</label>
-              <input type="text" class="form-control" id="nomeCompleto" formControlName="nomeCompleto" placeholder="Insira o nome completo">
-              <div *ngIf="servidorForm.get('nomeCompleto')?.invalid && servidorForm.get('nomeCompleto')?.touched" class="invalid-feedback">
-                Por favor, insira o nome completo.
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="nomeSetor" class="form-label">Nome do Setor</label>
-              <input type="text" class="form-control" id="nomeSetor" formControlName="nomeSetor" placeholder="Insira o nome do setor">
-              <div *ngIf="servidorForm.get('nomeSetor')?.invalid && servidorForm.get('nomeSetor')?.touched" class="invalid-feedback">
-                Por favor, insira o nome do setor.
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="nomeAgencia" class="form-label">Nome da Agência</label>
-              <input type="text" class="form-control" id="nomeAgencia" formControlName="nomeAgencia" placeholder="Insira o nome da agência">
-              <div *ngIf="servidorForm.get('nomeAgencia')?.invalid && servidorForm.get('nomeAgencia')?.touched" class="invalid-feedback">
-                Por favor, insira o nome da agência.
-              </div>
-            </div>
-            <button type="submit" class="btn btn-primary me-2" [disabled]="servidorForm.invalid">Salvar</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal de Exclusão de Servidor -->
-  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteModalLabel">Excluir Servidor</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          Tem certeza de que deseja excluir este servidor?
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-danger" (click)="deleteServidor()">Excluir</button>
+      <div class="modal-body">
+        <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
+          <div class="mb-3">
+            <label for="addInscricaoInstitucional" class="form-label">Inscrição Institucional</label>
+            <input type="text" class="form-control" id="addInscricaoInstitucional" formControlName="inscricao_institucional">
+          </div>
+          <div class="mb-3">
+            <label for="addNomeCompleto" class="form-label">Nome Completo</label>
+            <input type="text" class="form-control" id="addNomeCompleto" formControlName="nome_completo">
+          </div>
+          <div class="mb-3">
+            <label for="addChefe" class="form-label">Chefe</label>
+            <select class="form-select" id="addChefe" formControlName="chefe">
+              <option value="true">Sim</option>
+              <option value="false">Não</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary me-2">Adicionar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Edição de Servidor -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Editar Servidor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
+          <div class="mb-3">
+            <label for="editInscricaoInstitucional" class="form-label">Inscrição Institucional</label>
+            <input type="text" class="form-control" id="editInscricaoInstitucional" formControlName="inscricao_institucional">
+          </div>
+          <div class="mb-3">
+            <label for="editNomeCompleto" class="form-label">Nome Completo</label>
+            <input type="text" class="form-control" id="editNomeCompleto" formControlName="nome_completo">
+          </div>
+          <div class="mb-3">
+            <label for="editUsuario" class="form-label">Usuário</label>
+            <input type="text" class="form-control" id="editUsuario" formControlName="usuario">
+          </div>
+          <div class="mb-3">
+            <label for="editSetor" class="form-label">Setor</label>
+            <input type="text" class="form-control" id="editSetor" formControlName="setor">
+          </div>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Exclusão de Servidor -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Excluir Servidor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Tem certeza que deseja excluir este servidor?</p>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Excluir</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
       </div>
     </div>
   </div>
