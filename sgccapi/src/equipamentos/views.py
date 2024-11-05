@@ -3,7 +3,7 @@ from datetime import datetime
 from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.exceptions import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend, FilterSet, filters
 from .models import (
@@ -132,6 +132,7 @@ class EquipComponenteViewSet(viewsets.ModelViewSet):
 
 class ExportEquipamentosCSVView(APIView):
     permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def get(self, request, format=None):
         data_inicio = request.query_params.get('data_inicio')
@@ -183,6 +184,7 @@ class ExportEquipamentosCSVView(APIView):
 
 class ExportManutencoesCSVView(APIView):
     permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def get(self, request, format=None):
         data_inicio = request.query_params.get('data_inicio')
@@ -226,6 +228,7 @@ class ExportManutencoesCSVView(APIView):
 
 class ExportComponentesCSVView(APIView):
     permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def get(self, request, format=None):
         data_inicio = request.query_params.get('data_inicio')

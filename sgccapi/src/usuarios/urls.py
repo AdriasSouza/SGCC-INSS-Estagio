@@ -1,4 +1,5 @@
 from django.urls import path, include
+from django.contrib.auth import views as auth_view
 from rest_framework.routers import DefaultRouter
 from .views import (
     AgenciaViewSet,   # ViewSet para o modelo Agencia
@@ -9,7 +10,9 @@ from .views import (
     UserUpdateView,    # View para dar update nas informações do usuario
     UserDataView,         # View para obter informações do usuário logado
     LogoutView,       # View para logout de usuários
-    ExportServidoresCSVView  # View para exportar CSV dos Servidores socorro
+    ExportServidoresCSVView,  # View para exportar CSV dos Servidores socorro
+    UserAdminUpdateView,
+    UserAdminDataView
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -35,12 +38,25 @@ urlpatterns = [
     path('login/refresh/', TokenRefreshView.as_view()),
     # Rota para obter informações do usuário logado
     path('user_data/', UserDataView.as_view()),
+    # Rota para admin obter informalções de qualquer usuario
+    path('user_data/<int:pk>/', UserAdminDataView.as_view()),
     # Rota para update de usuario
     path('user_update/', UserUpdateView.as_view()),
+    # Atualiza um usuario em especifico
+    path('user_update/<int:pk>/', UserAdminUpdateView.as_view()),
     # Rota para logout de usuários
     path('logout/', LogoutView.as_view()),
     # Rota para exportar CSV de setores
     path('export-servidores-csv/', ExportServidoresCSVView.as_view()),
     # Inclui as rotas dos ViewSets gerados pelo roteador
     path('', include(router.urls)),
+    # VIEWS PARA RESET DE SENHA - NÃO FUNCIONA (AINDA)
+    # URL para solicitar o reset de senha
+    path('reset_password/', auth_view.PasswordResetView.as_view()),
+    # URL para enviar o email com o link de redefinição
+    path('reset_password_done/', auth_view.PasswordResetDoneView.as_view()),
+    # URL para confirmar a redefinição da senha através do link enviado por email
+    path('reset/<uidb64>/<token>/', auth_view.PasswordResetConfirmView.as_view()),
+    # URL para a conclusão do processo de redefinição de senha
+    path('reset_password_complete/', auth_view.PasswordResetCompleteView.as_view()),
 ]

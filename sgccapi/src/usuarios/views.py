@@ -11,6 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from .serializers import (
     AgenciaSerializer,
@@ -24,7 +25,15 @@ import csv
 
 
 class RegisterView(APIView):
+    permission_classes = [IsAdminUser]
+
     def post(self, request):
+        # Verifique se o usuário está tentando registrar com campos de 'is_superuser' ou 'is_staff'
+        if 'is_superuser' in request.data or 'is_staff' in request.data:
+            if not request.user.is_superuser:
+                return Response({"detail": "Você não tem permissão para definir os campos de superusuário ou staff."},
+                                 status=status.HTTP_403_FORBIDDEN)
+        
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -36,11 +45,37 @@ class UserUpdateView(APIView):
 
     def put(self, request):
         user = request.user
+        
+        # Verifique se o usuário está tentando alterar os campos 'is_superuser' ou 'is_staff'
+        if 'is_superuser' in request.data or 'is_staff' in request.data:
+            if not user.is_superuser:
+                return Response({"detail": "Você não tem permissão para alterar os campos de superusuário ou staff."},
+                                status=status.HTTP_403_FORBIDDEN)
+        
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserAdminUpdateView(APIView):
+    permission_classes = [IsAuthenticated]  # Garante que apenas usuários autenticados possam atualizar
+
+    def put(self, request, *args, **kwargs):
+        try:
+            # Encontrar o usuário pelo id
+            usuario = User.objects.get(pk=kwargs['pk'])
+            
+            # Passar o request no contexto ao instanciar o serializer
+            serializer = UserSerializer(usuario, data=request.data, context={'request': request})
+            
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            return Response({"detail": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
 
 class UserDataView(APIView):
@@ -60,6 +95,22 @@ class UserDataView(APIView):
             user = request.user
             serializer = UserSerializer(user)
             return Response(serializer.data)
+        
+
+class UserAdminDataView(APIView):
+    permission_classes = [IsAdminUser]  # Apenas administradores podem acessar
+
+    def get(self, request, pk):
+        try:
+            # Tente encontrar o usuário pelo ID
+            user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({"detail": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Serializa os dados do usuário
+        serializer = UserSerializer(user)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class LogoutView(APIView):
@@ -119,7 +170,7 @@ class AgenciaViewSet(viewsets.ModelViewSet):
     queryset = Agencia.objects.all().order_by('id')
     serializer_class = AgenciaSerializer
     permission_classes = [IsAuthenticated]
-    # permission_classes = [IsAdminUser | ReadOnly]
+    permission_classes = [IsAdminUser | ReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['nome', 'numero']
 
@@ -128,7 +179,7 @@ class SetorViewSet(viewsets.ModelViewSet):
     queryset = Setor.objects.all().order_by('id')
     serializer_class = SetorSerializer
     permission_classes = [IsAuthenticated]
-    # permission_classes = [IsAdminUser | ReadOnly]
+    permission_classes = [IsAdminUser | ReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['codigo', 'nome', 'agencia']
 
@@ -137,7 +188,7 @@ class ServidorViewSet(viewsets.ModelViewSet):
     queryset = Servidor.objects.all().order_by('id')
     serializer_class = ServidorSerializer
     permission_classes = [IsAuthenticated]
-    # permission_classes = [IsAdminUser | ReadOnly]
+    permission_classes = [IsAdminUser | ReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = [
         'inscricao_institucional', 'nome_completo', 'setor', 'usuario', 'chefe'
@@ -154,6 +205,7 @@ class SolicitacaoViewSet(viewsets.ModelViewSet):
 
 class ExportServidoresCSVView(APIView):
     permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     def get(self, request, format=None):
         setor_id = request.query_params.get('setor_id')

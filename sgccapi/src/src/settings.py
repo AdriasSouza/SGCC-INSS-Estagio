@@ -109,6 +109,15 @@ SIMPLE_JWT = {
     'UPDATE_LAST_LOGIN': True,
 }
 
+# EMAIL NÃO CONFIGURADO (AINDA)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'email'
+EMAIL_HOST_PASSWORD = 'senha'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 

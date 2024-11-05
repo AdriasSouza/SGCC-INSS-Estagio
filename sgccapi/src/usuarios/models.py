@@ -37,6 +37,22 @@ class Setor(models.Model):
         verbose_name_plural = 'Setores'
 
 
+class Servidor(models.Model):
+    inscricao_institucional = models.CharField(max_length=255)
+    nome_completo = models.CharField(max_length=255)
+    setor = models.ForeignKey(
+        Setor, on_delete=models.SET_NULL, blank=True, null=True
+        )
+    chefe = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.nome_completo
+
+    class Meta:
+        verbose_name = 'Servidor'
+        verbose_name_plural = 'Servidores'
+
+
 # Gerenciador personalizado para o modelo de usuário.
 class UserManager(BaseUserManager):
 
@@ -61,22 +77,6 @@ class UserManager(BaseUserManager):
             raise ValueError('Superuser must have is_superuser = True')
 
         return self.create_user(email, password, **extra_fields)
-    
-
-class Servidor(models.Model):
-    inscricao_institucional = models.CharField(max_length=255)
-    nome_completo = models.CharField(max_length=255)
-    setor = models.ForeignKey(
-        Setor, on_delete=models.SET_NULL, blank=True, null=True
-        )
-    chefe = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.nome_completo
-
-    class Meta:
-        verbose_name = 'Servidor'
-        verbose_name_plural = 'Servidores'
 
 
 # Modelo de usuário customizado, com email como campo de login.
@@ -131,7 +131,7 @@ class Solicitacao(models.Model):
         )
     # Descrição da solicitação
     descricao = models.CharField(max_length=255)
-    justificativa = models.CharField(max_length=255)
+    justificativa = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"Solicitação {self.id} - {self.user.email}"

@@ -49,6 +49,14 @@ class UserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True},
         }
 
+    def validate(self, attrs):
+        # Verifique se os campos is_superuser ou is_staff foram passados
+        user = self.context.get('request').user
+        if 'is_superuser' in attrs or 'is_staff' in attrs:
+            if not user.is_superuser:
+                raise serializers.ValidationError("Você não tem permissão para alterar os campos de superusuário ou staff.")
+        return attrs
+
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         user = User(**validated_data)
