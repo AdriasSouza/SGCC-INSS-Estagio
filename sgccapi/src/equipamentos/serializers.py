@@ -5,7 +5,6 @@ from .models import (
     Manutencao,
     TipoComponente,
     Componente,
-    EquipComponente,
 )
 from usuarios.models import (
     Setor,
@@ -27,13 +26,14 @@ class EquipamentoSerializer(serializers.ModelSerializer):
     tipo = serializers.PrimaryKeyRelatedField(queryset=TipoEquipamento.objects.all())
     setor = serializers.PrimaryKeyRelatedField(queryset=Setor.objects.all())
     servidor = serializers.PrimaryKeyRelatedField(queryset=Servidor.objects.all())
+    componentes = serializers.PrimaryKeyRelatedField(queryset=Componente.objects.all(), allow_null=True, many=True)
     estado = serializers.CharField(source='get_estado_display')
     situacao = serializers.CharField(source='get_situacao_display')
 
     class Meta:
         model = Equipamento
         fields = [
-            'id', 'plaqueta', 'nome', 'marca', 'estado', 'situacao',
+            'id', 'plaqueta', 'nome', 'marca', 'estado', 'situacao', 'componentes',
             'sala', 'setor', 'tipo', 'servidor', 'data_aquisicao'
         ]
 
@@ -42,6 +42,7 @@ class EquipamentoSerializer(serializers.ModelSerializer):
         representation['tipo'] = TipoEquipamentoSerializer(instance.tipo).data
         representation['setor'] = SetorSerializer(instance.setor).data
         representation['servidor'] = ServidorSerializer(instance.servidor).data
+        representation['componentes'] = ComponenteSerializer(instance.componentes.all(), many=True).data
         return representation
 
 
@@ -83,20 +84,4 @@ class ComponenteSerializer(serializers.ModelSerializer):
         """Usa um serializer aninhado para retornar dados completos em GET."""
         representation = super().to_representation(instance)
         representation['tipo'] = TipoComponenteSerializer(instance.tipo).data
-        return representation
-
-
-class EquipComponenteSerializer(serializers.ModelSerializer):
-    equip = serializers.PrimaryKeyRelatedField(queryset=Equipamento.objects.all(), many=True)
-    componente = serializers.PrimaryKeyRelatedField(queryset=Componente.objects.all(), many=True)
-
-    class Meta:
-        model = EquipComponente
-        fields = ['id', 'equip', 'componente']
-
-    def to_representation(self, instance):
-        """Usa um serializer aninhado para retornar dados completos em GET."""
-        representation = super().to_representation(instance)
-        representation['equip'] = EquipamentoSerializer(instance.equip, many=True).data
-        representation['componente'] = ComponenteSerializer(instance.componente, many=True).data
         return representation

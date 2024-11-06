@@ -11,7 +11,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from .serializers import (
     AgenciaSerializer,
@@ -191,7 +190,7 @@ class ServidorViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminUser | ReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = [
-        'inscricao_institucional', 'nome_completo', 'setor', 'usuario', 'chefe'
+        'inscricao_institucional', 'nome_completo', 'setor', 'chefe'
         ]
 
 

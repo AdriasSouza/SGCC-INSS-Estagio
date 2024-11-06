@@ -16,6 +16,38 @@ class TipoEquipamento(models.Model):
         verbose_name_plural = 'Tipos de Equipamentos'
 
 
+class TipoComponente(models.Model):
+    nome = models.CharField(max_length=255)
+    descricao = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f'Tipo de componente {self.nome} - {self.descricao}'
+
+    class Meta:
+        verbose_name = 'Tipo de Componente'
+        verbose_name_plural = 'Tipos de Componentes'
+
+
+class Componente(models.Model):
+    codigo = models.IntegerField()
+    nome = models.CharField(max_length=255)
+    descricao = models.CharField(max_length=255)
+    tipo = models.ForeignKey(
+        TipoComponente, on_delete=models.SET_NULL, blank=True, null=True
+        )
+    fabricante = models.CharField(max_length=255)
+    tamanho_mem = models.IntegerField(blank=True, null=True)
+    n_serie = models.CharField(max_length=255, blank=True, null=True)
+    data_aquisicao = models.DateField(auto_now=False, auto_now_add=False)
+
+    def __str__(self):
+        return f'Componente {self.nome} - {self.tipo}'
+
+    class Meta:
+        verbose_name = 'Componente'
+        verbose_name_plural = 'Componentes'
+
+
 # Modelo para representar os equipamentos
 class Equipamento(models.Model):
 
@@ -53,6 +85,7 @@ class Equipamento(models.Model):
     tipo = models.ForeignKey(
         TipoEquipamento, on_delete=models.SET_NULL, null=True, blank=True
     )
+    componentes = models.ManyToManyField(Componente, null=True)
     # Relaciona com Servidor, definindo um valor padrão
     # caso o servidor seja removido
     servidor = models.ForeignKey(
@@ -96,40 +129,3 @@ class Manutencao(models.Model):
     class Meta:
         verbose_name = 'Manutenção'
         verbose_name_plural = 'Manutenções'
-
-
-class TipoComponente(models.Model):
-    nome = models.CharField(max_length=255)
-    descricao = models.CharField(max_length=255)
-
-    def __str__(self):
-        return f'Tipo de componente {self.nome} - {self.descricao}'
-
-    class Meta:
-        verbose_name = 'Tipo de Componente'
-        verbose_name_plural = 'Tipos de Componentes'
-
-
-class Componente(models.Model):
-    codigo = models.IntegerField()
-    nome = models.CharField(max_length=255)
-    descricao = models.CharField(max_length=255)
-    tipo = models.ForeignKey(
-        TipoComponente, on_delete=models.SET_NULL, blank=True, null=True
-        )
-    fabricante = models.CharField(max_length=255)
-    tamanho_mem = models.IntegerField(blank=True, null=True)
-    n_serie = models.CharField(max_length=255, blank=True, null=True)
-    data_aquisicao = models.DateField(auto_now=False, auto_now_add=False)
-
-    def __str__(self):
-        return f'Componente {self.nome} - {self.tipo}'
-
-    class Meta:
-        verbose_name = 'Componente'
-        verbose_name_plural = 'Componentes'
-
-
-class EquipComponente(models.Model):
-    equip = models.ManyToManyField(Equipamento)
-    componente = models.ManyToManyField(Componente)
