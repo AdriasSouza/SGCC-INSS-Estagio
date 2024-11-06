@@ -8,6 +8,7 @@ import { UsuariosComponent } from './components/usuarios/usuarios.component';
 import { ComponentesComponent } from './components/componentes/componentes.component';
 import { authGuard } from './service/auth.guard';
 import { SolicitacaoComponent } from './components/solicitacao/solicitacao.component';
+import { ManutencaoComponent } from './components/manutencao/manutencao.component';
 
 export const routes: Routes = [
   { path: '', canActivate: [authGuard], children: [
@@ -17,6 +18,7 @@ export const routes: Routes = [
     { path: 'servidores', component: ServidoresComponent },
     { path: 'usuarios', component: UsuariosComponent },
     { path: 'relatorios', component: RelatoriosComponent },
+    { path: 'manutencao', component: ManutencaoComponent },
     { path: 'solicitacao', component: SolicitacaoComponent }
   ] },
   { path: 'login', component: LoginComponent },
