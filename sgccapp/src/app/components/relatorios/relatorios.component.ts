@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RelatoriosService } from '../../service/relatorios.service';
 
 @Component({
   selector: 'app-relatorios',
@@ -16,10 +17,9 @@ export class RelatoriosComponent {
   status: string = '';
   reportGenerated: boolean = false;
 
+  constructor(private relatoriosService: RelatoriosService) {}
+
   generateReport() {
-    // Aqui você pode adicionar a lógica para gerar o relatório.
-    // Por exemplo, você pode chamar um serviço que gera o relatório com os filtros aplicados.
-    
     console.log('Gerando relatório...', {
       reportType: this.reportType,
       dateFrom: this.dateFrom,
@@ -27,11 +27,37 @@ export class RelatoriosComponent {
       status: this.status,
     });
 
-    // Simulação de geração de relatório
-    this.reportGenerated = true;
+    switch (this.reportType) {
+      case 'equipamentos':
+        this.relatoriosService.exportEquipamentosCsv(this.dateFrom, this.dateTo).subscribe(blob => this.downloadFile(blob, 'equipamentos.csv'));
+        break;
+      case 'manutencao':
+        this.relatoriosService.exportManutencoesCsv(this.dateFrom, this.dateTo).subscribe(blob => this.downloadFile(blob, 'manutencoes.csv'));
+        break;
+      case 'pecas':
+        this.relatoriosService.exportComponentesCsv(this.dateFrom, this.dateTo).subscribe(blob => this.downloadFile(blob, 'componentes.csv'));
+        break;
+      case 'usuarios':
+        const setorId = 1; // Substitua pelo ID do setor desejado
+        this.relatoriosService.exportSetoresCsv(setorId).subscribe(blob => this.downloadFile(blob, 'servidores.csv'));
+        break;
+      default:
+        console.error('Tipo de relatório desconhecido:', this.reportType);
+    }
 
-    // Resetar o formulário após geração
+    this.reportGenerated = true;
     this.resetForm();
+  }
+
+  downloadFile(blob: Blob, filename: string) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   }
 
   resetForm() {
@@ -41,4 +67,3 @@ export class RelatoriosComponent {
     this.status = '';
   }
 }
-

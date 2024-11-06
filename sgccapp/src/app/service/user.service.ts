@@ -19,6 +19,12 @@ export class UserService implements IService<User> {
 
   apiUrl: string = environment.API_URL + '/api/usuarios/user_data/';
 
+  getUserData(): Observable<User> {
+    const token = localStorage.getItem('access_token');
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return this.http.get<User>(this.apiUrl, { headers });
+  }
+
   get(termoBusca?: string | undefined, paginacao?: RequisicaoPaginada | undefined): Observable<RespostaPaginada<User>> {
     let params = new HttpParams();
 

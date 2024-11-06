@@ -18,6 +18,8 @@ import { ServidorService } from '../../service/servidor.service'; // Importando 
 import { Setor } from '../../model/setor.model'; // Importando o modelo Setor
 import { TipoEquipamento } from '../../model/tipo-equipamento.model'; // Importando o modelo TipoEquipamento
 import { Servidor } from '../../model/servidor.model'; // Importando o modelo Servidor
+import { ComponenteService } from '../../service/componete.service';
+import { Componente } from '../../model/componente.model';
 
 declare var bootstrap: any;
 
@@ -37,7 +39,8 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
     private servicoAlerta: AlertaService, // Adicionando o serviço AlertaService
     private setorService: SetorService, // Adicionando o serviço SetorService
     private tipoEquipamentoService: TipoEquipamentoService, // Adicionando o serviço TipoEquipamentoService
-    private servidorService: ServidorService // Adicionando o serviço ServidorService
+    private servidorService: ServidorService, // Adicionando o serviço ServidorService
+    private componenteService: ComponenteService // Adicionando o serviço ComponenteService
   ) {
     this.editForm = this.fb.group({
       id: [''],
@@ -65,12 +68,17 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
       situacao: ['', Validators.required],
       data_aquisicao: ['', Validators.required]
     });
+
+    this.componentForm = this.fb.group({
+      componente: ['']
+    });
   }
 
   ngOnInit() {
     this.get();
     this.loadFilterOptions();
     this.loadSelectOptions();
+    this.loadComponentOptions();
     console.log('EquipamentoComponent inicializado!');
   }
 
@@ -87,14 +95,18 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
   tipos: TipoEquipamento[] = [];
   setores: Setor[] = [];
   servidores: Servidor[] = [];
+  componentesDisponiveis: Componente[] = [];
+  componentesAdicionados: Componente[] = [];
   estados: string[] = ['DEFASADO', 'ATENÇÃO', 'BOM', 'NOVO'];
   situacoes: string[] = ['EM_USO', 'RESERVA', 'MANUTENCAO', 'BAIXA', 'ALIENACAO', 'PERDIDO', 'ROUBADO'];
   editForm: FormGroup;
   addForm: FormGroup;
+  componentForm: FormGroup;
   mostrarFiltros: boolean = false;
   showDropdown: boolean[] = [];
   loading: boolean = false;
   equipamentoSelecionado: Equipamento | null = null;
+
 
   colunas: TheadOrdenacao = [
     { campo: 'plaqueta', descricao: 'Plaqueta' },
@@ -208,6 +220,56 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
         }
       });
     }
+  }
+
+  loadComponentOptions() {
+    this.componenteService.get().subscribe({
+      next: (resposta: RespostaPaginada<Componente>) => {
+        this.componentesDisponiveis = resposta.results;
+      },
+      error: (err) => {
+        console.error('Erro ao carregar componentes:', err);
+      }
+    });
+  }
+  
+  addComponent() {
+    const componenteId = this.componentForm.value.componente;
+    const componenteSelecionado = this.componentesDisponiveis.find(componente => componente.id === componenteId);
+    if (componenteSelecionado && !this.componentesAdicionados.some(componente => componente.id === componenteId)) {
+      this.componentesAdicionados.push(componenteSelecionado);
+    }
+  }
+
+  removeComponent(componenteId: number) {
+    this.componentesAdicionados = this.componentesAdicionados.filter(componente => componente.id !== componenteId);
+  }
+
+  confirmComponentChanges() {
+    if (this.equipamentoSelecionado) {
+      const equipamentoAtualizado: Equipamento = {
+        ...this.equipamentoSelecionado,
+        componentes: this.componentesAdicionados
+      };
+      this.servico.save(equipamentoAtualizado).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Componentes atualizados com sucesso!"
+          });
+          const componentModal = bootstrap.Modal.getInstance(document.getElementById('componentModal'));
+          componentModal.hide();
+        }
+      });
+    }
+  }
+
+  openComponentModal(equipamento: Equipamento) {
+    this.equipamentoSelecionado = equipamento;
+    this.componentesAdicionados = equipamento.componentes || [];
+    const componentModal = new bootstrap.Modal(document.getElementById('componentModal'));
+    componentModal.show();
   }
 
   openDeleteModal(id: number) {

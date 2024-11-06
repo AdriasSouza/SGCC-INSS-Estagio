@@ -47,11 +47,23 @@ export class ComponenteService implements IService<Componente> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl;
+    const componenteData = {
+      codigo: objeto.codigo,
+      nome: objeto.nome,
+      descricao: objeto.descricao,
+      tipo: objeto.tipo?.id ?? null,
+      fabricante: objeto.fabricante,
+      tamanho_mem: objeto.tamanho_mem,
+      n_serie: objeto?.n_serie ?? null,
+      data_aquisicao: objeto.data_aquisicao
+
+    };
+    console.log('componenteData', componenteData);
     if (objeto.id) {
       const url = this.apiUrl + objeto.id + '/';
-      return this.http.put<Componente>(url, objeto, { headers });
+      return this.http.put<Componente>(url, componenteData, { headers });
     } else {
-      return this.http.post<Componente>(url, objeto, { headers });
+      return this.http.post<Componente>(url, componenteData, { headers });
     }
   }
 
