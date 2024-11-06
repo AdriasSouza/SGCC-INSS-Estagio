@@ -27,8 +27,8 @@ class EquipamentoSerializer(serializers.ModelSerializer):
     setor = serializers.PrimaryKeyRelatedField(queryset=Setor.objects.all())
     servidor = serializers.PrimaryKeyRelatedField(queryset=Servidor.objects.all())
     componentes = serializers.PrimaryKeyRelatedField(queryset=Componente.objects.all(), allow_null=True, many=True)
-    estado = serializers.CharField(source='get_estado_display')
-    situacao = serializers.CharField(source='get_situacao_display')
+    # estado = serializers.CharField(source='get_estado_display', read_only=True)
+    # situacao = serializers.CharField(source='get_situacao_display', read_only=True)
 
     class Meta:
         model = Equipamento
