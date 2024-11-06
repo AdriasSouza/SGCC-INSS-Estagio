@@ -51,7 +51,8 @@ class UserUpdateView(APIView):
                 return Response({"detail": "Você não tem permissão para alterar os campos de superusuário ou staff."},
                                 status=status.HTTP_403_FORBIDDEN)
         
-        serializer = UserSerializer(user, data=request.data, partial=True)
+        # Passando o contexto com o 'request' para o serializer
+        serializer = UserSerializer(user, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
