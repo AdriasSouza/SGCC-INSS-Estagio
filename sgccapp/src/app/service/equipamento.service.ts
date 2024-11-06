@@ -59,22 +59,9 @@ export class EquipamentoService implements IService<Equipamento> {
       servidor: objeto.servidor?.id,
       data_aquisicao: objeto.data_aquisicao
     };
-    const edit = {
-      id: objeto.id,
-      plaqueta: objeto.plaqueta,
-      nome: objeto.nome,
-      marca: objeto.marca,
-      estado: objeto.estado,
-      situacao: objeto.situacao,
-      sala: objeto.sala,
-      setor: objeto.setor?.id,
-      tipo: objeto.tipo?.id,
-      servidor: objeto.servidor?.id,
-      data_aquisicao: objeto.data_aquisicao
-    };
     if (objeto.id) {
       const url = this.apiUrl + objeto.id + '/';
-      return this.http.put<Equipamento>(url, edit, { headers });
+      return this.http.put<Equipamento>(url, equipamentoData, { headers });
     } else {
       return this.http.post<Equipamento>(this.apiUrl, equipamentoData, { headers });
     }
@@ -86,6 +73,4 @@ export class EquipamentoService implements IService<Equipamento> {
     const url = this.apiUrl + id + '/';
     return this.http.delete<void>(url, { headers });
   }
-
-  
 }
