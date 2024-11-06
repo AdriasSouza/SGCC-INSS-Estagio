@@ -48,7 +48,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let manutencao of registrosFiltrados()">
-            <td>{{ manutencao.codigo }}</td>
+            <td>{{ manutencao.id }}</td>
             <td>{{ manutencao.descricao }}</td>
             <td>{{ manutencao.data | date }}</td>
             <td>{{ manutencao.equipamento?.nome }}</td>
@@ -80,10 +80,6 @@
         </div>
         <div class="modal-body">
           <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
-            <div class="mb-3">
-              <label for="addCodigo" class="form-label">Código</label>
-              <input type="text" class="form-control" id="addCodigo" formControlName="codigo">
-            </div>
             <div class="mb-3">
               <label for="addDescricao" class="form-label">Descrição</label>
               <input type="text" class="form-control" id="addDescricao" formControlName="descricao">
@@ -123,10 +119,6 @@
         <div class="modal-body">
           <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
             <div class="mb-3">
-              <label for="editCodigo" class="form-label">Código</label>
-              <input type="text" class="form-control" id="editCodigo" formControlName="codigo">
-            </div>
-            <div class="mb-3">
               <label for="editDescricao" class="form-label">Descrição</label>
               <input type="text" class="form-control" id="editDescricao" formControlName="descricao">
             </div>
@@ -146,7 +138,7 @@
                 <option *ngFor="let responsavel of responsaveis" [value]="responsavel.id">{{ responsavel.nome_completo }}</option>
               </select>
             </div>
-            <button type="submit" class="btn btn-primary">Salvar</button>
+            <button type="submit" class="btn btn-primary me-2" [disabled]="!editForm.dirty">Salvar</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
           </form>
         </div>
@@ -164,7 +156,7 @@
         </div>
         <div class="modal-body">
           <p>Tem certeza que deseja excluir esta manutenção?</p>
-          <button type="button" class="btn btn-danger" (click)="confirmDelete()">Excluir</button>
+          <button type="button" class="btn btn-danger me-2" (click)="confirmDelete()">Excluir</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </div>
       </div>
