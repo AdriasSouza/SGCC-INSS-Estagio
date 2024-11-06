@@ -43,7 +43,7 @@ urlpatterns = [
     # Rota para update de usuario
     path('user_update/', UserUpdateView.as_view()),
     # Atualiza um usuario em especifico
-    path('user_update/<int:pk>/', UserAdminUpdateView.as_view()),
+    path('user_update_admin/<int:pk>/', UserAdminUpdateView.as_view()),
     # Rota para logout de usuários
     path('logout/', LogoutView.as_view()),
     # Rota para exportar CSV de setores
