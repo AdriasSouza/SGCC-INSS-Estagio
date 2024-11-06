@@ -6,7 +6,6 @@ from .views import (
     ManutencaoViewSet,
     TipoComponenteViewSet,
     ComponenteViewSet,
-    EquipComponenteViewSet,
     ExportComponentesCSVView,
     ExportEquipamentosCSVView,
     ExportManutencoesCSVView,
@@ -19,7 +18,6 @@ router.register(r'equipamento', EquipamentoViewSet)
 router.register(r'manutencao', ManutencaoViewSet)
 router.register(r'tipo-componente', TipoComponenteViewSet)
 router.register(r'componente', ComponenteViewSet)
-router.register(r'equip-componente', EquipComponenteViewSet)
 
 # Inclui as URLs do roteador nas URLs principais
 urlpatterns = [

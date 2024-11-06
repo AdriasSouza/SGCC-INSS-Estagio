@@ -12,7 +12,6 @@ from .models import (
     Manutencao,
     TipoComponente,
     Componente,
-    EquipComponente
 )
 from usuarios.models import Servidor
 from .serializers import (
@@ -21,7 +20,6 @@ from .serializers import (
     ManutencaoSerializer,
     TipoComponenteSerializer,
     ComponenteSerializer,
-    EquipComponenteSerializer
 )
 
 
@@ -72,16 +70,6 @@ class ComponenteFilter(FilterSet):
         ]
 
 
-# Definindo um filtro personalizado para EquipComponente
-class EquipComponenteFilter(FilterSet):
-    equip = filters.ModelChoiceFilter(queryset=Equipamento.objects.all())
-    componente = filters.ModelChoiceFilter(queryset=Componente.objects.all())
-
-    class Meta:
-        model = EquipComponente
-        fields = ['equip', 'componente']
-
-
 class TipoEquipamentoViewSet(viewsets.ModelViewSet):
     queryset = TipoEquipamento.objects.all().order_by('id')
     serializer_class = TipoEquipamentoSerializer
@@ -120,14 +108,6 @@ class ComponenteViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_class = ComponenteFilter  # Usando o filtro personalizado
-
-
-class EquipComponenteViewSet(viewsets.ModelViewSet):
-    queryset = EquipComponente.objects.all().order_by('id')
-    serializer_class = EquipComponenteSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]
-    filterset_class = EquipComponenteFilter  # Usando o filtro personalizado
 
 
 class ExportEquipamentosCSVView(APIView):
