@@ -47,10 +47,18 @@ export class ManutencaoService implements IService<Manutencao> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl;
+    const manutencaoData = {
+      nome: objeto.codigo,
+      data: objeto.data,
+      descricao: objeto.descricao,
+      equipamento: objeto.equipamento?.id,
+      responsavel: objeto.responsavel?.id
+    };
     if (objeto.id) {
-      return this.http.put<Manutencao>(url, objeto, { headers });
+      const url = this.apiUrl + objeto.id + '/';
+      return this.http.put<Manutencao>(url, manutencaoData, { headers });
     } else {
-      return this.http.post<Manutencao>(url, objeto, { headers });
+      return this.http.post<Manutencao>(url, manutencaoData, { headers });
     }
   }
 
