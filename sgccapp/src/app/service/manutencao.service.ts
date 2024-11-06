@@ -16,7 +16,7 @@ export class ManutencaoService implements IService<Manutencao> {
     private http: HttpClient
   ) { }
 
-  apiUrl: string = environment.API_URL + '/api/gerenciamento/equipamento/';
+  apiUrl: string = environment.API_URL + '/api/gerenciamento/manutencao/';
 
   get(termoBusca?: string | undefined, paginacao?: RequisicaoPaginada | undefined): Observable<RespostaPaginada<Manutencao>> {
     let params = new HttpParams();

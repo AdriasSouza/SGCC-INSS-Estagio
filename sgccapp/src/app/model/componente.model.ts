@@ -10,5 +10,5 @@ export type Componente = {
   fabricante: string;            // Nome do fabricante
   tamanho_mem?: number;          // Tamanho da memória, opcional
   n_serie?: string;              // Número de série, opcional
-  data_aquisicao: Date;          // Data de aquisição
+  data_aquisicao: string;          // Data de aquisição
 }

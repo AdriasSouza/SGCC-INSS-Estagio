@@ -1,0 +1,172 @@
+<style>
+    .form-control, .form-select {
+      border-width: 3px; /* Aumentando a espessura da borda */
+    }
+  </style>
+  
+  <div class="container mt-4">
+    <!-- Título da página -->
+    <h3 class="fw-bold mb-4">Lista de Manutenções</h3>
+    <h5 class="mb-4">Tabela com todas as manutenções registradas</h5>
+  
+    <!-- Contêiner flexível para os botões -->
+    <div class="d-flex justify-content-between mb-3">
+      <!-- Botão para ocultar e abrir os filtros -->
+      <button class="btn btn-secondary" (click)="toggleFiltros()">
+        {{ mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
+      </button>
+  
+      <!-- Botão para adicionar nova manutenção -->
+      <button class="btn btn-primary" (click)="openAddModal()">Adicionar Manutenção</button>
+    </div>
+  
+    <!-- Filtros -->
+    <div class="row mb-3" *ngIf="mostrarFiltros">
+      <div class="col-md-3 mb-3">
+        <label for="filterCodigo" class="form-label">Código</label>
+        <input type="text" id="filterCodigo" class="form-control" [(ngModel)]="filtroCodigo">
+      </div>
+      <div class="col-md-3 mb-3">
+        <label for="filterDescricao" class="form-label">Descrição</label>
+        <input type="text" id="filterDescricao" class="form-control" [(ngModel)]="filtroDescricao">
+      </div>
+    </div>
+  
+    <!-- Spinner de Carregamento -->
+    <div class="text-center my-4">
+      <div class="spinner-border" role="status" *ngIf="loading">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  
+    <!-- Tabela de Manutenções -->
+    <div class="table-responsive min-vh-100">
+      <table class="table table-striped table-bordered" *ngIf="!loading">
+        <thead class="table-active" app-thead-ordenacao
+          [colunas]="colunas"
+          (ordenacaoAtualizada)="ordenar($event)">
+        </thead>
+        <tbody>
+          <tr *ngFor="let manutencao of registrosFiltrados()">
+            <td>{{ manutencao.codigo }}</td>
+            <td>{{ manutencao.descricao }}</td>
+            <td>{{ manutencao.data | date }}</td>
+            <td>{{ manutencao.equipamento?.nome }}</td>
+            <td>{{ manutencao.responsavel?.nome_completo }}</td>
+            <td>
+              <button class="btn btn-sm btn-primary me-2 mb-2" (click)="openEditModal(manutencao)">Editar</button>
+              <button class="btn btn-sm btn-danger mb-2" (click)="openDeleteModal(manutencao.id)">Excluir</button>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="6">
+              <span *ngIf="registros.length == 0">Nenhum registro encontrado</span>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+  
+  <!-- Modal de Adição de Manutenção -->
+  <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addModalLabel">Adicionar Manutenção</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
+            <div class="mb-3">
+              <label for="addCodigo" class="form-label">Código</label>
+              <input type="text" class="form-control" id="addCodigo" formControlName="codigo">
+            </div>
+            <div class="mb-3">
+              <label for="addDescricao" class="form-label">Descrição</label>
+              <input type="text" class="form-control" id="addDescricao" formControlName="descricao">
+            </div>
+            <div class="mb-3">
+              <label for="addData" class="form-label">Data</label>
+              <input type="date" class="form-control" id="addData" formControlName="data">
+            </div>
+            <div class="mb-3">
+              <label for="addEquipamento" class="form-label">Equipamento</label>
+              <select id="addEquipamento" class="form-select" formControlName="equipamento">
+                <option *ngFor="let equipamento of equipamentos" [value]="equipamento.id">{{ equipamento.nome }}</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="addResponsavel" class="form-label">Responsável</label>
+              <select id="addResponsavel" class="form-select" formControlName="responsavel">
+                <option *ngFor="let responsavel of responsaveis" [value]="responsavel.id">{{ responsavel.nome_completo }}</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary me-2">Adicionar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal de Edição de Manutenção -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel">Editar Manutenção</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
+            <div class="mb-3">
+              <label for="editCodigo" class="form-label">Código</label>
+              <input type="text" class="form-control" id="editCodigo" formControlName="codigo">
+            </div>
+            <div class="mb-3">
+              <label for="editDescricao" class="form-label">Descrição</label>
+              <input type="text" class="form-control" id="editDescricao" formControlName="descricao">
+            </div>
+            <div class="mb-3">
+              <label for="editData" class="form-label">Data</label>
+              <input type="date" class="form-control" id="editData" formControlName="data">
+            </div>
+            <div class="mb-3">
+              <label for="editEquipamento" class="form-label">Equipamento</label>
+              <select id="editEquipamento" class="form-select" formControlName="equipamento">
+                <option *ngFor="let equipamento of equipamentos" [value]="equipamento.id">{{ equipamento.nome }}</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="editResponsavel" class="form-label">Responsável</label>
+              <select id="editResponsavel" class="form-select" formControlName="responsavel">
+                <option *ngFor="let responsavel of responsaveis" [value]="responsavel.id">{{ responsavel.nome_completo }}</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal de Exclusão de Manutenção -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Excluir Manutenção</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Tem certeza que deseja excluir esta manutenção?</p>
+          <button type="button" class="btn btn-danger" (click)="confirmDelete()">Excluir</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>

@@ -48,7 +48,7 @@ export class SolicitacaoService implements IService<Solicitacao> {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
 
     // Verificar e converter data para Date se necessário
-    const data = objeto.data instanceof Date ? objeto.data : new Date(objeto.data);
+    const data = typeof objeto.data === 'string' ? new Date(objeto.data) : objeto.data;
     
     // Criar um objeto com os campos necessários
     const solicitacaoData = {

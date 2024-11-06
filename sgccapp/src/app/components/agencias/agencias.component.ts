@@ -91,8 +91,8 @@ export class AgenciasComponent implements IList<Agencia>, OnInit {
 
   registrosFiltrados(): Agencia[] {
     return this.registros.filter(agencia => {
-      return (!this.filtroNome || agencia.nome.includes(this.filtroNome)) &&
-             (!this.filtroNumero || agencia.numero.toString().includes(this.filtroNumero));
+      return (!this.filtroNome || (agencia.nome ?? '').includes(this.filtroNome)) &&
+             (!this.filtroNumero || (agencia.numero?.toString() ?? '').includes(this.filtroNumero));
     });
   }
 

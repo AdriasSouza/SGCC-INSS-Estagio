@@ -50,9 +50,9 @@ export class ServidorService implements IService<Servidor> {
       const addservidorData = {
         inscricao_institucional: objeto.inscricao_institucional,
         nome_completo: objeto.nome_completo,
-        usuario: objeto.usuario?.id,
         setor: objeto.setor?.id,
-        agencia: objeto.setor?.agencia?.id
+        agencia: objeto.setor?.agencia?.id,
+        chefe: objeto.chefe
       };
       const url = this.apiUrl + objeto.id + '/';
       return this.http.put<Servidor>(url, addservidorData, { headers });
@@ -62,7 +62,8 @@ export class ServidorService implements IService<Servidor> {
         inscricao_institucional: objeto.inscricao_institucional,
         nome_completo: objeto.nome_completo,
         setor: objeto.setor?.id,
-        agencia: objeto.setor?.agencia?.id
+        agencia: objeto.setor?.agencia?.id,
+        chefe: objeto.chefe
       };
       console.log('servidorData:', servidorData);
       return this.http.post<Servidor>(url, servidorData, { headers });

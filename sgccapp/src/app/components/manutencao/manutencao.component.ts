@@ -2,86 +2,84 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http'; // Importando HttpClientModule
-import { Servidor } from '../../model/servidor.model'; // Importando o modelo Servidor
+import { ManutencaoService } from '../../service/manutencao.service';
+import { EquipamentoService } from '../../service/equipamento.service';
 import { ServidorService } from '../../service/servidor.service';
 import { AlertaService } from '../../service/alerta.service';
 import { IList } from '../i-list';
 import { TheadOrdenacao } from '../thead-ordenacao/thead-ordenacao';
-import { ETipoAlerta } from '../../model/e-tipo-alerta';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { TheadOrdenacaoComponent } from '../thead-ordenacao/thead-ordenacao.component';
 import { BarraComandosComponent } from '../barra-comandos/barra-comandos.component';
+import { Equipamento } from '../../model/equipamento.model';
+import { Servidor } from '../../model/servidor.model';
 import { RespostaPaginada } from '../../model/resposta-paginada';
-import { SetorService } from '../../service/setor.service'; // Importando o serviço SetorService
-import { UserService } from '../../service/user.service'; // Importando o serviço UserService
-import { Setor } from '../../model/setor.model'; // Importando o modelo Setor
-import { User } from '../../model/user.model'; // Importando o modelo User
+import { Manutencao } from '../../model/manutencao.model';
+import { ETipoAlerta } from '../../model/e-tipo-alerta';
+
 
 declare var bootstrap: any;
 
 @Component({
-  selector: 'app-servidores',
+  selector: 'app-manutencao',
   standalone: true,
   imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent, BarraComandosComponent], // Adicionando HttpClientModule
-  templateUrl: './servidores.component.html',
-  styleUrls: ['./servidores.component.scss']
+  templateUrl: './manutencao.component.html',
+  styleUrls: ['./manutencao.component.css']
 })
-export class ServidoresComponent implements IList<Servidor>, OnInit {
+export class ManutencaoComponent implements IList<Manutencao>, OnInit {
 
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
-    private servico: ServidorService, // Adicionando o serviço ServidorService como dependência
+    private servico: ManutencaoService, // Adicionando o serviço ManutencaoService como dependência
+    private equipamentoService: EquipamentoService, // Adicionando o serviço EquipamentoService
+    private servidorService: ServidorService, // Adicionando o serviço ServidorService
     private servicoAlerta: AlertaService, // Adicionando o serviço AlertaService
-    private setorService: SetorService, // Adicionando o serviço SetorService
-    private userService: UserService // Adicionando o serviço UserService
   ) {
     this.editForm = this.fb.group({
-      id: [''],
-      inscricao_institucional: ['', Validators.required],
-      nome_completo: ['', Validators.required],
-      chefe: [false],
-      setor: ['', Validators.required],
-      agencia: ['', Validators.required]
+      codigo: ['', Validators.required],
+      descricao: ['', Validators.required],
+      data: ['', Validators.required],
+      equipamento: ['', Validators.required],
+      responsavel: ['', Validators.required],
     });
 
     this.addForm = this.fb.group({
-      inscricao_institucional: ['', Validators.required],
-      nome_completo: ['', Validators.required],
-      chefe: [false],
-      setor: ['', Validators.required],
-      agencia: ['', Validators.required]
+      codigo: ['', Validators.required],
+      descricao: ['', Validators.required],
+      data: ['', Validators.required],
+      equipamento: ['', Validators.required],
+      responsavel: ['', Validators.required],
     });
   }
 
   ngOnInit() {
     this.get();
     this.loadSelectOptions();
-    console.log('ServidoresComponent inicializado!');
+    console.log('ManutencaoComponent inicializado!');
   }
 
-  registros: Servidor[] = [];
+  registros: Manutencao[] = [];
   termoBusca: string | undefined = '';
-  filtroInscricao: string = '';
-  filtroNome: string = '';
-  filtroUsuario: string = '';
-  filtroSetor: string = '';
-  setores: Setor[] = [];
-  usuarios: User[] = [];
+  filtroCodigo: string = '';
+  filtroDescricao: string = '';
+  equipamentos: Equipamento[] = [];
+  responsaveis: Servidor[] = [];
   editForm: FormGroup;
   addForm: FormGroup;
   mostrarFiltros: boolean = false;
   showDropdown: boolean[] = [];
   loading: boolean = false;
-  servidorSelecionado: Servidor | null = null;
+  manutencaoSelecionada: Manutencao | null = null;
 
   colunas: TheadOrdenacao = [
-    { campo: 'inscricao_institucional', descricao: 'Inscrição Institucional' },
-    { campo: 'nome_completo', descricao: 'Nome Completo' },
-    { campo: 'usuario.email', descricao: 'Usuário' },
-    { campo: 'setor.nome', descricao: 'Setor' },
-    { campo: 'setor.agencia.nome', descricao: 'Agencia' },
-    { campo: '', descricao: 'Ações' },
+    { campo: 'codigo', descricao: 'Código' },
+    { campo: 'descricao', descricao: 'Descrição' },
+    { campo: 'data', descricao: 'Data' },
+    { campo: 'equipamento.nome', descricao: 'Equipamento' },
+    { campo: 'responsavel.nome_completo', descricao: 'Responsável' },
+    { campo: '', descricao: 'Ações' }
   ]
 
   //Função para esconder e mostrar os filtros
@@ -100,52 +98,51 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
   get(termoBusca?: string): void {
     this.termoBusca = termoBusca;
     this.servico.get(termoBusca).subscribe({
-      next: (resposta: RespostaPaginada<Servidor>) => {
+      next: (resposta: RespostaPaginada<Manutencao>) => {
         this.registros = resposta.results; // Extrai os registros da resposta paginada
         console.log('registros:', this.registros); // Adiciona o console.log para ver os registros
       },
       error: (err) => {
-        console.error('Erro ao buscar servidores:', err); // Você pode querer lidar com erros aqui
+        console.error('Erro ao buscar manutenções:', err); // Você pode querer lidar com erros aqui
       }
     });
   }
 
-  registrosFiltrados(): Servidor[] {
-    return this.registros.filter(servidor => {
-      return (!this.filtroInscricao || servidor.inscricao_institucional.includes(this.filtroInscricao)) &&
-             (!this.filtroNome || servidor.nome_completo.includes(this.filtroNome)) &&
-             (!this.filtroSetor || (servidor.setor?.nome && servidor.setor.nome.includes(this.filtroSetor)));
+  registrosFiltrados(): Manutencao[] {
+    return this.registros.filter(manutencao => {
+      return (!this.filtroCodigo || manutencao.codigo?.toString().includes(this.filtroCodigo)) &&
+             (!this.filtroDescricao || manutencao.descricao?.includes(this.filtroDescricao));
     });
   }
 
   loadSelectOptions() {
-    this.setorService.get().subscribe({
-      next: (resposta: RespostaPaginada<Setor>) => {
-        this.setores = resposta.results;
+    this.equipamentoService.get().subscribe({
+      next: (resposta: RespostaPaginada<Equipamento>) => {
+        this.equipamentos = resposta.results;
       },
       error: (err) => {
-        console.error('Erro ao carregar setores:', err);
+        console.error('Erro ao carregar equipamentos:', err);
       }
     });
 
-    this.userService.get().subscribe({
-      next: (resposta: RespostaPaginada<User>) => {
-        this.usuarios = resposta.results;
+    this.servidorService.get().subscribe({
+      next: (resposta: RespostaPaginada<Servidor>) => {
+        this.responsaveis = resposta.results;
       },
       error: (err) => {
-        console.error('Erro ao carregar usuários:', err);
+        console.error('Erro ao carregar responsáveis:', err);
       }
     });
   }
 
   delete(id: number): void {
-    if (confirm('Confirma a exclusão do servidor?')) {
+    if (confirm('Confirma a exclusão da manutenção?')) {
       this.servico.delete(id).subscribe({
         complete: () => {
           this.get();
           this.servicoAlerta.enviarAlerta({
             tipo: ETipoAlerta.SUCESSO,
-            mensagem: "Servidor excluído com sucesso!"
+            mensagem: "Manutenção excluída com sucesso!"
           });
         }
       });
@@ -153,14 +150,14 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
   }
 
   openDeleteModal(id: number) {
-    this.servidorSelecionado = this.registros.find(servidor => servidor.id === id) || null;
+    this.manutencaoSelecionada = this.registros.find(manutencao => manutencao.id === id) || null;
     const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
     deleteModal.show();
   }
 
   confirmDelete() {
-    if (this.servidorSelecionado) {
-      this.delete(this.servidorSelecionado.id);
+    if (this.manutencaoSelecionada) {
+      this.delete(this.manutencaoSelecionada.id);
       const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
       deleteModal.hide();
     }
@@ -173,17 +170,17 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
 
   confirmAdd() {
     if (this.addForm.valid) {
-      const novoServidor: Servidor = {
+      const novaManutencao: Manutencao = {
         ...this.addForm.value,
-        setor: { id: this.addForm.value.setor },
-        agencia: { id: this.addForm.value.agencia }
+        equipamento: { id: this.addForm.value.equipamento },
+        responsavel: { id: this.addForm.value.responsavel }
       };
-      this.servico.save(novoServidor).subscribe({
+      this.servico.save(novaManutencao).subscribe({
         complete: () => {
           this.get();
           this.servicoAlerta.enviarAlerta({
             tipo: ETipoAlerta.SUCESSO,
-            mensagem: "Servidor adicionado com sucesso!"
+            mensagem: "Manutenção adicionada com sucesso!"
           });
           const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
           addModal.hide();
@@ -192,34 +189,34 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
     }
   }
 
-  openEditModal(servidor: Servidor) {
-    this.servidorSelecionado = servidor;
+  openEditModal(manutencao: Manutencao) {
+    this.manutencaoSelecionada = manutencao;
     this.editForm.patchValue({
-      id: servidor.id,
-      inscricao_institucional: servidor.inscricao_institucional,
-      nome_completo: servidor.nome_completo,
-      chefe: servidor.chefe,
-      setor: servidor.setor?.id,
-      agencia: servidor.setor?.agencia?.id
+      id: manutencao.id,
+      codigo: manutencao.codigo,
+      descricao: manutencao.descricao,
+      data: manutencao.data,
+      equipamento: manutencao.equipamento?.id,
+      responsavel: manutencao.responsavel?.id
     });
     const editModal = new bootstrap.Modal(document.getElementById('editModal'));
     editModal.show();
   }
 
   confirmEdit() {
-    if (this.servidorSelecionado && this.editForm.valid) {
-      const servidorAtualizado: Servidor = {
-        ...this.servidorSelecionado,
+    if (this.manutencaoSelecionada && this.editForm.valid) {
+      const manutencaoAtualizada: Manutencao = {
+        ...this.manutencaoSelecionada,
         ...this.editForm.value,
-        setor: { id: this.editForm.value.setor },
-        agencia: { id: this.editForm.value.agencia }
+        equipamento: { id: this.editForm.value.equipamento },
+        responsavel: { id: this.editForm.value.responsavel }
       };
-      this.servico.save(servidorAtualizado).subscribe({
+      this.servico.save(manutencaoAtualizada).subscribe({
         complete: () => {
           this.get();
           this.servicoAlerta.enviarAlerta({
             tipo: ETipoAlerta.SUCESSO,
-            mensagem: "Servidor editado com sucesso!"
+            mensagem: "Manutenção editada com sucesso!"
           });
           const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
           editModal.hide();

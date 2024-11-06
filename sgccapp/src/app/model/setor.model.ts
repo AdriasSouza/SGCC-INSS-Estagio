@@ -4,7 +4,7 @@ import { Agencia } from "./agencia.model";   // Importa a interface Agencia para
 
 export type Setor = {
   id: number;              // ID único do setor
-  codigo: number | null;   // Código do setor, pode ser nulo
-  nome: string | null;     // Nome do setor, pode ser nulo
-  agencia: Agencia | null; // Relacionamento com a agência, pode ser nulo
+  codigo?: number;   // Código do setor, pode ser nulo
+  nome?: string;     // Nome do setor, pode ser nulo
+  agencia?: Agencia; // Relacionamento com a agência, pode ser nulo
 }
