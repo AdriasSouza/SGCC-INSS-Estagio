@@ -9,6 +9,8 @@ import { ComponentesComponent } from './components/componentes/componentes.compo
 import { authGuard } from './service/auth.guard';
 import { SolicitacaoComponent } from './components/solicitacao/solicitacao.component';
 import { ManutencaoComponent } from './components/manutencao/manutencao.component';
+import { TipoComponenteComponent } from './components/tipo-componente/tipo-componente.component';
+import { TipoEquipamentoComponent } from './components/tipo-equipamento/tipo-equipamento.component';
 
 export const routes: Routes = [
   { path: '', canActivate: [authGuard], children: [
@@ -19,7 +21,10 @@ export const routes: Routes = [
     { path: 'usuarios', component: UsuariosComponent },
     { path: 'relatorios', component: RelatoriosComponent },
     { path: 'manutencao', component: ManutencaoComponent },
-    { path: 'solicitacao', component: SolicitacaoComponent }
+    { path: 'solicitacao', component: SolicitacaoComponent },
+    { path: 'tipo-comp', component: TipoComponenteComponent },
+    { path: 'tipo-equip', component: TipoEquipamentoComponent },
+
   ] },
   { path: 'login', component: LoginComponent },
   { path: '**', redirectTo: '' }

@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { IService } from './i-service';
+import { environment } from '../environments/environment';
 import { Equipamento } from '../model/equipamento.model';
 import { RequisicaoPaginada } from '../model/requisicao-paginada';
 import { RespostaPaginada } from '../model/resposta-paginada';
-import { IService } from './i-service';
-import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -46,7 +46,6 @@ export class EquipamentoService implements IService<Equipamento> {
   save(objeto: Equipamento): Observable<Equipamento> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    console.log('objeto:', objeto);
     const equipamentoData = {
       plaqueta: objeto.plaqueta,
       nome: objeto.nome,
@@ -57,8 +56,10 @@ export class EquipamentoService implements IService<Equipamento> {
       setor: objeto.setor?.id,
       tipo: objeto.tipo?.id,
       servidor: objeto.servidor?.id,
+      componentes: objeto.componentes?.map(componente => componente.id) ?? [],
       data_aquisicao: objeto.data_aquisicao
     };
+    console.log(equipamentoData);
     if (objeto.id) {
       const url = this.apiUrl + objeto.id + '/';
       return this.http.put<Equipamento>(url, equipamentoData, { headers });
