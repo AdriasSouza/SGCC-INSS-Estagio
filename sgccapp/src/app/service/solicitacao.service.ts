@@ -18,6 +18,12 @@ export class SolicitacaoService implements IService<Solicitacao> {
 
   apiUrl: string = environment.API_URL + '/api/usuarios/solicitacoes/';
 
+  getSolicita(): Observable<Solicitacao[]> {
+    const token = localStorage.getItem('access_token');
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return this.http.get<Solicitacao[]>(this.apiUrl, { headers });
+  }
+
   get(termoBusca?: string | undefined, paginacao?: RequisicaoPaginada | undefined): Observable<RespostaPaginada<Solicitacao>> {
     let params = new HttpParams();
 
@@ -55,7 +61,8 @@ export class SolicitacaoService implements IService<Solicitacao> {
       user: objeto.user ? objeto.user.id : null,
       data: data.toISOString(),
       status: objeto.status,
-      descricao: objeto.descricao
+      descricao: objeto.descricao,
+      justificativa: objeto.justificativa
     };
 
     console.log('Enviando dados para a API:', solicitacaoData); // Adiciona log para depuração
@@ -71,7 +78,7 @@ export class SolicitacaoService implements IService<Solicitacao> {
   delete(id: number): Observable<void> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    const url = this.apiUrl + id;
+    const url = this.apiUrl + id + '/';
     return this.http.delete<void>(url, { headers });
   }
 }

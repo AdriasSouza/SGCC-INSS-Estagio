@@ -11,6 +11,8 @@ import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { TheadOrdenacaoComponent } from '../thead-ordenacao/thead-ordenacao.component';
 import { BarraComandosComponent } from '../barra-comandos/barra-comandos.component';
 import { RespostaPaginada } from '../../model/resposta-paginada';
+import { TipoComponenteService } from '../../service/tipo-componente.service'; // Importando o serviço TipoComponenteService
+import { TipoComponente } from '../../model/tipo-componente.model'; // Importando o modelo TipoComponente
 import { ComponenteService } from '../../service/componete.service';
 
 declare var bootstrap: any;
@@ -28,6 +30,7 @@ export class ComponentesComponent implements IList<Componente>, OnInit {
     private fb: FormBuilder,
     private http: HttpClient,
     private servico: ComponenteService, // Adicionando o serviço ComponenteService como dependência
+    private tipoComponenteService: TipoComponenteService, // Adicionando o serviço TipoComponenteService como dependência
     private servicoAlerta: AlertaService, // Adicionando o serviço AlertaService
   ) {
     this.editForm = this.fb.group({
@@ -55,11 +58,12 @@ export class ComponentesComponent implements IList<Componente>, OnInit {
 
   ngOnInit() {
     this.get();
+    this.loadTipoComponentes();
     console.log('ComponentesComponent inicializado!');
-    console.log('registros:', this.registros); // Adiciona o console.log para ver os registros
   }
 
   registros: Componente[] = [];
+  tiposComponentes: TipoComponente[] = [];
   termoBusca: string | undefined = '';
   filtroCodigo: string = '';
   filtroNome: string = '';
@@ -85,7 +89,7 @@ export class ComponentesComponent implements IList<Componente>, OnInit {
     { campo: 'tamanho_mem', descricao: 'Tamanho Memória' },
     { campo: 'n_serie', descricao: 'Número de Série' },
     { campo: 'data_aquisicao', descricao: 'Data de Aquisição' },
-    { campo: '', descricao: 'Ações' },
+    { campo: '', descricao: 'Ações' }
   ]
 
   //Função para esconder e mostrar os filtros
@@ -108,8 +112,19 @@ export class ComponentesComponent implements IList<Componente>, OnInit {
         this.registros = resposta.results; // Extrai os registros da resposta paginada
         console.log('registros:', this.registros); // Adiciona o console.log para ver os registros
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Erro ao buscar componentes:', err); // Você pode querer lidar com erros aqui
+      }
+    });
+  }
+
+  loadTipoComponentes() {
+    this.tipoComponenteService.get().subscribe({
+      next: (resposta: RespostaPaginada<TipoComponente>) => {
+        this.tiposComponentes = resposta.results;
+      },
+      error: (err) => {
+        console.error('Erro ao carregar tipos de componentes:', err);
       }
     });
   }
@@ -162,7 +177,10 @@ export class ComponentesComponent implements IList<Componente>, OnInit {
 
   confirmAdd() {
     if (this.addForm.valid) {
-      const novoComponente: Componente = this.addForm.value;
+      const novoComponente: Componente = {
+        ...this.addForm.value,
+        tipo: { id: this.addForm.value.tipo }
+      };
       this.servico.save(novoComponente).subscribe({
         complete: () => {
           this.get();
@@ -197,7 +215,8 @@ export class ComponentesComponent implements IList<Componente>, OnInit {
     if (this.componenteSelecionado && this.editForm.valid) {
       const componenteAtualizado: Componente = {
         ...this.componenteSelecionado,
-        ...this.editForm.value
+        ...this.editForm.value,
+        tipo: { id: this.editForm.value.tipo }
       };
       this.servico.save(componenteAtualizado).subscribe({
         complete: () => {

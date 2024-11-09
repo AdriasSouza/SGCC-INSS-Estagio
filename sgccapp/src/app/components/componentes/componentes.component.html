@@ -114,7 +114,9 @@
           </div>
           <div class="mb-3">
             <label for="addTipo" class="form-label">Tipo</label>
-            <input type="text" class="form-control" id="addTipo" formControlName="tipo">
+            <select id="addTipo" class="form-select" formControlName="tipo">
+              <option *ngFor="let tipo of tiposComponentes" [value]="tipo.id">{{ tipo.nome }}</option>
+            </select>
           </div>
           <div class="mb-3">
             <label for="addFabricante" class="form-label">Fabricante</label>
@@ -164,7 +166,9 @@
           </div>
           <div class="mb-3">
             <label for="editTipo" class="form-label">Tipo</label>
-            <input type="text" class="form-control" id="editTipo" formControlName="tipo">
+            <select id="editTipo" class="form-select" formControlName="tipo">
+              <option *ngFor="let tipo of tiposComponentes" [value]="tipo.id">{{ tipo.nome }}</option>
+            </select>
           </div>
           <div class="mb-3">
             <label for="editFabricante" class="form-label">Fabricante</label>
@@ -182,26 +186,9 @@
             <label for="editDataAquisicao" class="form-label">Data de Aquisição</label>
             <input type="date" class="form-control" id="editDataAquisicao" formControlName="data_aquisicao">
           </div>
-          <button type="submit" class="btn btn-primary">Salvar</button>
+          <button type="submit" class="btn btn-primary me-2">Salvar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal de Exclusão de Componente -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="deleteModalLabel">Excluir Componente</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>Tem certeza que deseja excluir este componente?</p>
-        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Excluir</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
       </div>
     </div>
   </div>

@@ -5,47 +5,35 @@
 </style>
 
 <div class="container mt-5">
-    <h2 class="mb-4">Geração de Relatórios</h2>
-    
-    <form (ngSubmit)="generateReport()" #reportForm="ngForm">
-      <div class="mb-3">
-        <label for="reportType" class="form-label">Tipo de Relatório</label>
-        <select id="reportType" class="form-select" required [(ngModel)]="reportType" name="reportType">
-          <option value="" disabled selected>Escolha o tipo de relatório</option>
-          <option value="equipamentos">Equipamentos</option>
-          <option value="manutencao">Manutenções</option>
-          <option value="pecas">Peças</option>
-          <option value="usuarios">Usuários</option>
-          <option value="relatorios">Relatórios Gerais</option>
-        </select>
-      </div>
+  <h2 class="mb-4">Geração de Relatórios</h2>
   
-      <div class="mb-3">
-        <label for="dateFrom" class="form-label">Data de Início</label>
-        <input type="date" class="form-control" id="dateFrom" [(ngModel)]="dateFrom" name="dateFrom" required>
-      </div>
-  
-      <div class="mb-3">
-        <label for="dateTo" class="form-label">Data de Fim</label>
-        <input type="date" class="form-control" id="dateTo" [(ngModel)]="dateTo" name="dateTo" required>
-      </div>
-  
-      <div class="mb-3">
-        <label for="status" class="form-label">Status</label>
-        <select id="status" class="form-select" [(ngModel)]="status" name="status">
-          <option value="" disabled selected>Escolha o status</option>
-          <option value="todos">Todos</option>
-          <option value="ativo">Ativo</option>
-          <option value="inativo">Inativo</option>
-        </select>
-      </div>
-  
-      <button type="submit" class="btn btn-primary">Gerar Relatório</button>
-    </form>
-  
-    <!-- Se o relatório for gerado, exibe uma mensagem de sucesso -->
-    <div *ngIf="reportGenerated" class="alert alert-success mt-4" role="alert">
-      Relatório gerado com sucesso! Você pode baixá-lo na seção de relatórios.
+  <form (ngSubmit)="generateReport()" #reportForm="ngForm">
+    <div class="mb-3">
+      <label for="reportType" class="form-label">Tipo de Relatório</label>
+      <select id="reportType" class="form-select" required [(ngModel)]="reportType" name="reportType">
+        <option value="" disabled selected>Escolha o tipo de relatório</option>
+        <option value="equipamentos">Equipamentos</option>
+        <option value="manutencao">Manutenções</option>
+        <option value="pecas">Peças</option>
+        <option value="usuarios">Usuários</option>
+      </select>
     </div>
+
+    <div class="mb-3">
+      <label for="dateFrom" class="form-label">Data de Início</label>
+      <input type="date" class="form-control" id="dateFrom" [(ngModel)]="dateFrom" name="dateFrom" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="dateTo" class="form-label">Data de Fim</label>
+      <input type="date" class="form-control" id="dateTo" [(ngModel)]="dateTo" name="dateTo" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Gerar Relatório</button>
+  </form>
+
+  <!-- Se o relatório for gerado, exibe uma mensagem de sucesso -->
+  <div *ngIf="reportGenerated" class="alert alert-success mt-4" role="alert">
+    Relatório gerado com sucesso! Você pode baixá-lo na seção de relatórios.
   </div>
-  
+</div>

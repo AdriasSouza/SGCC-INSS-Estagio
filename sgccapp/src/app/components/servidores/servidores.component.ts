@@ -41,16 +41,14 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
       inscricao_institucional: ['', Validators.required],
       nome_completo: ['', Validators.required],
       chefe: [false],
-      setor: ['', Validators.required],
-      agencia: ['', Validators.required]
+      setor: ['', Validators.required]
     });
 
     this.addForm = this.fb.group({
       inscricao_institucional: ['', Validators.required],
       nome_completo: ['', Validators.required],
       chefe: [false],
-      setor: ['', Validators.required],
-      agencia: ['', Validators.required]
+      setor: ['', Validators.required]
     });
   }
 
@@ -78,10 +76,8 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
   colunas: TheadOrdenacao = [
     { campo: 'inscricao_institucional', descricao: 'Inscrição Institucional' },
     { campo: 'nome_completo', descricao: 'Nome Completo' },
-    { campo: 'usuario.email', descricao: 'Usuário' },
     { campo: 'setor.nome', descricao: 'Setor' },
-    { campo: 'setor.agencia.nome', descricao: 'Agencia' },
-    { campo: '', descricao: 'Ações' },
+    { campo: '', descricao: 'Ações' }
   ]
 
   //Função para esconder e mostrar os filtros

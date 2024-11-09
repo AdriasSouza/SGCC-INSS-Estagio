@@ -73,7 +73,7 @@ export class ServidorService implements IService<Servidor> {
   delete(id: number): Observable<void> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    const url = this.apiUrl + id;
+    const url = this.apiUrl + id + '/';
     return this.http.delete<void>(url, { headers });
   }
 }

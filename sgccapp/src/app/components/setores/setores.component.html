@@ -6,13 +6,13 @@
 
 <div class="container mt-4">
   <!-- Título da página -->
-  <h3 class="fw-bold mb-4">Minhas Requisições</h3>
-  <h5 class="mb-4">Tabela com todas as requisições registradas no sistema</h5>
+  <h3 class="fw-bold mb-4">Gestão de Setores</h3>
+  <h5 class="mb-4">Tabela com todos os setores registrados no sistema</h5>
 
   <!-- Contêiner flexível para os botões -->
   <div class="d-flex justify-content-between mb-3">
-    <!-- Botão para adicionar nova requisição -->
-    <button class="btn btn-primary mb-3" (click)="openAddModal()">Nova Requisição</button>
+    <!-- Botão para adicionar novo setor -->
+    <button class="btn btn-primary mb-3" (click)="openAddModal()">Adicionar Setor</button>
   </div>
 
   <!-- Spinner de Carregamento -->
@@ -22,33 +22,32 @@
     </div>
   </div>
 
-  <!-- Tabela de Requisições -->
+  <!-- Tabela de Setores -->
   <div class="table-responsive min-vh-100">
     <table class="table table-striped table-bordered" *ngIf="!loading">
       <thead class="table-active">
         <tr>
-          <th>Data</th>
-          <th>Status</th>
-          <th>Descrição</th>
-          <th>Justificativa</th>
+          <th>Nome</th>
+          <th>Código</th>
+          <th>Chefe</th>
           <th>Ações</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let solicitacao of requisicoes">
-          <td>{{ solicitacao.data | date }}</td>
-          <td>{{ solicitacao.status }}</td>
-          <td>{{ solicitacao.descricao }}</td>
-          <td>{{ solicitacao.justificativa }}</td>
+        <tr *ngFor="let setor of setores">
+          <td>{{ setor.nome }}</td>
+          <td>{{ setor.codigo }}</td>
+          <td>{{ getChefeDoSetor(setor.id) }}</td>
           <td>
-            <button class="btn btn-sm btn-primary me-2" (click)="openEditModal(solicitacao)">Editar</button>
+            <button class="btn btn-sm btn-primary me-2" (click)="openEditModal(setor)">Editar</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteSetor(setor.id)">Excluir</button>
           </td>
         </tr>
       </tbody>
       <tfoot>
         <tr>
-          <td colspan="5">
-            <span *ngIf="requisicoes.length == 0">Nenhuma requisição encontrada</span>
+          <td colspan="4">
+            <span *ngIf="setores.length == 0">Nenhum setor encontrado</span>
           </td>
         </tr>
       </tfoot>
@@ -56,25 +55,25 @@
   </div>
 </div>
 
-<!-- Modal de Nova Requisição -->
+<!-- Modal de Adição de Setor -->
 <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="addModalLabel">Nova Requisição</h5>
+        <h5 class="modal-title" id="addModalLabel">Adicionar Setor</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
           <div class="mb-3">
-            <label for="addDescricao" class="form-label">Descrição</label>
-            <input type="text" class="form-control" id="addDescricao" formControlName="descricao">
+            <label for="addNome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="addNome" formControlName="nome">
           </div>
           <div class="mb-3">
-            <label for="addJustificativa" class="form-label">Justificativa</label>
-            <input type="text" class="form-control" id="addJustificativa" formControlName="justificativa">
+            <label for="addCodigo" class="form-label">Código</label>
+            <input type="text" class="form-control" id="addCodigo" formControlName="codigo">
           </div>
-          <button type="submit" class="btn btn-primary me-2">Enviar</button>
+          <button type="submit" class="btn btn-primary me-2">Adicionar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </form>
       </div>
@@ -82,23 +81,23 @@
   </div>
 </div>
 
-<!-- Modal de Edição de Requisição -->
+<!-- Modal de Edição de Setor -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="editModalLabel">Editar Requisição</h5>
+        <h5 class="modal-title" id="editModalLabel">Editar Setor</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
           <div class="mb-3">
-            <label for="editDescricao" class="form-label">Descrição</label>
-            <input type="text" class="form-control" id="editDescricao" formControlName="descricao">
+            <label for="editNome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="editNome" formControlName="nome">
           </div>
           <div class="mb-3">
-            <label for="editJustificativa" class="form-label">Justificativa</label>
-            <input type="text" class="form-control" id="editJustificativa" formControlName="justificativa">
+            <label for="editCodigo" class="form-label">Código</label>
+            <input type="text" class="form-control" id="editCodigo" formControlName="codigo">
           </div>
           <button type="submit" class="btn btn-primary me-2">Salvar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

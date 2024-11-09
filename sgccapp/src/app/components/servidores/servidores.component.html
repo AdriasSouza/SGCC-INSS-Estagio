@@ -6,76 +6,49 @@
 
 <div class="container mt-4">
   <!-- Título da página -->
-  <h3 class="fw-bold mb-4">Lista de Servidores</h3>
-  <h5 class="mb-4">Tabela com todos os servidores e usuários</h5>
+  <h3 class="fw-bold mb-4">Gestão de Servidores</h3>
+  <h5 class="mb-4">Tabela com todos os servidores registrados no sistema</h5>
 
   <!-- Contêiner flexível para os botões -->
   <div class="d-flex justify-content-between mb-3">
-
-    <!-- Botão para ocultar e abrir os filtros -->
-    <button class="btn btn-secondary mb-3" (click)="toggleFiltros()">
-      {{ mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
-    </button>
-  
     <!-- Botão para adicionar novo servidor -->
     <button class="btn btn-primary mb-3" (click)="openAddModal()">Adicionar Servidor</button>
-
   </div>
 
-  <!-- Filtros -->
-  <div class="row mb-3" *ngIf="mostrarFiltros">
-    <div class="col-md-3 mb-3">
-      <label for="filterInscricao" class="form-label">Inscrição Institucional</label>
-      <input type="text" id="filterInscricao" class="form-control" [(ngModel)]="filtroInscricao">
-    </div>
-    <div class="col-md-3 mb-3">
-      <label for="filterNome" class="form-label">Nome Completo</label>
-      <input type="text" id="filterNome" class="form-control" [(ngModel)]="filtroNome">
-    </div>
-    <div class="col-md-3 mb-3">
-      <label for="filterUsuario" class="form-label">Usuário</label>
-      <input type="text" id="filterUsuario" class="form-control" [(ngModel)]="filtroUsuario">
-    </div>
-    <div class="col-md-3 mb-3">
-      <label for="filterSetor" class="form-label">Setor</label>
-      <input type="text" id="filterSetor" class="form-control" [(ngModel)]="filtroSetor">
+  <!-- Spinner de Carregamento -->
+  <div class="text-center my-4">
+    <div class="spinner-border" role="status" *ngIf="loading">
+      <span class="visually-hidden">Loading...</span>
     </div>
   </div>
 
-<!-- Spinner de Carregamento -->
-<div class="text-center my-4">
-  <div class="spinner-border" role="status" *ngIf="loading">
-    <span class="visually-hidden">Loading...</span>
+  <!-- Tabela de Servidores -->
+  <div class="table-responsive min-vh-100">
+    <table class="table table-striped table-bordered" *ngIf="!loading">
+      <thead class="table-active" app-thead-ordenacao
+        [colunas]="colunas"
+        (ordenacaoAtualizada)="ordenar($event)">
+      </thead>
+      <tbody>
+        <tr *ngFor="let servidor of registrosFiltrados()">
+          <td>{{ servidor.inscricao_institucional }}</td>
+          <td>{{ servidor.nome_completo }}</td>
+          <td>{{ servidor.setor?.nome }}</td>
+          <td>
+            <button class="btn btn-sm btn-primary me-2 mb-2" (click)="openEditModal(servidor)">Editar</button>
+            <button class="btn btn-sm btn-danger mb-2" (click)="delete(servidor.id)">Excluir</button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5">
+            <span *ngIf="registros.length == 0">Nenhum servidor encontrado</span>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
   </div>
-</div>
-
-<!-- Tabela de Servidores -->
-<div class="table-responsive min-vh-100">
-  <table class="table table-striped table-bordered" *ngIf="!loading">
-    <thead class="table-active" app-thead-ordenacao
-      [colunas]="colunas"
-      (ordenacaoAtualizada)="ordenar($event)">
-    </thead>
-    <tbody>
-      <tr *ngFor="let servidor of registrosFiltrados()">
-        <td>{{ servidor.inscricao_institucional }}</td>
-        <td>{{ servidor.nome_completo }}</td>
-        <td>{{ servidor.setor?.nome }}</td>
-        <td>{{ servidor.setor?.agencia?.nome }}</td>
-        <td>
-          <button class="btn btn-sm btn-primary me-2 mb-2" (click)="openEditModal(servidor)">Editar</button>
-          <button class="btn btn-sm btn-danger mb-2" (click)="openDeleteModal(servidor.id)">Excluir</button>
-        </td>
-      </tr>
-    </tbody>
-    <tfoot>
-      <tr>
-        <td colspan="6">
-          <span *ngIf="registros.length == 0">Nenhum registro encontrado</span>
-        </td>
-      </tr>
-    </tfoot>
-  </table>
 </div>
 
 <!-- Modal de Adição de Servidor -->
@@ -106,13 +79,7 @@
               <option *ngFor="let setor of setores" [value]="setor.id">{{ setor.nome }}</option>
             </select>
           </div>
-          <div class="mb-3">
-            <label for="addAgencia" class="form-label">Agência</label>
-            <select id="addAgencia" class="form-select" formControlName="agencia">
-              <option *ngFor="let setor of setores" [value]="setor.agencia?.id">{{ setor.agencia?.nome }}</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary">Adicionar</button>
+          <button type="submit" class="btn btn-primary me-2">Adicionar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </form>
       </div>
@@ -148,13 +115,7 @@
               <option *ngFor="let setor of setores" [value]="setor.id">{{ setor.nome }}</option>
             </select>
           </div>
-          <div class="mb-3">
-            <label for="editAgencia" class="form-label">Agência</label>
-            <select id="editAgencia" class="form-select" formControlName="agencia">
-              <option *ngFor="let setor of setores" [value]="setor.agencia?.id">{{ setor.agencia?.nome }}</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary">Salvar</button>
+          <button type="submit" class="btn btn-primary me-2">Salvar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </form>
       </div>
