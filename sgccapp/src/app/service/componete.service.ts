@@ -53,10 +53,9 @@ export class ComponenteService implements IService<Componente> {
       descricao: objeto.descricao,
       tipo: objeto.tipo?.id ?? null,
       fabricante: objeto.fabricante,
-      tamanho_mem: objeto.tamanho_mem,
+      tamanho_mem: objeto.tamanho_mem ?? null,
       n_serie: objeto?.n_serie ?? null,
       data_aquisicao: objeto.data_aquisicao
-
     };
     console.log('componenteData', componenteData);
     if (objeto.id) {

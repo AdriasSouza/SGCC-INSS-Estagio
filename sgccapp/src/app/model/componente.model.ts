@@ -8,7 +8,7 @@ export type Componente = {
   descricao: string;             // Descrição do componente
   tipo?: TipoComponente;         // Relacionamento com tipo de componente
   fabricante: string;            // Nome do fabricante
-  tamanho_mem?: number;          // Tamanho da memória, opcional
+  tamanho_mem?: number | null;   // Tamanho da memória, opcional
   n_serie?: string;              // Número de série, opcional
   data_aquisicao: string;          // Data de aquisição
 }

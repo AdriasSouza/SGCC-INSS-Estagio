@@ -170,7 +170,8 @@ class AgenciaViewSet(viewsets.ModelViewSet):
     queryset = Agencia.objects.all().order_by('id')
     serializer_class = AgenciaSerializer
     permission_classes = [IsAuthenticated]
-    permission_classes = [IsAdminUser | ReadOnly]
+    # permission_classes = [IsAdminUser | ReadOnly]
+    permission_classes = [IsAdminUser]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['nome', 'numero']
 
@@ -179,7 +180,8 @@ class SetorViewSet(viewsets.ModelViewSet):
     queryset = Setor.objects.all().order_by('id')
     serializer_class = SetorSerializer
     permission_classes = [IsAuthenticated]
-    permission_classes = [IsAdminUser | ReadOnly]
+    # permission_classes = [IsAdminUser | ReadOnly]
+    permission_classes = [IsAdminUser]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['codigo', 'nome', 'agencia']
 

@@ -179,7 +179,8 @@ export class ComponentesComponent implements IList<Componente>, OnInit {
     if (this.addForm.valid) {
       const novoComponente: Componente = {
         ...this.addForm.value,
-        tipo: { id: this.addForm.value.tipo }
+        tipo: { id: this.addForm.value.tipo },
+        tamanho_mem: this.addForm.value.tamanho_mem ? this.addForm.value.tamanho_mem : null
       };
       this.servico.save(novoComponente).subscribe({
         complete: () => {

@@ -16,7 +16,7 @@ export class TipoComponenteService implements IService<TipoComponente> {
     private http: HttpClient
   ) { }
 
-  apiUrl: string = environment.API_URL + '/api/gerenciamento/tipo-equipamento/';
+  apiUrl: string = environment.API_URL + '/api/gerenciamento/tipo-componente/';
 
   get(termoBusca?: string, paginacao?: RequisicaoPaginada): Observable<RespostaPaginada<TipoComponente>> {
     let params = new HttpParams();
@@ -48,6 +48,7 @@ export class TipoComponenteService implements IService<TipoComponente> {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl;
     if (objeto.id) {
+      const url = this.apiUrl + objeto.id + '/';
       return this.http.put<TipoComponente>(url, objeto, { headers });
     } else {
       return this.http.post<TipoComponente>(url, objeto, { headers });

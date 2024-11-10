@@ -48,6 +48,7 @@ export class SetorService implements IService<Setor> {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl;
     if (objeto.id) {
+      const url = this.apiUrl + objeto.id + '/';
       return this.http.put<Setor>(url, objeto, { headers });
     } else {
       return this.http.post<Setor>(url, objeto, { headers });

@@ -55,6 +55,7 @@ export class UserService implements IService<User> {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl;
     if (objeto.id) {
+      this.apiUrl + objeto.id + '/';
       return this.http.put<User>(url, objeto, { headers });
     } else {
       return this.http.post<User>(url, objeto, { headers });
@@ -64,7 +65,7 @@ export class UserService implements IService<User> {
   delete(id: number): Observable<void> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    const url = this.apiUrl + id;
+    const url = this.apiUrl + id + '/';
     return this.http.delete<void>(url, { headers });
   }
 }
