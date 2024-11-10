@@ -6,7 +6,7 @@ from rest_framework.permissions import (
     IsAdminUser,
     SAFE_METHODS,
     BasePermission
-    )
+)
 from rest_framework_simplejwt.tokens import RefreshToken
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -23,67 +23,76 @@ from .models import Servidor, Agencia, Setor, Solicitacao, User
 import csv
 
 
+# Permissão personalizada que permite acesso somente a administradores ou leitura por todos
+class IsAdminOrReadOnly(IsAuthenticated):
+    def has_permission(self, request, view):
+        # Verifica se o usuário é admin ou se a requisição é de leitura (GET, OPTIONS, HEAD)
+        return bool(request.user and (request.user.is_staff or request.method in SAFE_METHODS))
+
+
+# View para registrar novos usuários
 class RegisterView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]  # Apenas administradores podem criar usuários
 
     def post(self, request):
-        # Verifique se o usuário está tentando registrar com campos de 'is_superuser' ou 'is_staff'
+        # Impede que usuários não administradores definam campos como is_superuser ou is_staff
         if 'is_superuser' in request.data or 'is_staff' in request.data:
             if not request.user.is_superuser:
-                return Response({"detail": "Você não tem permissão para definir os campos de superusuário ou staff."},
-                                 status=status.HTTP_403_FORBIDDEN)
-        
+                return Response({"detail": "Você não tem permissão para definir os campos de superusuário ou staff."}, status=status.HTTP_403_FORBIDDEN)
+
         serializer = UserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        if serializer.is_valid():
+            serializer.save()  # Cria o novo usuário
+            return Response(serializer.data, status=status.HTTP_201_CREATED)  # Retorna os dados do usuário criado
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # Se houver erros, retorna os erros
 
 
+# View para atualizar os dados do usuário logado
 class UserUpdateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]  # Apenas usuários autenticados podem atualizar seus dados
 
     def put(self, request):
-        user = request.user
+        user = request.user  # Obtém o usuário logado
         
-        # Verifique se o usuário está tentando alterar os campos 'is_superuser' ou 'is_staff'
+        # Verifica se o usuário está tentando alterar campos proibidos como 'is_superuser' ou 'is_staff'
         if 'is_superuser' in request.data or 'is_staff' in request.data:
             if not user.is_superuser:
                 return Response({"detail": "Você não tem permissão para alterar os campos de superusuário ou staff."},
                                 status=status.HTTP_403_FORBIDDEN)
         
-        # Passando o contexto com o 'request' para o serializer
         serializer = UserSerializer(user, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
-            serializer.save()
+            serializer.save()  # Atualiza o usuário
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # Se houver erros, retorna os erros
 
 
+# View para que administradores atualizem dados de outros usuários
 class UserAdminUpdateView(APIView):
     permission_classes = [IsAuthenticated]  # Garante que apenas usuários autenticados possam atualizar
 
     def put(self, request, *args, **kwargs):
         try:
-            # Encontrar o usuário pelo id
+            # Encontra o usuário pelo ID fornecido
             usuario = User.objects.get(pk=kwargs['pk'])
             
-            # Passar o request no contexto ao instanciar o serializer
+            # Passa o request para o contexto ao instanciar o serializer
             serializer = UserSerializer(usuario, data=request.data, context={'request': request})
             
             if serializer.is_valid():
-                serializer.save()
+                serializer.save()  # Atualiza os dados do usuário
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  # Se houver erros, retorna os erros
         except User.DoesNotExist:
             return Response({"detail": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
 
+# View para visualizar os dados do usuário logado ou todos os usuários se o parâmetro 'all' for verdadeiro
 class UserDataView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]  # Apenas usuários autenticados podem acessar
 
     def get(self, request):
-        # Verifica se o parâmetro 'all' está presente e é verdadeiro na URL
-        get_all = request.query_params.get('all', 'false').lower() == 'true'
+        get_all = request.query_params.get('all', 'false').lower() == 'true'  # Verifica se 'all' é true na URL
         
         if get_all:
             # Retorna todos os usuários
@@ -95,44 +104,45 @@ class UserDataView(APIView):
             user = request.user
             serializer = UserSerializer(user)
             return Response(serializer.data)
-        
 
+
+# View para administradores visualizarem dados de um usuário específico
 class UserAdminDataView(APIView):
     permission_classes = [IsAdminUser]  # Apenas administradores podem acessar
 
     def get(self, request, pk):
         try:
-            # Tente encontrar o usuário pelo ID
+            # Encontra o usuário pelo ID
             user = User.objects.get(pk=pk)
         except User.DoesNotExist:
             return Response({"detail": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Serializa os dados do usuário
+        # Serializa e retorna os dados do usuário
         serializer = UserSerializer(user)
-        
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+# View para logout do usuário, invalidando o refresh token
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]  # Apenas usuários autenticados podem fazer logout
 
     def post(self, request):
         try:
-            refresh_token = request.data["refresh_token"]  # Obtenha o refresh token do corpo da requisição
-            token = RefreshToken(refresh_token)  # Crie um objeto RefreshToken
-            token.blacklist()  # Coloque o token na blacklist
+            refresh_token = request.data["refresh_token"]  # Obtém o refresh token da requisição
+            token = RefreshToken(refresh_token)  # Cria o objeto RefreshToken
+            token.blacklist()  # Coloca o token na blacklist, invalidando-o
 
-            return Response(status=status.HTTP_205_RESET_CONTENT)  # Retorne o status 205
+            return Response(status=status.HTTP_205_RESET_CONTENT)  # Retorna o status 205 (reset do conteúdo)
         except KeyError:
             return Response({"detail": "Refresh token not provided."}, status=status.HTTP_400_BAD_REQUEST)  # Caso não forneça o token
         except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)  # Retorne a mensagem de errocd
-    
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)  # Qualquer outro erro
+
 
 # Filtros para a model Agencia
 class AgenciaFilter(filters.FilterSet):
-    nome = filters.CharFilter(lookup_expr='icontains')
-    numero = filters.NumberFilter()
+    nome = filters.CharFilter(lookup_expr='icontains')  # Filtro para buscar por nome com case-insensitive
+    numero = filters.NumberFilter()  # Filtro para o número da agência
 
     class Meta:
         model = Agencia
@@ -141,62 +151,55 @@ class AgenciaFilter(filters.FilterSet):
 
 # Filtros para a model Setor
 class SetorFilter(filters.FilterSet):
-    codigo = filters.NumberFilter()
-    nome = filters.CharFilter(lookup_expr='icontains')
-    agencia = filters.ModelChoiceFilter(queryset=Agencia.objects.all())
+    codigo = filters.NumberFilter()  # Filtro para código
+    nome = filters.CharFilter(lookup_expr='icontains')  # Filtro para nome com case-insensitive
+    agencia = filters.ModelChoiceFilter(queryset=Agencia.objects.all())  # Filtro para a agência relacionada
+    chefe = filters.ModelChoiceFilter(queryset=Servidor.objects.all(), required=False)  # Filtro para o chefe (servidor responsável)
+    servidores = filters.ModelMultipleChoiceFilter(queryset=Servidor.objects.all(), required=False)  # Filtro para servidores relacionados ao setor
 
     class Meta:
         model = Setor
-        fields = ['codigo', 'nome', 'agencia']
+        fields = ['codigo', 'nome', 'agencia', 'chefe', 'servidores']
 
 
 # Filtros para a model Servidor
 class ServidorFilter(filters.FilterSet):
-    inscricao_institucional = filters.CharFilter(lookup_expr='icontains')
-    nome_completo = filters.CharFilter(lookup_expr='icontains')
-    setor = filters.ModelChoiceFilter(queryset=Setor.objects.all())
+    inscricao_institucional = filters.CharFilter(lookup_expr='icontains')  # Filtro para inscrição institucional
+    nome_completo = filters.CharFilter(lookup_expr='icontains')  # Filtro para nome completo
 
     class Meta:
         model = Servidor
-        fields = ['inscricao_institucional', 'nome_completo', 'setor']
+        fields = ['inscricao_institucional', 'nome_completo']
 
 
-class ReadOnly(BasePermission):
-    def has_permission(self, request, view):
-        return request.method in SAFE_METHODS
-
-
+# ViewSet para a model Agencia
 class AgenciaViewSet(viewsets.ModelViewSet):
     queryset = Agencia.objects.all().order_by('id')
     serializer_class = AgenciaSerializer
-    permission_classes = [IsAuthenticated]
-    # permission_classes = [IsAdminUser | ReadOnly]
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['nome', 'numero']
+    filterset_class = AgenciaFilter
 
 
+# ViewSet para a model Setor
 class SetorViewSet(viewsets.ModelViewSet):
     queryset = Setor.objects.all().order_by('id')
     serializer_class = SetorSerializer
-    permission_classes = [IsAuthenticated]
-    # permission_classes = [IsAdminUser | ReadOnly]
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['codigo', 'nome', 'agencia']
+    filterset_class = SetorFilter
 
 
+# ViewSet para a model Servidor
 class ServidorViewSet(viewsets.ModelViewSet):
     queryset = Servidor.objects.all().order_by('id')
     serializer_class = ServidorSerializer
-    permission_classes = [IsAuthenticated]
-    permission_classes = [IsAdminUser | ReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = [
-        'inscricao_institucional', 'nome_completo', 'setor', 'chefe'
-        ]
+    filterset_class = ServidorFilter
 
 
+# ViewSet para a model Solicitacao
 class SolicitacaoViewSet(viewsets.ModelViewSet):
     queryset = Solicitacao.objects.all().order_by('id')
     serializer_class = SolicitacaoSerializer
@@ -205,31 +208,47 @@ class SolicitacaoViewSet(viewsets.ModelViewSet):
     filterset_fields = ['user', 'data', 'status', 'descricao']
 
 
+# View para exportar dados dos servidores em formato CSV
 class ExportServidoresCSVView(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser]  # Apenas administradores podem acessar
 
-    def get(self, request, format=None):
+    def get(self, request):
+        # Obtém o setor_id da requisição
         setor_id = request.query_params.get('setor_id')
         if not setor_id:
-            return HttpResponse(
-                status=400, content="Parâmetro 'setor_id' é obrigatório."
-                )
+            return HttpResponse(status=400, content="Parâmetro 'setor_id' é obrigatório.")  # Retorna erro caso não tenha setor_id
+
         try:
+            # Encontra o setor
             setor = Setor.objects.get(id=setor_id)
         except Setor.DoesNotExist:
-            return HttpResponse(status=404, content="Setor não encontrado.")
+            return HttpResponse(status=404, content="Setor não encontrado.")  # Se o setor não existir, retorna erro
 
-        servidores = Servidor.objects.filter(setor=setor).order_by('id')
+        # Obtém todos os servidores do setor, incluindo o chefe
+        servidores = Servidor.objects.filter(setores_associados=setor).order_by('id')
 
+        # Identifica o chefe do setor
+        chefe = setor.chefe
+
+        # Cria uma lista de servidores com o chefe primeiro
+        servidores_ordenados = [chefe] + [servidor for servidor in servidores if servidor != chefe]
+
+        # Prepara o nome do arquivo, incluindo código e nome do setor
+        nome_arquivo = f"servidores_{setor.codigo}_{setor.nome}.csv"
+
+        # Prepara a resposta do CSV
         response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="servidores_setor_{setor_id}.csv"'
+        response['Content-Disposition'] = f'attachment; filename="{nome_arquivo}"'
 
-        writer = csv.writer(response)
-        writer.writerow(['Nome Completo', 'Inscrição Institucional', 'Chefe'])
+        writer = csv.DictWriter(response, fieldnames=['nome_completo', 'inscricao_institucional', 'chefe'])
+        writer.writeheader()
 
-        for servidor in servidores:
-            writer.writerow([servidor.nome_completo, servidor.inscricao_institucional, servidor.chefe])
+        # Escreve os dados dos servidores no CSV
+        for servidor in servidores_ordenados:
+            writer.writerow({
+                'nome_completo': servidor.nome_completo,
+                'inscricao_institucional': servidor.inscricao_institucional,
+                'chefe': 'Sim' if servidor == chefe else ''
+            })
 
         return response
-    

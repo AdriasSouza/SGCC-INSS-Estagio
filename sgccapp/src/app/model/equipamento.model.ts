@@ -14,7 +14,7 @@ export type Equipamento = {
   sala?: number;
   setor?: Setor;
   tipo?: TipoEquipamento;
-  servidor?: Servidor;
+  servidor_responsavel?: Servidor;
   componentes?: Componente[];
-  data_aquisicao?: string; // ISO 8601 date string
+  data_aquisicao?: Date; // ISO 8601 date string
 }
