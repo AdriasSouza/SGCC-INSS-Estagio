@@ -22,7 +22,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-servidores',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent, BarraComandosComponent], // Adicionando HttpClientModule
+  imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent], // Adicionando HttpClientModule
   templateUrl: './servidores.component.html',
   styleUrls: ['./servidores.component.scss']
 })
@@ -38,17 +38,13 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
   ) {
     this.editForm = this.fb.group({
       id: [''],
-      inscricao_institucional: ['', Validators.required],
-      nome_completo: ['', Validators.required],
-      chefe: [false],
-      setor: ['', Validators.required]
+      inscricao_institucional: ['', [Validators.required, Validators.pattern('^[0-9]*$'), Validators.minLength(7), Validators.maxLength(7)]],
+      nome_completo: ['', Validators.required]
     });
 
     this.addForm = this.fb.group({
-      inscricao_institucional: ['', Validators.required],
-      nome_completo: ['', Validators.required],
-      chefe: [false],
-      setor: ['', Validators.required]
+      inscricao_institucional: ['', [Validators.required, Validators.pattern('^[0-9]*$'), Validators.minLength(7), Validators.maxLength(7)]],
+      nome_completo: ['', Validators.required]
     });
   }
 
@@ -72,11 +68,13 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
   showDropdown: boolean[] = [];
   loading: boolean = false;
   servidorSelecionado: Servidor | null = null;
+  initialFormValues: any;
+  inscricaoExistente: boolean = false;
+  successMessage: string = '';
 
   colunas: TheadOrdenacao = [
     { campo: 'inscricao_institucional', descricao: 'Inscrição Institucional' },
     { campo: 'nome_completo', descricao: 'Nome Completo' },
-    { campo: 'setor.nome', descricao: 'Setor' },
     { campo: '', descricao: 'Ações' }
   ]
 
@@ -109,8 +107,7 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
   registrosFiltrados(): Servidor[] {
     return this.registros.filter(servidor => {
       return (!this.filtroInscricao || servidor.inscricao_institucional.includes(this.filtroInscricao)) &&
-             (!this.filtroNome || servidor.nome_completo.includes(this.filtroNome)) &&
-             (!this.filtroSetor || (servidor.setor?.nome && servidor.setor.nome.includes(this.filtroSetor)));
+             (!this.filtroNome || servidor.nome_completo.includes(this.filtroNome));
     });
   }
 
@@ -168,7 +165,7 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
   }
 
   confirmAdd() {
-    if (this.addForm.valid) {
+    if (this.addForm.valid && !this.inscricaoExistente) {
       const novoServidor: Servidor = {
         ...this.addForm.value,
         setor: { id: this.addForm.value.setor },
@@ -194,16 +191,14 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
       id: servidor.id,
       inscricao_institucional: servidor.inscricao_institucional,
       nome_completo: servidor.nome_completo,
-      chefe: servidor.chefe,
-      setor: servidor.setor?.id,
-      agencia: servidor.setor?.agencia?.id
     });
+    this.initialFormValues = this.editForm.value;
     const editModal = new bootstrap.Modal(document.getElementById('editModal'));
     editModal.show();
   }
 
   confirmEdit() {
-    if (this.servidorSelecionado && this.editForm.valid) {
+    if (this.servidorSelecionado && this.editForm.valid && !this.inscricaoExistente) {
       const servidorAtualizado: Servidor = {
         ...this.servidorSelecionado,
         ...this.editForm.value,
@@ -222,6 +217,24 @@ export class ServidoresComponent implements IList<Servidor>, OnInit {
         }
       });
     }
+  }
+
+  checkInscricaoInstitucional(formType: 'add' | 'edit') {
+    const inscricao = formType === 'add' ? this.addForm.get('inscricao_institucional')?.value : this.editForm.get('inscricao_institucional')?.value;
+    if (inscricao) {
+      this.servico.checkInscricaoExists(inscricao).subscribe({
+        next: (exists: boolean) => {
+          this.inscricaoExistente = exists;
+        },
+        error: (err) => {
+          console.error('Erro ao verificar inscrição institucional:', err);
+        }
+      });
+    }
+  }
+
+  formChanged(): boolean {
+    return JSON.stringify(this.initialFormValues) !== JSON.stringify(this.editForm.value);
   }
 
   cancelAdd(form: NgForm) {

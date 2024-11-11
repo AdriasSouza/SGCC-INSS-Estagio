@@ -47,23 +47,16 @@ export class ServidorService implements IService<Servidor> {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl;
     if (objeto.id) {
-      const addservidorData = {
-        inscricao_institucional: objeto.inscricao_institucional,
-        nome_completo: objeto.nome_completo,
-        setor: objeto.setor?.id,
-        agencia: objeto.setor?.agencia?.id,
-        chefe: objeto.chefe
-      };
-      const url = this.apiUrl + objeto.id + '/';
-      return this.http.put<Servidor>(url, addservidorData, { headers });
-    } else {
-      // Criar um objeto com os campos necessários
       const servidorData = {
         inscricao_institucional: objeto.inscricao_institucional,
         nome_completo: objeto.nome_completo,
-        setor: objeto.setor?.id,
-        agencia: objeto.setor?.agencia?.id,
-        chefe: objeto.chefe
+      };
+      const url = this.apiUrl + objeto.id + '/';
+      return this.http.put<Servidor>(url, servidorData, { headers });
+    } else {
+      const servidorData = {
+        inscricao_institucional: objeto.inscricao_institucional,
+        nome_completo: objeto.nome_completo,
       };
       console.log('servidorData:', servidorData);
       return this.http.post<Servidor>(url, servidorData, { headers });
@@ -75,5 +68,12 @@ export class ServidorService implements IService<Servidor> {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl + id + '/';
     return this.http.delete<void>(url, { headers });
+  }
+
+  checkInscricaoExists(inscricao: string): Observable<boolean> {
+    const token = localStorage.getItem('access_token');
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    const url = `${this.apiUrl}check-inscricao/${inscricao}/`;
+    return this.http.get<boolean>(url, { headers });
   }
 }

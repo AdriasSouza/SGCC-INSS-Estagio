@@ -55,7 +55,7 @@ export class EquipamentoService implements IService<Equipamento> {
       sala: objeto.sala,
       setor: objeto.setor?.id,
       tipo: objeto.tipo?.id,
-      servidor: objeto.servidor?.id,
+      servidor: objeto.servidor_responsavel?.id,
       componentes: objeto.componentes?.map(componente => componente.id) ?? [],
       data_aquisicao: objeto.data_aquisicao
     };

@@ -55,7 +55,7 @@ export class RequisicoesComponent implements OnInit {
   getUserData(): void {
     this.userService.getUserData().subscribe({
       next: (user: User) => {
-        this.userId = user.id;
+        this.userId = user.id ?? null;
         this.getRequisicoes();
       },
       error: (err) => {

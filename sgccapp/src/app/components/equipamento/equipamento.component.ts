@@ -149,21 +149,16 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
   }
 
   registrosFiltrados(): Equipamento[] {
-    const dataInicio = this.filtroDataInicio ? new Date(this.filtroDataInicio) : null;
-    const dataFim = this.filtroDataFim ? new Date(this.filtroDataFim) : null;
-
     return this.registros.filter(equipamento => {
-      const dataAquisicao = new Date(equipamento.data_aquisicao!);
-
       return (!this.filtroMarca || equipamento.marca?.includes(this.filtroMarca)) &&
              (!this.filtroTipo || equipamento.tipo?.nome?.includes(this.filtroTipo)) &&
              (!this.filtroSetor || equipamento.setor?.nome?.includes(this.filtroSetor)) &&
              (!this.filtroEstado || equipamento.estado.includes(this.filtroEstado)) &&
              (!this.filtroSituacao || equipamento.situacao.includes(this.filtroSituacao)) &&
-             (!dataInicio || dataAquisicao >= dataInicio) &&
-             (!dataFim || dataAquisicao <= dataFim);
+             (!this.filtroDataInicio || new Date(equipamento.data_aquisicao!) >= new Date(this.filtroDataInicio)) &&
+             (!this.filtroDataFim || new Date(equipamento.data_aquisicao!) <= new Date(this.filtroDataFim));
     });
-  }
+  } 
 
   loadFilterOptions() {
     this.servico.get().subscribe({
@@ -322,7 +317,7 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
       marca: equipamento.marca,
       tipo: equipamento.tipo?.id,
       setor: equipamento.setor?.id,
-      servidor: equipamento.servidor?.id,
+      servidor: equipamento.servidor_responsavel?.id,
       sala: equipamento.sala,
       estado: equipamento.estado,
       situacao: equipamento.situacao,

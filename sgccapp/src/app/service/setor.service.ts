@@ -47,11 +47,25 @@ export class SetorService implements IService<Setor> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl;
+    console.log('Requisição:', objeto);
+    const setorData: any = {
+      codigo: objeto.codigo,
+      nome: objeto.nome,
+      agencia: objeto.agencia?.id,
+      chefe: objeto.chefe?.id
+    };
+
+    if (objeto.servidores && objeto.servidores.length > 0) {
+      setorData.servidores = objeto.servidores.map(servidor => servidor.id);
+    }
+    
     if (objeto.id) {
       const url = this.apiUrl + objeto.id + '/';
-      return this.http.put<Setor>(url, objeto, { headers });
+      console.log('Dados edição:', setorData);
+      return this.http.put<Setor>(url, setorData, { headers });
     } else {
-      return this.http.post<Setor>(url, objeto, { headers });
+      console.log('Dados criação:', setorData);
+      return this.http.post<Setor>(url, setorData, { headers });
     }
   }
 

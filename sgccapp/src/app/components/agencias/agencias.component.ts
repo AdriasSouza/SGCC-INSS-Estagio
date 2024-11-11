@@ -31,6 +31,7 @@ export class AgenciasComponent implements IList<Agencia>, OnInit {
     private servicoAlerta: AlertaService, // Adicionando o serviço AlertaService
   ) {
     this.editForm = this.fb.group({
+      id: [''],
       nome: ['', Validators.required],
       numero: ['', Validators.required],
     });
@@ -118,7 +119,9 @@ export class AgenciasComponent implements IList<Agencia>, OnInit {
 
   confirmDelete() {
     if (this.agenciaSelecionada) {
-      this.delete(this.agenciaSelecionada.id);
+      if (this.agenciaSelecionada?.id !== undefined) {
+        this.delete(this.agenciaSelecionada.id);
+      }
       const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
       deleteModal.hide();
     }
@@ -149,6 +152,7 @@ export class AgenciasComponent implements IList<Agencia>, OnInit {
   openEditModal(agencia: Agencia) {
     this.agenciaSelecionada = agencia;
     this.editForm.patchValue({
+      id: agencia.id,
       nome: agencia.nome,
       numero: agencia.numero
     });

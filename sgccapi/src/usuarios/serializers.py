@@ -28,6 +28,22 @@ class SetorSerializer(serializers.ModelSerializer):
         model = Setor
         fields = ['id', 'codigo', 'nome', 'agencia','servidores', 'chefe']  # Inclui o ID, código, nome, agência e chefe.
 
+    def create(self, validated_data):
+        servidores_data = validated_data.pop('servidores', [])
+        setor = Setor.objects.create(**validated_data)
+        setor.servidores.set(servidores_data)
+        return setor
+
+    def update(self, instance, validated_data):
+        servidores_data = validated_data.pop('servidores', [])
+        instance.codigo = validated_data.get('codigo', instance.codigo)
+        instance.nome = validated_data.get('nome', instance.nome)
+        instance.agencia = validated_data.get('agencia', instance.agencia)
+        instance.chefe = validated_data.get('chefe', instance.chefe)
+        instance.save()
+        instance.servidores.set(servidores_data)
+        return instance
+
     # Sobrescreve a representação para exibir dados completos de agência e chefe ao invés de apenas os IDs.
     def to_representation(self, instance):
         representation = super().to_representation(instance)

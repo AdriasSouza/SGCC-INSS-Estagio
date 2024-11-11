@@ -33,7 +33,6 @@
         <tr *ngFor="let servidor of registrosFiltrados()">
           <td>{{ servidor.inscricao_institucional }}</td>
           <td>{{ servidor.nome_completo }}</td>
-          <td>{{ servidor.setor?.nome }}</td>
           <td>
             <button class="btn btn-sm btn-primary me-2 mb-2" (click)="openEditModal(servidor)">Editar</button>
             <button class="btn btn-sm btn-danger mb-2" (click)="delete(servidor.id)">Excluir</button>
@@ -63,23 +62,23 @@
         <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
           <div class="mb-3">
             <label for="addInscricao" class="form-label">Inscrição Institucional</label>
-            <input type="text" class="form-control" id="addInscricao" formControlName="inscricao_institucional">
+            <input type="text" class="form-control" id="addInscricao" formControlName="inscricao_institucional" maxlength="7" (blur)="checkInscricaoInstitucional('add')">
+            <div *ngIf="addForm.get('inscricao_institucional')?.invalid && (addForm.get('inscricao_institucional')?.dirty || addForm.get('inscricao_institucional')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('inscricao_institucional')?.errors?.['required']">Inscrição Institucional é obrigatória.</div>
+              <div *ngIf="addForm.get('inscricao_institucional')?.errors?.['pattern']">Inscrição Institucional deve conter apenas números.</div>
+              <div *ngIf="addForm.get('inscricao_institucional')?.errors?.['minlength']">Inscrição Institucional deve ter 7 caracteres.</div>
+              <div *ngIf="addForm.get('inscricao_institucional')?.errors?.['maxlength']">Inscrição Institucional deve ter 7 caracteres.</div>
+              <div *ngIf="inscricaoExistente">Já existe um servidor com esta inscrição institucional.</div>
+            </div>
           </div>
           <div class="mb-3">
             <label for="addNome" class="form-label">Nome Completo</label>
             <input type="text" class="form-control" id="addNome" formControlName="nome_completo">
+            <div *ngIf="addForm.get('nome_completo')?.invalid && (addForm.get('nome_completo')?.dirty || addForm.get('nome_completo')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('nome_completo')?.errors?.['required']">Nome Completo é obrigatório.</div>
+            </div>
           </div>
-          <div class="mb-3">
-            <label for="addChefe" class="form-label">Chefe</label>
-            <input type="checkbox" class="form-check-input" id="addChefe" formControlName="chefe">
-          </div>
-          <div class="mb-3">
-            <label for="addSetor" class="form-label">Setor</label>
-            <select id="addSetor" class="form-select" formControlName="setor">
-              <option *ngFor="let setor of setores" [value]="setor.id">{{ setor.nome }}</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary me-2">Adicionar</button>
+          <button type="submit" class="btn btn-primary me-2" [disabled]="!addForm.valid || inscricaoExistente">Adicionar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </form>
       </div>
@@ -99,25 +98,43 @@
         <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
           <div class="mb-3">
             <label for="editInscricao" class="form-label">Inscrição Institucional</label>
-            <input type="text" class="form-control" id="editInscricao" formControlName="inscricao_institucional">
+            <input type="text" class="form-control" id="editInscricao" formControlName="inscricao_institucional" maxlength="7" (blur)="checkInscricaoInstitucional('edit')">
+            <div *ngIf="editForm.get('inscricao_institucional')?.invalid && (editForm.get('inscricao_institucional')?.dirty || editForm.get('inscricao_institucional')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('inscricao_institucional')?.errors?.['required']">Inscrição Institucional é obrigatória.</div>
+              <div *ngIf="editForm.get('inscricao_institucional')?.errors?.['pattern']">Inscrição Institucional deve conter apenas números.</div>
+              <div *ngIf="editForm.get('inscricao_institucional')?.errors?.['minlength']">Inscrição Institucional deve ter 7 caracteres.</div>
+              <div *ngIf="editForm.get('inscricao_institucional')?.errors?.['maxlength']">Inscrição Institucional deve ter 7 caracteres.</div>
+              <div *ngIf="inscricaoExistente">Já existe um servidor com esta inscrição institucional.</div>
+            </div>
           </div>
           <div class="mb-3">
             <label for="editNome" class="form-label">Nome Completo</label>
             <input type="text" class="form-control" id="editNome" formControlName="nome_completo">
+            <div *ngIf="editForm.get('nome_completo')?.invalid && (editForm.get('nome_completo')?.dirty || editForm.get('nome_completo')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('nome_completo')?.errors?.['required']">Nome Completo é obrigatório.</div>
+            </div>
           </div>
-          <div class="mb-3">
-            <label for="editChefe" class="form-label">Chefe</label>
-            <input type="checkbox" class="form-check-input" id="editChefe" formControlName="chefe">
-          </div>
-          <div class="mb-3">
-            <label for="editSetor" class="form-label">Setor</label>
-            <select id="editSetor" class="form-select" formControlName="setor">
-              <option *ngFor="let setor of setores" [value]="setor.id">{{ setor.nome }}</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary me-2">Salvar</button>
+          <button type="submit" class="btn btn-primary me-2" [disabled]="!editForm.valid || !formChanged() || inscricaoExistente">Salvar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Sucesso -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="successModalLabel">Operação bem-sucedida</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>{{ successMessage }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
       </div>
     </div>
   </div>

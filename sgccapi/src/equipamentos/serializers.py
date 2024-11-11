@@ -40,7 +40,7 @@ class EquipamentoSerializer(serializers.ModelSerializer):
         # Campos que serão incluídos na serialização
         fields = [
             'id', 'plaqueta', 'nome', 'marca', 'estado', 'situacao', 'componentes',
-            'sala', 'setor', 'tipo', 'servidor', 'data_aquisicao'
+            'sala', 'setor', 'tipo', 'servidor_responsavel', 'data_aquisicao'
         ]
 
     def to_representation(self, instance):
@@ -49,7 +49,7 @@ class EquipamentoSerializer(serializers.ModelSerializer):
         # Aqui, cada campo relacionado é substituído por seus dados completos, utilizando seus respectivos serializers
         representation['tipo'] = TipoEquipamentoSerializer(instance.tipo).data
         representation['setor'] = SetorSerializer(instance.setor).data
-        representation['servidor'] = ServidorSerializer(instance.servidor).data
+        representation['servidor_responsavel'] = ServidorSerializer(instance.servidor_responsavel).data
         # Se o campo 'componentes' estiver presente, ele será serializado como uma lista de objetos
         representation['componentes'] = ComponenteSerializer(instance.componentes.all(), many=True).data
         return representation
