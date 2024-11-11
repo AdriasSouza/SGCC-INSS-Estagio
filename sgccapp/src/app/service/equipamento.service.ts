@@ -46,24 +46,44 @@ export class EquipamentoService implements IService<Equipamento> {
   save(objeto: Equipamento): Observable<Equipamento> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    const equipamentoData = {
-      plaqueta: objeto.plaqueta,
-      nome: objeto.nome,
-      marca: objeto.marca,
+    const equipamentoData: any = {
+      plaqueta: objeto?.plaqueta,
+      nome: objeto?.nome,
+      marca: objeto?.marca || null,
       estado: objeto.estado,
       situacao: objeto.situacao,
-      sala: objeto.sala,
-      setor: objeto.setor?.id,
-      tipo: objeto.tipo?.id,
-      servidor: objeto.servidor_responsavel?.id,
-      componentes: objeto.componentes?.map(componente => componente.id) ?? [],
-      data_aquisicao: objeto.data_aquisicao
+      sala: objeto?.sala || null,
+      setor: objeto?.setor?.id || null,
+      tipo: objeto.tipo?.id || null,
+      servidor: objeto.servidor_responsavel?.id || null,
+      data_aquisicao: objeto?.data_aquisicao || null
     };
+    
+    if (objeto.componentes && objeto.componentes.length > 0) {
+      equipamentoData.componentes = objeto.componentes.map(componente => componente.id);
+    } else {
+      equipamentoData.componentes = null;
+    }
+
     console.log(equipamentoData);
     if (objeto.id) {
       const url = this.apiUrl + objeto.id + '/';
+      console.log('Dados edição:', equipamentoData);
       return this.http.put<Equipamento>(url, equipamentoData, { headers });
     } else {
+      const equipamentoData: any = {
+        plaqueta: objeto?.plaqueta,
+        nome: objeto?.nome,
+        marca: objeto?.marca || null,
+        estado: objeto.estado,
+        situacao: objeto.situacao,
+        sala: objeto?.sala || null,
+        setor: objeto?.setor?.id || null,
+        tipo: objeto.tipo?.id || null,
+        servidor: objeto.servidor_responsavel?.id || null,
+        data_aquisicao: objeto?.data_aquisicao || null
+      };
+      console.log('Dados criação:', equipamentoData);
       return this.http.post<Equipamento>(this.apiUrl, equipamentoData, { headers });
     }
   }

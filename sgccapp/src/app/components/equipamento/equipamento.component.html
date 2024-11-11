@@ -33,7 +33,7 @@
       <label for="tipoSelect" class="form-label">Tipo</label>
       <select id="tipoSelect" class="form-select" [(ngModel)]="filtroTipo">
         <option value="">Todos os Tipos</option>
-        <option *ngFor="let tipo of tipos" [value]="tipo.nome">{{ tipo.nome }}</option>
+        <option *ngFor="let tipo of tipoEquipamento" [value]="tipo.nome">{{ tipo.nome }}</option>
       </select>
     </div>
 
@@ -87,7 +87,7 @@
         (ordenacaoAtualizada)="ordenar($event)">
       </thead>
       <tbody>
-        <tr *ngFor="let equipamento of registrosFiltrados()" (click)="openComponentModal(equipamento)">
+        <tr *ngFor="let equipamento of registrosFiltrados()">
           <td>{{equipamento.plaqueta}}</td>
           <td>{{equipamento.nome}}</td>
           <td>{{equipamento.marca}}</td>
@@ -101,12 +101,13 @@
           <td>
             <button class="btn btn-warning btn-sm me-2 mb-2" (click)="openEditModal(equipamento)">Editar</button>
             <button class="btn btn-danger btn-sm mb-2" (click)="openDeleteModal(equipamento.id)">Excluir</button>
+            <button class="btn btn-info btn-sm mb-2" (click)="openComponentesModal(equipamento)">Componentes</button>
           </td>
         </tr>
       </tbody>
       <tfoot>
         <tr>
-          <td colspan="10">
+          <td colspan="11">
             <span *ngIf="registros.length == 0">Nenhum registro encontrado</span>
           </td>
         </tr>
@@ -114,176 +115,208 @@
     </table>
   </div>
 
-
-    <!-- Modal de Gerenciamento de Componentes -->
-    <div class="modal fade" id="componentModal" tabindex="-1" aria-labelledby="componentModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="componentModalLabel">Gerenciar Componentes</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form [formGroup]="componentForm" (ngSubmit)="confirmComponentChanges()">
-              <div class="mb-3">
-                <label for="componentSelect" class="form-label">Adicionar Componente</label>
-                <select id="componentSelect" class="form-select" formControlName="componente">
-                  <option *ngFor="let componente of componentesDisponiveis" [value]="componente.id">{{ componente.nome }}</option>
-                </select>
-                <button type="button" class="btn btn-primary mt-2" (click)="addComponent()">Adicionar</button>
+  <!-- Modal de Adição de Equipamento -->
+  <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addModalLabel">Adicionar Equipamento</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" (click)="cancelAdd()"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
+            <div class="mb-3">
+              <label for="addPlaqueta" class="form-label">Plaqueta</label>
+              <input type="text" class="form-control" id="addPlaqueta" formControlName="plaqueta" maxlength="9" placeholder="Digite a plaqueta" (input)="validatePlaqueta($event)">
+              <div *ngIf="addForm.get('plaqueta')?.invalid && (addForm.get('plaqueta')?.dirty || addForm.get('plaqueta')?.touched)" class="text-danger">
+                <div *ngIf="addForm.get('plaqueta')?.errors?.['required']">Plaqueta é obrigatória.</div>
+                <div *ngIf="addForm.get('plaqueta')?.errors?.['maxlength']">Plaqueta deve conter exatamente 9 caracteres.</div>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Componentes Adicionados</label>
-                <ul class="list-group">
-                  <li *ngFor="let componente of componentesAdicionados" class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ componente.nome }}
-                    <button type="button" class="btn btn-danger btn-sm" (click)="removeComponent(componente.id)">Remover</button>
-                  </li>
-                </ul>
+            </div>
+            <div class="mb-3">
+              <label for="addNome" class="form-label">Nome</label>
+              <input type="text" class="form-control" id="addNome" formControlName="nome" placeholder="Digite o nome">
+              <div *ngIf="addForm.get('nome')?.invalid && (addForm.get('nome')?.dirty || addForm.get('nome')?.touched)" class="text-danger">
+                <div *ngIf="addForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
               </div>
-              <button type="submit" class="btn btn-primary">Salvar</button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            </form>
-          </div>
+            </div>
+            <div class="mb-3">
+              <label for="addMarca" class="form-label">Marca</label>
+              <input type="text" class="form-control" id="addMarca" formControlName="marca" placeholder="Digite a marca">
+            </div>
+            <div class="mb-3">
+              <label for="addEstado" class="form-label">Estado</label>
+              <select id="addEstado" class="form-select" formControlName="estado">
+                <option value="DEFASADO">DEFASADO</option>
+                <option value="ATENÇÃO">ATENÇÃO</option>
+                <option value="BOM">BOM</option>
+                <option value="NOVO">NOVO</option>
+              </select>
+              <div *ngIf="addForm.get('estado')?.invalid && (addForm.get('estado')?.dirty || addForm.get('estado')?.touched)" class="text-danger">
+                <div *ngIf="addForm.get('estado')?.errors?.['required']">Estado é obrigatório.</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="addSituacao" class="form-label">Situação</label>
+              <select id="addSituacao" class="form-select" formControlName="situacao">
+                <option value="EM_USO">EM USO</option>
+                <option value="RESERVA">RESERVA</option>
+                <option value="MANUTENCAO">MANUTENÇÃO</option>
+                <option value="BAIXA">BAIXA</option>
+                <option value="ALIENACAO">ALIENAÇÃO</option>
+                <option value="PERDIDO">PERDIDO</option>
+                <option value="ROUBADO">ROUBADO</option>
+              </select>
+              <div *ngIf="addForm.get('situacao')?.invalid && (addForm.get('situacao')?.dirty || addForm.get('situacao')?.touched)" class="text-danger">
+                <div *ngIf="addForm.get('situacao')?.errors?.['required']">Situação é obrigatória.</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="addSala" class="form-label">Sala</label>
+              <input type="number" class="form-control" id="addSala" formControlName="sala" placeholder="Digite a sala">
+            </div>
+            <div class="mb-3">
+              <label for="addSetor" class="form-label">Setor</label>
+              <select id="addSetor" class="form-select" formControlName="setor">
+                <option *ngFor="let setor of setores" [value]="setor.id">{{ setor.nome }}</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="addTipo" class="form-label">Tipo</label>
+              <select id="addTipo" class="form-select" formControlName="tipo">
+                <option *ngFor="let tipo of tipoEquipamento" [value]="tipo.id">{{ tipo.nome }}</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="addDataAquisicao" class="form-label">Data de Aquisição</label>
+              <input type="date" class="form-control" id="addDataAquisicao" formControlName="data_aquisicao">
+            </div>
+            <button type="submit" class="btn btn-primary me-2" [disabled]="!addForm.valid">Adicionar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="cancelAdd()">Cancelar</button>
+          </form>
         </div>
       </div>
     </div>
+  </div>
 
-<!-- Modal de Adição de Equipamento -->
-<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="addModalLabel">Adicionar Equipamento</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
-          <div class="mb-3">
-            <label for="addPlaqueta" class="form-label">Plaqueta</label>
-            <input type="text" class="form-control" id="addPlaqueta" formControlName="plaqueta">
-          </div>
-          <div class="mb-3">
-            <label for="addNome" class="form-label">Nome</label>
-            <input type="text" class="form-control" id="addNome" formControlName="nome">
-          </div>
-          <div class="mb-3">
-            <label for="addMarca" class="form-label">Marca</label>
-            <input type="text" class="form-control" id="addMarca" formControlName="marca">
-          </div>
-          <div class="mb-3">
-            <label for="addTipo" class="form-label">Tipo</label>
-            <select id="addTipo" class="form-select" formControlName="tipo">
-              <option *ngFor="let tipo of tipos" [value]="tipo.id">{{ tipo.nome }}</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="addSetor" class="form-label">Setor</label>
-            <select id="addSetor" class="form-select" formControlName="setor">
-              <option *ngFor="let setor of setores" [value]="setor.id">{{ setor.nome }}</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="addServidor" class="form-label">Servidor</label>
-            <select id="addServidor" class="form-select" formControlName="servidor">
-              <option *ngFor="let servidor of servidores" [value]="servidor.id">{{ servidor.nome_completo }}</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="addSala" class="form-label">Sala</label>
-            <input type="text" class="form-control" id="addSala" formControlName="sala">
-          </div>
-          <div class="mb-3">
-            <label for="addEstado" class="form-label">Estado</label>
-            <select id="addEstado" class="form-select" formControlName="estado">
-              <option *ngFor="let estado of estados" [value]="estado">{{ estado }}</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="addSituacao" class="form-label">Situação</label>
-            <select id="addSituacao" class="form-select" formControlName="situacao">
-              <option *ngFor="let situacao of situacoes" [value]="situacao">{{ situacao }}</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="addDataAquisicao" class="form-label">Data de Aquisição</label>
-            <input type="date" class="form-control" id="addDataAquisicao" formControlName="data_aquisicao">
-          </div>
-          <button type="submit" class="btn btn-primary">Adicionar</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        </form>
+  <!-- Modal de Edição de Equipamento -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel">Editar Equipamento</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
+            <div class="mb-3">
+              <label for="editPlaqueta" class="form-label">Plaqueta</label>
+              <input type="text" class="form-control" id="editPlaqueta" formControlName="plaqueta" maxlength="9" placeholder="Digite a plaqueta" (input)="validatePlaqueta($event)">
+              <div *ngIf="editForm.get('plaqueta')?.invalid && (editForm.get('plaqueta')?.dirty || editForm.get('plaqueta')?.touched)" class="text-danger">
+                <div *ngIf="editForm.get('plaqueta')?.errors?.['required']">Plaqueta é obrigatória.</div>
+                <div *ngIf="editForm.get('plaqueta')?.errors?.['maxlength']">Plaqueta deve conter exatamente 9 caracteres.</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="editNome" class="form-label">Nome</label>
+              <input type="text" class="form-control" id="editNome" formControlName="nome" placeholder="Digite o nome">
+              <div *ngIf="editForm.get('nome')?.invalid && (editForm.get('nome')?.dirty || editForm.get('nome')?.touched)" class="text-danger">
+                <div *ngIf="editForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="editMarca" class="form-label">Marca</label>
+              <input type="text" class="form-control" id="editMarca" formControlName="marca" placeholder="Digite a marca">
+            </div>
+            <div class="mb-3">
+              <label for="editEstado" class="form-label">Estado</label>
+              <select id="editEstado" class="form-select" formControlName="estado">
+                <option value="DEFASADO">DEFASADO</option>
+                <option value="ATENÇÃO">ATENÇÃO</option>
+                <option value="BOM">BOM</option>
+                <option value="NOVO">NOVO</option>
+              </select>
+              <div *ngIf="editForm.get('estado')?.invalid && (editForm.get('estado')?.dirty || editForm.get('estado')?.touched)" class="text-danger">
+                <div *ngIf="editForm.get('estado')?.errors?.['required']">Estado é obrigatório.</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="editSituacao" class="form-label">Situação</label>
+              <select id="editSituacao" class="form-select" formControlName="situacao">
+                <option value="EM_USO">EM USO</option>
+                <option value="RESERVA">RESERVA</option>
+                <option value="MANUTENCAO">MANUTENÇÃO</option>
+                <option value="BAIXA">BAIXA</option>
+                <option value="ALIENACAO">ALIENAÇÃO</option>
+                <option value="PERDIDO">PERDIDO</option>
+                <option value="ROUBADO">ROUBADO</option>
+              </select>
+              <div *ngIf="editForm.get('situacao')?.invalid && (editForm.get('situacao')?.dirty || editForm.get('situacao')?.touched)" class="text-danger">
+                <div *ngIf="editForm.get('situacao')?.errors?.['required']">Situação é obrigatória.</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="editSala" class="form-label">Sala</label>
+              <input type="number" class="form-control" id="editSala" formControlName="sala" placeholder="Digite a sala">
+            </div>
+            <div class="mb-3">
+              <label for="editSetor" class="form-label">Setor</label>
+              <select id="editSetor" class="form-select" formControlName="setor">
+                <option value="" disabled selected>Selecione um setor</option>
+                <option *ngFor="let setor of setores" [value]="setor.id">{{ setor.nome }}</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="editTipo" class="form-label">Tipo</label>
+              <select id="editTipo" class="form-select" formControlName="tipo">
+                <option value="" disabled selected>Selecione um tipo</option>
+                <option *ngFor="let tipo of tipoEquipamento" [value]="tipo.id">{{ tipo.nome }}</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="editDataAquisicao" class="form-label">Data de Aquisição</label>
+              <input type="date" class="form-control" id="editDataAquisicao" formControlName="data_aquisicao">
+            </div>
+            <button type="submit" class="btn btn-primary me-2" [disabled]="!editForm.valid || !formChanged()">Salvar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Modal de Edição de Equipamento -->
-<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="editModalLabel">Editar Equipamento</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
+  <!-- Modal de Componentes do Equipamento -->
+  <div class="modal fade" id="componentModal" tabindex="-1" aria-labelledby="componentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="componentModalLabel">Componentes do Equipamento</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
           <div class="mb-3">
-            <label for="editPlaqueta" class="form-label">Plaqueta</label>
-            <input type="text" class="form-control" id="editPlaqueta" formControlName="plaqueta">
-          </div>
-          <div class="mb-3">
-            <label for="editNome" class="form-label">Nome</label>
-            <input type="text" class="form-control" id="editNome" formControlName="nome">
-          </div>
-          <div class="mb-3">
-            <label for="editMarca" class="form-label">Marca</label>
-            <input type="text" class="form-control" id="editMarca" formControlName="marca">
-          </div>
-          <div class="mb-3">
-            <label for="editTipo" class="form-label">Tipo</label>
-            <select id="editTipo" class="form-select" formControlName="tipo">
-              <option *ngFor="let tipo of tipos" [value]="tipo.id">{{ tipo.nome }}</option>
+            <label for="addComponente" class="form-label">Adicionar Componente</label>
+            <select class="form-select" id="addComponente" (change)="addComponente($event)">
+              <option value="" disabled selected>Selecione um componente para adicionar</option>
+              <option *ngFor="let componente of componentesDisponiveis" [value]="componente.id">{{ componente.nome }}</option>
             </select>
           </div>
-          <div class="mb-3">
-            <label for="editSetor" class="form-label">Setor</label>
-            <select id="editSetor" class="form-select" formControlName="setor">
-              <option *ngFor="let setor of setores" [value]="setor.id">{{ setor.nome }}</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="editServidor" class="form-label">Servidor</label>
-            <select id="editServidor" class="form-select" formControlName="servidor">
-              <option *ngFor="let servidor of servidores" [value]="servidor.id">{{ servidor.nome_completo }}</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="editSala" class="form-label">Sala</label>
-            <input type="text" class="form-control" id="editSala" formControlName="sala">
-          </div>
-          <div class="mb-3">
-            <label for="editEstado" class="form-label">Estado</label>
-            <select id="editEstado" class="form-select" formControlName="estado">
-              <option *ngFor="let estado of estados" [value]="estado">{{ estado }}</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="editSituacao" class="form-label">Situação</label>
-            <select id="editSituacao" class="form-select" formControlName="situacao">
-              <option *ngFor="let situacao of situacoes" [value]="situacao">{{ situacao }}</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="editDataAquisicao" class="form-label">Data de Aquisição</label>
-            <input type="date" class="form-control" id="editDataAquisicao" formControlName="data_aquisicao">
-          </div>
-          <button type="submit" class="btn btn-primary">Salvar</button>
+          <ul class="list-group mt-2">
+            <li class="list-group-item" *ngFor="let componente of componentesAdicionados">
+              {{ componente.nome }}
+              <button type="button" class="btn btn-danger btn-sm float-end" (click)="removeComponente(componente.id)">Remover</button>
+            </li>
+            <li class="list-group-item" *ngIf="componentesAdicionados.length === 0">Nenhum componente alocado</li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" (click)="confirmComponentChanges()">Salvar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
+
 
   <!-- Modal de Exclusão de Equipamento -->
   <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">

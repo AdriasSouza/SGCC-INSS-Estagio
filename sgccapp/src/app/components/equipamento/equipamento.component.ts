@@ -15,22 +15,62 @@ import { RespostaPaginada } from '../../model/resposta-paginada';
 import { SetorService } from '../../service/setor.service'; // Importando o serviço SetorService
 import { TipoEquipamentoService } from '../../service/tipo-equipamento.service'; // Importando o serviço TipoEquipamentoService
 import { ServidorService } from '../../service/servidor.service'; // Importando o serviço ServidorService
-import { Setor } from '../../model/setor.model'; // Importando o modelo Setor
-import { TipoEquipamento } from '../../model/tipo-equipamento.model'; // Importando o modelo TipoEquipamento
 import { Servidor } from '../../model/servidor.model'; // Importando o modelo Servidor
 import { ComponenteService } from '../../service/componete.service';
 import { Componente } from '../../model/componente.model';
+import { TipoEquipamento } from '../../model/tipo-equipamento.model';
+import { Setor } from '../../model/setor.model';
 
 declare var bootstrap: any;
 
 @Component({
   selector: 'app-equipamento',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent, BarraComandosComponent], // Adicionando HttpClientModule
+  imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent], // Adicionando HttpClientModule
   templateUrl: './equipamento.component.html',
   styleUrls: ['./equipamento.component.scss']
 })
 export class EquipamentoComponent implements IList<Equipamento>, OnInit {
+
+  registros: Equipamento[] = [];
+  tipoEquipamento: TipoEquipamento[] = [];
+  setores: Setor[] = [];
+  servidores: Servidor[] = [];
+  componentesDisponiveis: Componente[] = [];
+  componentesAdicionados: Componente[] = [];
+  termoBusca: string | undefined = '';
+  filtroMarca: string = '';
+  filtroTipo: string = '';
+  filtroSetor: string = '';
+  filtroEstado: string = '';
+  filtroSituacao: string = '';
+  filtroDataInicio: string = '';
+  filtroDataFim: string = '';
+  marcas: string[] = [];
+  estados: string[] = ['DEFASADO', 'ATENÇÃO', 'BOM', 'NOVO'];
+  situacoes: string[] = ['EM_USO', 'RESERVA', 'MANUTENCAO', 'BAIXA', 'ALIENACAO', 'PERDIDO', 'ROUBADO'];
+  editForm: FormGroup;
+  addForm: FormGroup;
+  componentForm: FormGroup;
+  mostrarFiltros: boolean = false;
+  showDropdown: boolean[] = [];
+  loading: boolean = false;
+  equipamentoSelecionado: Equipamento | null = null;
+  initialFormValues: any;
+
+  colunas: TheadOrdenacao = [
+    { campo: 'plaqueta', descricao: 'Plaqueta' },
+    { campo: 'nome', descricao: 'Nome' },
+    { campo: 'marca', descricao: 'Marca' },
+    { campo: 'tipo.nome', descricao: 'Tipo' },
+    { campo: 'setor.nome', descricao: 'Setor' },
+    { campo: 'servidor.nome_completo', descricao: 'Responsavel' },
+    { campo: 'sala', descricao: 'Sala' },
+    { campo: 'estado', descricao: 'Estado' },
+    { campo: 'situacao', descricao: 'Situação' },
+    { campo: 'data_aquisicao', descricao: 'Data' },
+    { campo: '', descricao: 'Ações' },
+  ]
 
   constructor(
     private fb: FormBuilder,
@@ -60,10 +100,6 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
       plaqueta: ['', Validators.required],
       nome: ['', Validators.required],
       marca: ['', Validators.required],
-      tipo: ['', Validators.required],
-      setor: ['', Validators.required],
-      servidor: ['', Validators.required],
-      sala: ['', Validators.required],
       estado: ['', Validators.required],
       situacao: ['', Validators.required],
       data_aquisicao: ['', Validators.required]
@@ -77,50 +113,12 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
   ngOnInit() {
     this.get();
     this.loadFilterOptions();
-    this.loadSelectOptions();
-    this.loadComponentOptions();
+    // this.loadSelectOptions();
+    this.loadSetores();
+    this.loadTiposEquipamentos();
+    this.loadComponentesDisponiveis();
     console.log('EquipamentoComponent inicializado!');
   }
-
-  registros: Equipamento[] = [];
-  termoBusca: string | undefined = '';
-  filtroMarca: string = '';
-  filtroTipo: string = '';
-  filtroSetor: string = '';
-  filtroEstado: string = '';
-  filtroSituacao: string = '';
-  filtroDataInicio: string = '';
-  filtroDataFim: string = '';
-  marcas: string[] = [];
-  tipos: TipoEquipamento[] = [];
-  setores: Setor[] = [];
-  servidores: Servidor[] = [];
-  componentesDisponiveis: Componente[] = [];
-  componentesAdicionados: Componente[] = [];
-  estados: string[] = ['DEFASADO', 'ATENÇÃO', 'BOM', 'NOVO'];
-  situacoes: string[] = ['EM_USO', 'RESERVA', 'MANUTENCAO', 'BAIXA', 'ALIENACAO', 'PERDIDO', 'ROUBADO'];
-  editForm: FormGroup;
-  addForm: FormGroup;
-  componentForm: FormGroup;
-  mostrarFiltros: boolean = false;
-  showDropdown: boolean[] = [];
-  loading: boolean = false;
-  equipamentoSelecionado: Equipamento | null = null;
-
-
-  colunas: TheadOrdenacao = [
-    { campo: 'plaqueta', descricao: 'Plaqueta' },
-    { campo: 'nome', descricao: 'Nome' },
-    { campo: 'marca', descricao: 'Marca' },
-    { campo: 'tipo.nome', descricao: 'Tipo' },
-    { campo: 'setor.nome', descricao: 'Setor' },
-    { campo: 'servidor.nome_completo', descricao: 'Responsavel' },
-    { campo: 'sala', descricao: 'Sala' },
-    { campo: 'estado', descricao: 'Estado' },
-    { campo: 'situacao', descricao: 'Situação' },
-    { campo: 'data_aquisicao', descricao: 'Data' },
-    { campo: '', descricao: 'Ações' },
-  ]
 
   //Função para esconder e mostrar os filtros
   toggleFiltros() {
@@ -148,6 +146,10 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
     });
   }
 
+  formChanged(): boolean {
+    return JSON.stringify(this.initialFormValues) !== JSON.stringify(this.editForm.value);
+  }
+
   registrosFiltrados(): Equipamento[] {
     return this.registros.filter(equipamento => {
       return (!this.filtroMarca || equipamento.marca?.includes(this.filtroMarca)) &&
@@ -165,7 +167,7 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
       next: (resposta: RespostaPaginada<Equipamento>) => {
         const equipamentos = resposta.results;
         this.marcas = [...new Set(equipamentos.map(e => e.marca).filter((marca): marca is string => !!marca))];
-        this.tipos = [...new Set(equipamentos.map(e => e.tipo).filter((tipo): tipo is TipoEquipamento => !!tipo))];
+        this.tipoEquipamento = [...new Set(equipamentos.map(e => e.tipo).filter((tipo): tipo is TipoEquipamento => !!tipo))];
         this.setores = [...new Set(equipamentos.map(e => e.setor).filter((setor): setor is Setor => !!setor))];
       },
       error: (err) => {
@@ -174,34 +176,34 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
     });
   }
 
-  loadSelectOptions() {
-    this.tipoEquipamentoService.get().subscribe({
-      next: (resposta: RespostaPaginada<TipoEquipamento>) => {
-        this.tipos = resposta.results;
-      },
-      error: (err) => {
-        console.error('Erro ao carregar tipos de equipamento:', err);
-      }
-    });
+  // loadSelectOptions() {
+  //   this.tipoEquipamentoService.get().subscribe({
+  //     next: (resposta: RespostaPaginada<TipoEquipamento>) => {
+  //       this.tipo = resposta.results.filter(tipo => tipo.nome); // Filtra tipos válidos
+  //     },
+  //     error: (err) => {
+  //       console.error('Erro ao carregar tipos de equipamento:', err);
+  //     }
+  //   });
 
-    this.setorService.get().subscribe({
-      next: (resposta: RespostaPaginada<Setor>) => {
-        this.setores = resposta.results;
-      },
-      error: (err) => {
-        console.error('Erro ao carregar setores:', err);
-      }
-    });
+  //   this.setorService.get().subscribe({
+  //     next: (resposta: RespostaPaginada<Setor>) => {
+  //       this.setores = resposta.results.filter(setor => setor.nome); // Filtra setores válidos
+  //     },
+  //     error: (err) => {
+  //       console.error('Erro ao carregar setores:', err);
+  //     }
+  //   });
 
-    this.servidorService.get().subscribe({
-      next: (resposta: RespostaPaginada<Servidor>) => {
-        this.servidores = resposta.results;
-      },
-      error: (err) => {
-        console.error('Erro ao carregar servidores:', err);
-      }
-    });
-  }
+  //   this.servidorService.get().subscribe({
+  //     next: (resposta: RespostaPaginada<Servidor>) => {
+  //       this.servidores = resposta.results.filter(servidor => servidor.nome_completo); // Filtra servidores válidos
+  //     },
+  //     error: (err) => {
+  //       console.error('Erro ao carregar servidores:', err);
+  //     }
+  //   });
+  // }
 
   delete(id: number): void {
     if (confirm('Confirma a exclusão do equipamento?')) {
@@ -217,36 +219,30 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
     }
   }
 
-  loadComponentOptions() {
-    this.componenteService.get().subscribe({
-      next: (resposta: RespostaPaginada<Componente>) => {
-        this.componentesDisponiveis = resposta.results;
-      },
-      error: (err) => {
-        console.error('Erro ao carregar componentes:', err);
-      }
-    });
+  openComponentesModal(equipamento: Equipamento) {
+    this.equipamentoSelecionado = equipamento;
+    this.componentesAdicionados = equipamento.componentes || [];
+    const componentModal = new bootstrap.Modal(document.getElementById('componentModal'));
+    componentModal.show();
   }
-  
-  addComponent() {
-    const componenteId = this.componentForm.value.componente;
+
+  addComponente(event: Event) {
+    const selectElement = event.target as HTMLSelectElement;
+    const componenteId = parseInt(selectElement.value, 10);
     const componenteSelecionado = this.componentesDisponiveis.find(componente => componente.id === componenteId);
-    if (componenteSelecionado && !this.componentesAdicionados.some(componente => componente.id === componenteId)) {
+    if (componenteSelecionado && !this.componentesAdicionados.includes(componenteSelecionado)) {
       this.componentesAdicionados.push(componenteSelecionado);
     }
   }
 
-  removeComponent(componenteId: number) {
+  removeComponente(componenteId: number) {
     this.componentesAdicionados = this.componentesAdicionados.filter(componente => componente.id !== componenteId);
   }
 
   confirmComponentChanges() {
     if (this.equipamentoSelecionado) {
-      const equipamentoAtualizado: Equipamento = {
-        ...this.equipamentoSelecionado,
-        componentes: this.componentesAdicionados
-      };
-      this.servico.save(equipamentoAtualizado).subscribe({
+      this.equipamentoSelecionado.componentes = this.componentesAdicionados;
+      this.servico.save(this.equipamentoSelecionado).subscribe({
         complete: () => {
           this.get();
           this.servicoAlerta.enviarAlerta({
@@ -260,13 +256,6 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
     }
   }
 
-  openComponentModal(equipamento: Equipamento) {
-    this.equipamentoSelecionado = equipamento;
-    this.componentesAdicionados = equipamento.componentes || [];
-    const componentModal = new bootstrap.Modal(document.getElementById('componentModal'));
-    componentModal.show();
-  }
-
   openDeleteModal(id: number) {
     this.equipamentoSelecionado = this.registros.find(equipamento => equipamento.id === id) || null;
     const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
@@ -275,9 +264,17 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
 
   confirmDelete() {
     if (this.equipamentoSelecionado) {
-      this.delete(this.equipamentoSelecionado.id);
-      const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-      deleteModal.hide();
+      this.servico.delete(this.equipamentoSelecionado.id).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Equipamento excluído com sucesso!"
+          });
+          const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+          deleteModal.hide();
+        }
+      });
     }
   }
 
@@ -350,8 +347,15 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
     }
   }
 
-  cancelAdd(form: NgForm) {
-    form.reset();
+  validatePlaqueta(event: Event) {
+    const inputElement = event.target as HTMLInputElement;
+    if (inputElement.value.length > 9) {
+      inputElement.value = inputElement.value.slice(0, 9);
+    }
+  }
+
+  cancelAdd() {
+    this.addForm.reset();
     const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
     addModal.hide();
   }
@@ -365,5 +369,41 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
   cancelDelete() {
     const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
     deleteModal.hide();
+  }
+
+  loadSetores() {
+    this.setorService.get().subscribe({
+      next: (resposta: RespostaPaginada<Setor>) => {
+        this.setores = resposta.results; // Filtra setores válidos
+        console.log('Setores:', this.setores);
+      },
+      error: (err) => {
+        console.error('Erro ao carregar setores:', err);
+      }
+    });
+  }
+
+  loadTiposEquipamentos() {
+    this.tipoEquipamentoService.get().subscribe({
+      next: (resposta: RespostaPaginada<TipoEquipamento>) => {
+        this.tipoEquipamento = resposta.results; // Filtra tipos válidos
+        console.log('Tipos de equipamentos:', this.tipoEquipamento);
+      },
+      error: (err) => {
+        console.error('Erro ao carregar tipos de equipamentos:', err);
+      }
+    });
+  }
+
+  loadComponentesDisponiveis() {
+    this.componenteService.get().subscribe({
+      next: (resposta: RespostaPaginada<Componente>) => {
+        this.componentesDisponiveis = resposta.results;
+        console.log('Componentes disponíveis:', this.componentesDisponiveis);
+      },
+      error: (err) => {
+        console.error('Erro ao carregar componentes disponíveis:', err);
+      }
+    });
   }
 }
