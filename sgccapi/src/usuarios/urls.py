@@ -27,6 +27,7 @@ router.register(r'agencias', AgenciaViewSet)   # URL para Agencia
 router.register(r'setores', SetorViewSet)      # URL para Setor
 router.register(r'servidores', ServidorViewSet)  # URL para Servidor
 router.register(r'solicitacoes', SolicitacaoViewSet)  # URL para Solicitacao
+router.register(r'user_data_admin', UserAdminDataView)
 
 # Define as rotas de URL da aplicação
 urlpatterns = [
@@ -39,7 +40,7 @@ urlpatterns = [
     # Rota para obter informações do usuário logado
     path('user_data/', UserDataView.as_view()),
     # Rota para admin obter informalções de qualquer usuario
-    path('user_data_admin/<int:pk>/', UserAdminDataView.as_view()),
+    # path('user_data_admin/<int:pk>/', UserAdminDataView.as_view()),
     # Rota para update de usuario
     path('user_update/', UserUpdateView.as_view()),
     # Atualiza um usuario em especifico
