@@ -47,16 +47,22 @@ export class ComponenteService implements IService<Componente> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl;
-    const componenteData = {
+    const componenteData: any = {
       codigo: objeto.codigo,
       nome: objeto.nome,
       descricao: objeto.descricao,
-      tipo: objeto.tipo?.id ?? null,
+      tipo: objeto.tipo?.id,
       fabricante: objeto.fabricante,
       tamanho_mem: objeto.tamanho_mem ?? null,
-      n_serie: objeto?.n_serie ?? null,
+      n_serie: objeto?.n_serie,
       data_aquisicao: objeto.data_aquisicao
     };
+
+    // Adiciona o campo tamanho_mem se ele existir no objeto
+    if (objeto.tamanho_mem) {
+      componenteData.tamanho_mem = objeto.tamanho_mem;
+    }
+
     console.log('componenteData', componenteData);
     if (objeto.id) {
       const url = this.apiUrl + objeto.id + '/';
@@ -69,7 +75,6 @@ export class ComponenteService implements IService<Componente> {
   delete(id: number): Observable<void> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    const url = this.apiUrl + id + '/';
-    return this.http.delete<void>(url, { headers });
+    return this.http.delete<void>(`${this.apiUrl}${id}/`, { headers });
   }
 }

@@ -31,13 +31,14 @@ export class TipoEquipamentoComponent implements IList<TipoEquipamento>, OnInit 
     private servicoAlerta: AlertaService, // Adicionando o serviço AlertaService
   ) {
     this.editForm = this.fb.group({
+      id: [''],
       nome: ['', Validators.required],
-      descricao: ['', Validators.required],
+      descricao: ['', Validators.required]
     });
 
     this.addForm = this.fb.group({
       nome: ['', Validators.required],
-      descricao: ['', Validators.required],
+      descricao: ['', Validators.required]
     });
   }
 
@@ -56,6 +57,7 @@ export class TipoEquipamentoComponent implements IList<TipoEquipamento>, OnInit 
   showDropdown: boolean[] = [];
   loading: boolean = false;
   tipoEquipamentoSelecionado: TipoEquipamento | null = null;
+  initialFormValues: any;
 
   colunas: TheadOrdenacao = [
     { campo: 'nome', descricao: 'Nome' },
@@ -97,17 +99,15 @@ export class TipoEquipamentoComponent implements IList<TipoEquipamento>, OnInit 
   }
 
   delete(id: number): void {
-    if (confirm('Confirma a exclusão do tipo de equipamento?')) {
-      this.servico.delete(id).subscribe({
-        complete: () => {
-          this.get();
-          this.servicoAlerta.enviarAlerta({
-            tipo: ETipoAlerta.SUCESSO,
-            mensagem: "Tipo de equipamento excluído com sucesso!"
-          });
-        }
-      });
-    }
+    this.servico.delete(id).subscribe({
+      complete: () => {
+        this.get();
+        this.servicoAlerta.enviarAlerta({
+          tipo: ETipoAlerta.SUCESSO,
+          mensagem: "Tipo de equipamento excluído com sucesso!"
+        });
+      }
+    });
   }
 
   openDeleteModal(id: number) {
@@ -131,9 +131,7 @@ export class TipoEquipamentoComponent implements IList<TipoEquipamento>, OnInit 
 
   confirmAdd() {
     if (this.addForm.valid) {
-      const novoTipoEquipamento: TipoEquipamento = {
-        ...this.addForm.value
-      };
+      const novoTipoEquipamento: TipoEquipamento = this.addForm.value;
       this.servico.save(novoTipoEquipamento).subscribe({
         complete: () => {
           this.get();
@@ -155,12 +153,13 @@ export class TipoEquipamentoComponent implements IList<TipoEquipamento>, OnInit 
       nome: tipoEquipamento.nome,
       descricao: tipoEquipamento.descricao
     });
+    this.initialFormValues = this.editForm.value;
     const editModal = new bootstrap.Modal(document.getElementById('editModal'));
     editModal.show();
   }
 
   confirmEdit() {
-    if (this.tipoEquipamentoSelecionado && this.editForm.valid) {
+    if (this.tipoEquipamentoSelecionado && this.editForm.valid && this.formChanged()) {
       const tipoEquipamentoAtualizado: TipoEquipamento = {
         ...this.tipoEquipamentoSelecionado,
         ...this.editForm.value
@@ -177,6 +176,10 @@ export class TipoEquipamentoComponent implements IList<TipoEquipamento>, OnInit 
         }
       });
     }
+  }
+
+  formChanged(): boolean {
+    return JSON.stringify(this.initialFormValues) !== JSON.stringify(this.editForm.value);
   }
 
   cancelAdd(form: NgForm) {

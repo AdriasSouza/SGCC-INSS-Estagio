@@ -88,59 +88,75 @@
       </tfoot>
     </table>
   </div>
-</div>
 
-<!-- Modal de Adição de Componente -->
-<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="addModalLabel">Adicionar Componente</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
-          <div class="mb-3">
-            <label for="addCodigo" class="form-label">Código</label>
-            <input type="text" class="form-control" id="addCodigo" formControlName="codigo">
-          </div>
-          <div class="mb-3">
-            <label for="addNome" class="form-label">Nome</label>
-            <input type="text" class="form-control" id="addNome" formControlName="nome">
-          </div>
-          <div class="mb-3">
-            <label for="addDescricao" class="form-label">Descrição</label>
-            <input type="text" class="form-control" id="addDescricao" formControlName="descricao">
-          </div>
-          <div class="mb-3">
-            <label for="addTipo" class="form-label">Tipo</label>
-            <select id="addTipo" class="form-select" formControlName="tipo">
-              <option *ngFor="let tipo of tiposComponentes" [value]="tipo.id">{{ tipo.nome }}</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="addFabricante" class="form-label">Fabricante</label>
-            <input type="text" class="form-control" id="addFabricante" formControlName="fabricante">
-          </div>
-          <div class="mb-3">
-            <label for="addTamanhoMem" class="form-label">Tamanho Memória</label>
-            <input type="text" class="form-control" id="addTamanhoMem" formControlName="tamanho_mem">
-          </div>
-          <div class="mb-3">
-            <label for="addNumeroSerie" class="form-label">Número de Série</label>
-            <input type="text" class="form-control" id="addNumeroSerie" formControlName="n_serie">
-          </div>
-          <div class="mb-3">
-            <label for="addDataAquisicao" class="form-label">Data de Aquisição</label>
-            <input type="date" class="form-control" id="addDataAquisicao" formControlName="data_aquisicao">
-          </div>
-          <button type="submit" class="btn btn-primary me-2">Adicionar</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        </form>
+  <!-- Modal de Adição de Componente -->
+  <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addModalLabel">Adicionar Componente</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
+            <div class="mb-3">
+              <label for="addCodigo" class="form-label">Código</label>
+              <input type="text" class="form-control" id="addCodigo" formControlName="codigo" maxlength="9" (input)="validateCodigo($event)">
+              <div *ngIf="addForm.get('codigo')?.invalid && (addForm.get('codigo')?.dirty || addForm.get('codigo')?.touched)" class="text-danger">
+                <div *ngIf="addForm.get('codigo')?.errors?.['required']">Código é obrigatório.</div>
+                <div *ngIf="addForm.get('codigo')?.errors?.['pattern']">Código deve conter exatamente 9 dígitos numéricos.</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="addNome" class="form-label">Nome</label>
+              <input type="text" class="form-control" id="addNome" formControlName="nome">
+              <div *ngIf="addForm.get('nome')?.invalid && (addForm.get('nome')?.dirty || addForm.get('nome')?.touched)" class="text-danger">
+                <div *ngIf="addForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="addDescricao" class="form-label">Descrição</label>
+              <input type="text" class="form-control" id="addDescricao" formControlName="descricao">
+              <div *ngIf="addForm.get('descricao')?.invalid && (addForm.get('descricao')?.dirty || addForm.get('descricao')?.touched)" class="text-danger">
+                <div *ngIf="addForm.get('descricao')?.errors?.['required']">Descrição é obrigatória.</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="addTipo" class="form-label">Tipo</label>
+              <select id="addTipo" class="form-select" formControlName="tipo" (change)="onTipoChange($event)">
+                <option *ngFor="let tipo of tiposComponentes" [value]="tipo.id">{{ tipo.nome }}</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="addFabricante" class="form-label">Fabricante</label>
+              <input type="text" class="form-control" id="addFabricante" formControlName="fabricante">
+              <div *ngIf="addForm.get('fabricante')?.invalid && (addForm.get('fabricante')?.dirty || addForm.get('fabricante')?.touched)" class="text-danger">
+                <div *ngIf="addForm.get('fabricante')?.errors?.['required']">Fabricante é obrigatório.</div>
+              </div>
+            </div>
+            <div class="mb-3" *ngIf="mostrarTamanhoMem">
+              <label for="addTamanhoMem" class="form-label">Tamanho Memória</label>
+              <input type="text" class="form-control" id="addTamanhoMem" formControlName="tamanho_mem">
+            </div>
+            <div class="mb-3">
+              <label for="addNumeroSerie" class="form-label">Número de Série</label>
+              <input type="text" class="form-control" id="addNumeroSerie" formControlName="n_serie">
+            </div>
+            <div class="mb-3">
+              <label for="addDataAquisicao" class="form-label">Data de Aquisição</label>
+              <input type="date" class="form-control" id="addDataAquisicao" formControlName="data_aquisicao">
+              <div *ngIf="addForm.get('data_aquisicao')?.invalid && (addForm.get('data_aquisicao')?.dirty || addForm.get('data_aquisicao')?.touched)" class="text-danger">
+                <div *ngIf="addForm.get('data_aquisicao')?.errors?.['required']">Data de Aquisição é obrigatória.</div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary me-2" [disabled]="!addForm.valid">Adicionar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
+
 
 <!-- Modal de Edição de Componente -->
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
@@ -154,27 +170,40 @@
         <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
           <div class="mb-3">
             <label for="editCodigo" class="form-label">Código</label>
-            <input type="text" class="form-control" id="editCodigo" formControlName="codigo">
+            <input type="text" class="form-control" id="editCodigo" formControlName="codigo" maxlength="9" (input)="validateCodigo($event)">
+            <div *ngIf="editForm.get('codigo')?.invalid && (editForm.get('codigo')?.dirty || editForm.get('codigo')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('codigo')?.errors?.['required']">Código é obrigatório.</div>
+              <div *ngIf="editForm.get('codigo')?.errors?.['pattern']">Código deve conter exatamente 9 dígitos numéricos.</div>
+            </div>
           </div>
           <div class="mb-3">
             <label for="editNome" class="form-label">Nome</label>
             <input type="text" class="form-control" id="editNome" formControlName="nome">
+            <div *ngIf="editForm.get('nome')?.invalid && (editForm.get('nome')?.dirty || editForm.get('nome')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
+            </div>
           </div>
           <div class="mb-3">
             <label for="editDescricao" class="form-label">Descrição</label>
             <input type="text" class="form-control" id="editDescricao" formControlName="descricao">
+            <div *ngIf="editForm.get('descricao')?.invalid && (editForm.get('descricao')?.dirty || editForm.get('descricao')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('descricao')?.errors?.['required']">Descrição é obrigatória.</div>
+            </div>
           </div>
           <div class="mb-3">
             <label for="editTipo" class="form-label">Tipo</label>
-            <select id="editTipo" class="form-select" formControlName="tipo">
+            <select id="editTipo" class="form-select" formControlName="tipo" (change)="onTipoChange($event)">
               <option *ngFor="let tipo of tiposComponentes" [value]="tipo.id">{{ tipo.nome }}</option>
             </select>
           </div>
           <div class="mb-3">
             <label for="editFabricante" class="form-label">Fabricante</label>
             <input type="text" class="form-control" id="editFabricante" formControlName="fabricante">
+            <div *ngIf="editForm.get('fabricante')?.invalid && (editForm.get('fabricante')?.dirty || editForm.get('fabricante')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('fabricante')?.errors?.['required']">Fabricante é obrigatório.</div>
+            </div>
           </div>
-          <div class="mb-3">
+          <div class="mb-3" *ngIf="mostrarTamanhoMem">
             <label for="editTamanhoMem" class="form-label">Tamanho Memória</label>
             <input type="text" class="form-control" id="editTamanhoMem" formControlName="tamanho_mem">
           </div>
@@ -185,13 +214,17 @@
           <div class="mb-3">
             <label for="editDataAquisicao" class="form-label">Data de Aquisição</label>
             <input type="date" class="form-control" id="editDataAquisicao" formControlName="data_aquisicao">
+            <div *ngIf="editForm.get('data_aquisicao')?.invalid && (editForm.get('data_aquisicao')?.dirty || editForm.get('data_aquisicao')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('data_aquisicao')?.errors?.['required']">Data de Aquisição é obrigatória.</div>
+            </div>
           </div>
-          <button type="submit" class="btn btn-primary me-2">Salvar</button>
+          <button type="submit" class="btn btn-primary me-2" [disabled]="!editForm.valid || !formChanged()">Salvar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </form>
       </div>
     </div>
   </div>
+</div>
 
   <!-- Modal de Exclusão de Componente -->
   <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">

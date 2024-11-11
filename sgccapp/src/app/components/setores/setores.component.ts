@@ -22,7 +22,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-setores',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent, BarraComandosComponent], // Adicionando HttpClientModule
+  imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent], // Adicionando HttpClientModule
   templateUrl: './setores.component.html',
   styleUrls: ['./setores.component.scss']
 })

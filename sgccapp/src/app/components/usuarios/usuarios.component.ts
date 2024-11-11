@@ -1,109 +1,78 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http'; // Importando HttpClientModule
-import { User } from '../../model/user.model'; // Importando o modelo User
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { AlertaService } from '../../service/alerta.service';
-import { IList } from '../i-list';
-import { TheadOrdenacao } from '../thead-ordenacao/thead-ordenacao';
 import { ETipoAlerta } from '../../model/e-tipo-alerta';
+import { User } from '../../model/user.model';
+import { UserService } from '../../service/user.service';
+import { RespostaPaginada } from '../../model/resposta-paginada';
+import { CommonModule } from '@angular/common';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { TheadOrdenacaoComponent } from '../thead-ordenacao/thead-ordenacao.component';
-import { BarraComandosComponent } from '../barra-comandos/barra-comandos.component';
-import { RespostaPaginada } from '../../model/resposta-paginada';
-import { UserService } from '../../service/user.service';
 
 declare var bootstrap: any;
 
 @Component({
   selector: 'app-usuarios',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent, BarraComandosComponent], // Adicionando HttpClientModule
+  imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent], // Adicionando HttpClientModule
   templateUrl: './usuarios.component.html',
-  styleUrls: ['./usuarios.component.css']
+  styleUrls: ['./usuarios.component.scss']
 })
-export class UsuariosComponent implements IList<User>, OnInit {
+export class UsuariosComponent implements OnInit {
+
+  registros: User[] = [];
+  addForm: FormGroup;
+  editForm: FormGroup;
+  mostrarFiltros: boolean = false;
+  usuarioSelecionado: User | null = null;
+  initialFormValues: any;
+  filtroNome: string = '';
+  filtroEmail: string = '';
 
   constructor(
     private fb: FormBuilder,
     private http: HttpClient,
-    private servico: UserService, // Adicionando o serviço UsuarioService como dependência
-    private servicoAlerta: AlertaService, // Adicionando o serviço AlertaService
+    private servico: UserService,
+    private servicoAlerta: AlertaService
   ) {
-    this.editForm = this.fb.group({
-      id: ['', Validators.required],
+    this.addForm = this.fb.group({
+      nome: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]]
     });
 
-    this.addForm = this.fb.group({
-      id: ['', Validators.required],
+    this.editForm = this.fb.group({
+      id: [''],
+      nome: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]]
     });
   }
 
   ngOnInit() {
     this.get();
-    console.log('UsuariosComponent inicializado!');
-    console.log('registros:', this.registros); // Adiciona o console.log para ver os registros
   }
 
-  registros: User[] = [];
-  termoBusca: string | undefined = '';
-  editForm: FormGroup;
-  addForm: FormGroup;
-  mostrarFiltros: boolean = false;
-  showDropdown: boolean[] = [];
-  loading: boolean = false;
-
-  colunas: TheadOrdenacao = [
-    { campo: 'id', descricao: 'Código' },
-    { campo: 'email', descricao: 'Email' },
-    { campo: '', descricao: 'Ações' }
-  ]
-
-  //Função para esconder e mostrar os filtros
-  toggleFiltros() {
-    this.mostrarFiltros = !this.mostrarFiltros;
-  }
-
-  toggleDropdown(index: number) {
-    this.showDropdown[index] = !this.showDropdown[index];
-  }
-
-  ordenar(ordenacao: string[]): void {
-    this.get(this.termoBusca);
-  }
-
-  get(termoBusca?: string): void {
-    this.termoBusca = termoBusca;
-    this.servico.get(termoBusca).subscribe({
+  get() {
+    this.servico.get().subscribe({
       next: (resposta: RespostaPaginada<User>) => {
-        this.registros = resposta.results; // Extrai os registros da resposta paginada
-        console.log('registros:', this.registros); // Adiciona o console.log para ver os registros
+        this.registros = resposta.results; // Assuming 'resultados' contains the array of users
+        console.log('Usuários:', this.registros);
       },
       error: (err) => {
-        console.error('Erro ao buscar usuários:', err); // Você pode querer lidar com erros aqui
+        console.error('Erro ao buscar usuários:', err);
       }
     });
   }
 
-  delete(id: number): void {
-    if (confirm('Confirma a exclusão do usuário?')) {
-      this.servico.delete(id).subscribe({
-        complete: () => {
-          this.get();
-          this.servicoAlerta.enviarAlerta({
-            tipo: ETipoAlerta.SUCESSO,
-            mensagem: "Usuário excluído com sucesso!"
-          });
-        }
-      });
-    }
+  registrosFiltrados(): User[] {
+    return this.registros.filter(usuario => {
+      return (!this.filtroNome || usuario.servidor?.nome_completo.includes(this.filtroNome)) &&
+             (!this.filtroEmail || usuario.email.includes(this.filtroEmail));
+    });
   }
 
-  openDeleteModal(id: number) {
-    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    deleteModal.show();
+  toggleFiltros() {
+    this.mostrarFiltros = !this.mostrarFiltros;
   }
 
   openAddModal() {
@@ -111,31 +80,78 @@ export class UsuariosComponent implements IList<User>, OnInit {
     addModal.show();
   }
 
-  cancelAdd(form: NgForm) {
-    form.reset();
-    const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
-    addModal.hide();
-    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
-    cancelModal.show();
+  confirmAdd() {
+    if (this.addForm.valid) {
+      const novoUser: User = this.addForm.value;
+      this.servico.save(novoUser).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Usuário adicionado com sucesso!"
+          });
+          const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+          addModal.hide();
+        }
+      });
+    }
   }
 
-  openEditModal(index: number) {
+  openEditModal(usuario: User) {
+    this.usuarioSelecionado = usuario;
+    this.editForm.patchValue({
+      id: usuario.id,
+      nome: usuario.servidor?.nome_completo,
+      email: usuario.email
+    });
+    this.initialFormValues = this.editForm.value;
     const editModal = new bootstrap.Modal(document.getElementById('editModal'));
     editModal.show();
   }
 
-  cancelEdit() {
-    this.editForm.reset();
-    const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
-    editModal.hide();
-    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
-    cancelModal.show();
+  confirmEdit() {
+    if (this.usuarioSelecionado && this.editForm.valid && this.formChanged()) {
+      const usuarioAtualizado: User = {
+        ...this.usuarioSelecionado,
+        ...this.editForm.value
+      };
+      this.servico.save(usuarioAtualizado).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Usuário editado com sucesso!"
+          });
+          const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+          editModal.hide();
+        }
+      });
+    }
   }
 
-  cancelDelete() {
-    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-    deleteModal.hide();
-    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
-    cancelModal.show();
+  formChanged(): boolean {
+    return JSON.stringify(this.initialFormValues) !== JSON.stringify(this.editForm.value);
+  }
+
+  openDeleteModal(id: number) {
+    this.usuarioSelecionado = this.registros.find(usuario => usuario.id === id) || null;
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+  }
+
+  confirmDelete() {
+    if (this.usuarioSelecionado) {
+      this.servico.delete(this.usuarioSelecionado!.id!).subscribe({
+        complete: () => {
+          this.get();
+          this.servicoAlerta.enviarAlerta({
+            tipo: ETipoAlerta.SUCESSO,
+            mensagem: "Usuário excluído com sucesso!"
+          });
+          const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+          deleteModal.hide();
+        }
+      });
+    }
   }
 }

@@ -55,9 +55,11 @@ export class ManutencaoService implements IService<Manutencao> {
       responsavel: objeto.responsavel?.id
     };
     if (objeto.id) {
+      console.log('Atualizando manutenção...', manutencaoData);
       const url = this.apiUrl + objeto.id + '/';
       return this.http.put<Manutencao>(url, manutencaoData, { headers });
     } else {
+      console.log('Criando manutenção...', manutencaoData);
       return this.http.post<Manutencao>(url, manutencaoData, { headers });
     }
   }

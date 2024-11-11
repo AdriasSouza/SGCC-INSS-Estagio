@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, FormsModule, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http'; // Importando HttpClientModule
 import { ManutencaoService } from '../../service/manutencao.service';
@@ -17,13 +17,12 @@ import { RespostaPaginada } from '../../model/resposta-paginada';
 import { Manutencao } from '../../model/manutencao.model';
 import { ETipoAlerta } from '../../model/e-tipo-alerta';
 
-
 declare var bootstrap: any;
 
 @Component({
   selector: 'app-manutencao',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent, BarraComandosComponent], // Adicionando HttpClientModule
+  imports: [FormsModule, ReactiveFormsModule, CommonModule, HttpClientModule, NgbPaginationModule, TheadOrdenacaoComponent], // Adicionando HttpClientModule
   templateUrl: './manutencao.component.html',
   styleUrls: ['./manutencao.component.css']
 })
@@ -39,14 +38,14 @@ export class ManutencaoComponent implements IList<Manutencao>, OnInit {
   ) {
     this.editForm = this.fb.group({
       descricao: ['', Validators.required],
-      data: ['', Validators.required],
+      data: ['', [Validators.required, this.dataValidator]],
       equipamento: ['', Validators.required],
       responsavel: ['', Validators.required],
     });
 
     this.addForm = this.fb.group({
       descricao: ['', Validators.required],
-      data: ['', Validators.required],
+      data: ['', [Validators.required, this.dataValidator]],
       equipamento: ['', Validators.required],
       responsavel: ['', Validators.required],
     });
@@ -62,6 +61,9 @@ export class ManutencaoComponent implements IList<Manutencao>, OnInit {
   termoBusca: string | undefined = '';
   filtroCodigo: string = '';
   filtroDescricao: string = '';
+  filtroData: string = '';
+  filtroEquipamento: string = '';
+  filtroResponsavel: string = '';
   equipamentos: Equipamento[] = [];
   responsaveis: Servidor[] = [];
   editForm: FormGroup;
@@ -70,6 +72,8 @@ export class ManutencaoComponent implements IList<Manutencao>, OnInit {
   showDropdown: boolean[] = [];
   loading: boolean = false;
   manutencaoSelecionada: Manutencao | null = null;
+  initialFormValues: any;
+  hoje: string = new Date().toISOString().split('T')[0]; // Data de hoje no formato YYYY-MM-DD
 
   colunas: TheadOrdenacao = [
     { campo: 'codigo', descricao: 'Código' },
@@ -109,7 +113,10 @@ export class ManutencaoComponent implements IList<Manutencao>, OnInit {
   registrosFiltrados(): Manutencao[] {
     return this.registros.filter(manutencao => {
       return (!this.filtroCodigo || manutencao.codigo?.toString().includes(this.filtroCodigo)) &&
-             (!this.filtroDescricao || manutencao.descricao?.includes(this.filtroDescricao));
+             (!this.filtroDescricao || manutencao.descricao?.includes(this.filtroDescricao)) &&
+             (!this.filtroData || (manutencao.data && manutencao.data.toString().includes(this.filtroData))) &&
+             (!this.filtroEquipamento || (manutencao.equipamento && manutencao.equipamento.nome && manutencao.equipamento.nome.includes(this.filtroEquipamento))) &&
+             (!this.filtroResponsavel || (manutencao.responsavel && manutencao.responsavel.nome_completo && manutencao.responsavel.nome_completo.includes(this.filtroResponsavel)));
     });
   }
 
@@ -134,7 +141,6 @@ export class ManutencaoComponent implements IList<Manutencao>, OnInit {
   }
 
   delete(id: number): void {
-    if (confirm('Confirma a exclusão da manutenção?')) {
       this.servico.delete(id).subscribe({
         complete: () => {
           this.get();
@@ -144,7 +150,6 @@ export class ManutencaoComponent implements IList<Manutencao>, OnInit {
           });
         }
       });
-    }
   }
 
   openDeleteModal(id: number) {
@@ -197,12 +202,13 @@ export class ManutencaoComponent implements IList<Manutencao>, OnInit {
       equipamento: manutencao.equipamento?.id,
       responsavel: manutencao.responsavel?.id
     });
+    this.initialFormValues = this.editForm.value;
     const editModal = new bootstrap.Modal(document.getElementById('editModal'));
     editModal.show();
   }
 
   confirmEdit() {
-    if (this.manutencaoSelecionada && this.editForm.valid) {
+    if (this.manutencaoSelecionada && this.editForm.valid && this.formChanged()) {
       const manutencaoAtualizada: Manutencao = {
         ...this.manutencaoSelecionada,
         ...this.editForm.value,
@@ -223,6 +229,10 @@ export class ManutencaoComponent implements IList<Manutencao>, OnInit {
     }
   }
 
+  formChanged(): boolean {
+    return JSON.stringify(this.initialFormValues) !== JSON.stringify(this.editForm.value);
+  }
+
   cancelAdd(form: NgForm) {
     form.reset();
     const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
@@ -238,5 +248,13 @@ export class ManutencaoComponent implements IList<Manutencao>, OnInit {
   cancelDelete() {
     const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
     deleteModal.hide();
+  }
+
+  dataValidator(control: AbstractControl): { [key: string]: boolean } | null {
+    const data = control.value;
+    if (data && new Date(data) > new Date()) {
+      return { 'max': true };
+    }
+    return null;
   }
 }
