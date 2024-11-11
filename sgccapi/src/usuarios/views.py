@@ -92,34 +92,29 @@ class UserDataView(APIView):
     permission_classes = [IsAuthenticated]  # Apenas usuários autenticados podem acessar
 
     def get(self, request):
-        get_all = request.query_params.get('all', 'false').lower() == 'true'  # Verifica se 'all' é true na URL
-        
-        if get_all:
-            # Retorna todos os usuários
-            users = User.objects.all()
-            serializer = UserSerializer(users, many=True)
-            return Response(serializer.data)
-        else:
-            # Retorna apenas os dados do usuário logado
-            user = request.user
-            serializer = UserSerializer(user)
-            return Response(serializer.data)
+        # Retorna apenas os dados do usuário logado
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
 
+
+class UserFilter(filters.FilterSet):
+    email = filters.CharFilter(field_name='email', lookup_expr='icontains')  # Busca parcial por email
+    servidor = filters.NumberFilter(field_name='servidor', lookup_expr='exact')  # Filtra pelo ID do servidor
+    is_staff = filters.BooleanFilter(field_name='is_staff')
+    is_superuser = filters.BooleanFilter(field_name='is_superuser')
+
+    class Meta:
+        model = User
+        fields = ['email', 'servidor', 'is_staff', 'is_superuser']
 
 # View para administradores visualizarem dados de um usuário específico
-class UserAdminDataView(APIView):
+class UserAdminDataView(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.all().order_by('id')
+    serializer_class = UserSerializer
     permission_classes = [IsAdminUser]  # Apenas administradores podem acessar
-
-    def get(self, request, pk):
-        try:
-            # Encontra o usuário pelo ID
-            user = User.objects.get(pk=pk)
-        except User.DoesNotExist:
-            return Response({"detail": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
-
-        # Serializa e retorna os dados do usuário
-        serializer = UserSerializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = UserFilter
 
 
 # View para logout do usuário, invalidando o refresh token

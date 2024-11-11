@@ -76,10 +76,18 @@ class UserSerializer(serializers.ModelSerializer):
 
     # Validação para garantir que apenas superusuários possam modificar os campos de superusuário e staff.
     def validate(self, attrs):
-        user = self.context.get('request').user
-        if 'is_superuser' in attrs or 'is_staff' in attrs:
-            if not user.is_superuser:
-                raise serializers.ValidationError("Você não tem permissão para alterar os campos de superusuário ou staff.")
+        request = self.context.get('request')  # Pega o request do contexto
+
+        if request and hasattr(request, 'user'):
+            # Só tenta acessar o 'request.user' se o request for válido e tiver o atributo 'user'
+            user = request.user
+            if 'is_superuser' in attrs or 'is_staff' in attrs:
+                if not user.is_superuser:
+                    raise serializers.ValidationError("Você não tem permissão para alterar os campos de superusuário ou staff.")
+        else:
+            # Se não houver usuário autenticado, podemos ignorar essa validação
+            pass
+
         return attrs
 
     # Método de criação customizado para definir a senha do usuário corretamente.
@@ -90,13 +98,23 @@ class UserSerializer(serializers.ModelSerializer):
             user.set_password(password)  # Define a senha usando o método adequado para segurança.
         user.save()
         return user
-    
+
     # Método de atualização customizado para alterar a senha, se fornecida.
     def update(self, instance, validated_data):
         password = validated_data.pop('password', None)
         if password:
             instance.set_password(password)  # Atualiza a senha, se fornecida.
         return super().update(instance, validated_data)
+
+    def to_internal_value(self, data):
+        """
+        Método customizado para tornar `email` e `password` opcionais durante a atualização (PUT).
+        """
+        # Se já houver uma instância (significa que é uma atualização), torna esses campos opcionais
+        if self.instance:
+            self.fields['email'].required = False
+            self.fields['password'].required = False
+        return super().to_internal_value(data)
 
     # Sobrescreve a representação para exibir dados completos do servidor ao invés de apenas o ID.
     def to_representation(self, instance):
