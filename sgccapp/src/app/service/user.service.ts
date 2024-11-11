@@ -17,7 +17,7 @@ export class UserService implements IService<User> {
     private http: HttpClient
   ) { }
 
-  apiUrl: string = environment.API_URL + '/api/usuarios/user_data/';
+  apiUrl: string = environment.API_URL + '/api/usuarios/';
 
   getUserData(): Observable<User> {
     const token = localStorage.getItem('access_token');

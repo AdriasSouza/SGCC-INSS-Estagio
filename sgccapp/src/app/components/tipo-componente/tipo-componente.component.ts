@@ -2,17 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, NgForm, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http'; // Importando HttpClientModule
+import { TipoComponente } from '../../model/tipo-componente.model'; // Importando o modelo TipoComponente
+import { TipoComponenteService } from '../../service/tipo-componente.service';
 import { AlertaService } from '../../service/alerta.service';
 import { IList } from '../i-list';
 import { TheadOrdenacao } from '../thead-ordenacao/thead-ordenacao';
+import { ETipoAlerta } from '../../model/e-tipo-alerta';
 import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { TheadOrdenacaoComponent } from '../thead-ordenacao/thead-ordenacao.component';
 import { BarraComandosComponent } from '../barra-comandos/barra-comandos.component';
-import { TipoComponenteService } from '../../service/tipo-componente.service';
-import { TipoComponente } from '../../model/tipo-componente.model';
 import { RespostaPaginada } from '../../model/resposta-paginada';
-import { ETipoAlerta } from '../../model/e-tipo-alerta';
-
 
 declare var bootstrap: any;
 
@@ -32,13 +31,14 @@ export class TipoComponenteComponent implements IList<TipoComponente>, OnInit {
     private servicoAlerta: AlertaService, // Adicionando o serviço AlertaService
   ) {
     this.editForm = this.fb.group({
+      id: [''],
       nome: ['', Validators.required],
-      descricao: ['', Validators.required],
+      descricao: ['', Validators.required]
     });
 
     this.addForm = this.fb.group({
       nome: ['', Validators.required],
-      descricao: ['', Validators.required],
+      descricao: ['', Validators.required]
     });
   }
 
@@ -57,6 +57,7 @@ export class TipoComponenteComponent implements IList<TipoComponente>, OnInit {
   showDropdown: boolean[] = [];
   loading: boolean = false;
   tipoComponenteSelecionado: TipoComponente | null = null;
+  initialFormValues: any;
 
   colunas: TheadOrdenacao = [
     { campo: 'nome', descricao: 'Nome' },
@@ -92,23 +93,21 @@ export class TipoComponenteComponent implements IList<TipoComponente>, OnInit {
 
   registrosFiltrados(): TipoComponente[] {
     return this.registros.filter(tipoComponente => {
-      return (!this.filtroNome || tipoComponente.nome?.includes(this.filtroNome)) &&
-             (!this.filtroDescricao || tipoComponente.descricao?.includes(this.filtroDescricao));
+      return (!this.filtroNome || tipoComponente.nome.includes(this.filtroNome)) &&
+             (!this.filtroDescricao || tipoComponente.descricao.includes(this.filtroDescricao));
     });
   }
 
   delete(id: number): void {
-    if (confirm('Confirma a exclusão do tipo de componente?')) {
-      this.servico.delete(id).subscribe({
-        complete: () => {
-          this.get();
-          this.servicoAlerta.enviarAlerta({
-            tipo: ETipoAlerta.SUCESSO,
-            mensagem: "Tipo de componente excluído com sucesso!"
-          });
-        }
-      });
-    }
+    this.servico.delete(id).subscribe({
+      complete: () => {
+        this.get();
+        this.servicoAlerta.enviarAlerta({
+          tipo: ETipoAlerta.SUCESSO,
+          mensagem: "Tipo de componente excluído com sucesso!"
+        });
+      }
+    });
   }
 
   openDeleteModal(id: number) {
@@ -119,7 +118,9 @@ export class TipoComponenteComponent implements IList<TipoComponente>, OnInit {
 
   confirmDelete() {
     if (this.tipoComponenteSelecionado) {
-      this.delete(this.tipoComponenteSelecionado.id);
+      if (this.tipoComponenteSelecionado?.id !== undefined) {
+        this.delete(this.tipoComponenteSelecionado.id);
+      }
       const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
       deleteModal.hide();
     }
@@ -132,9 +133,7 @@ export class TipoComponenteComponent implements IList<TipoComponente>, OnInit {
 
   confirmAdd() {
     if (this.addForm.valid) {
-      const novoTipoComponente: TipoComponente = {
-        ...this.addForm.value
-      };
+      const novoTipoComponente: TipoComponente = this.addForm.value;
       this.servico.save(novoTipoComponente).subscribe({
         complete: () => {
           this.get();
@@ -156,12 +155,13 @@ export class TipoComponenteComponent implements IList<TipoComponente>, OnInit {
       nome: tipoComponente.nome,
       descricao: tipoComponente.descricao
     });
+    this.initialFormValues = this.editForm.value;
     const editModal = new bootstrap.Modal(document.getElementById('editModal'));
     editModal.show();
   }
 
   confirmEdit() {
-    if (this.tipoComponenteSelecionado && this.editForm.valid) {
+    if (this.tipoComponenteSelecionado && this.editForm.valid && this.formChanged()) {
       const tipoComponenteAtualizado: TipoComponente = {
         ...this.tipoComponenteSelecionado,
         ...this.editForm.value
@@ -178,6 +178,10 @@ export class TipoComponenteComponent implements IList<TipoComponente>, OnInit {
         }
       });
     }
+  }
+
+  formChanged(): boolean {
+    return JSON.stringify(this.initialFormValues) !== JSON.stringify(this.editForm.value);
   }
 
   cancelAdd(form: NgForm) {

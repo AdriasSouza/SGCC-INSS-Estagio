@@ -48,7 +48,8 @@ export class TipoEquipamentoService implements IService<TipoEquipamento> {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     const url = this.apiUrl;
     if (objeto.id) {
-      this.apiUrl + objeto.id + '/';
+      const url = this.apiUrl + objeto.id + '/';
+      console.log('url', url);
       return this.http.put<TipoEquipamento>(url, objeto, { headers });
     } else {
       return this.http.post<TipoEquipamento>(url, objeto, { headers });

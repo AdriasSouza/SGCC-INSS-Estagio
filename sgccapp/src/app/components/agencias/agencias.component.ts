@@ -33,12 +33,12 @@ export class AgenciasComponent implements IList<Agencia>, OnInit {
     this.editForm = this.fb.group({
       id: [''],
       nome: ['', Validators.required],
-      numero: ['', Validators.required],
+      numero: ['', [Validators.required, Validators.pattern('^[0-9]*$'), Validators.maxLength(8)]],
     });
 
     this.addForm = this.fb.group({
       nome: ['', Validators.required],
-      numero: ['', Validators.required],
+      numero: ['', [Validators.required, Validators.pattern('^[0-9]*$'), Validators.maxLength(8)]],
     });
   }
 
@@ -57,10 +57,11 @@ export class AgenciasComponent implements IList<Agencia>, OnInit {
   showDropdown: boolean[] = [];
   loading: boolean = false;
   agenciaSelecionada: Agencia | null = null;
+  initialFormValues: any;
 
   colunas: TheadOrdenacao = [
     { campo: 'nome', descricao: 'Nome' },
-    { campo: 'numero', descricao: 'Número' },
+    { campo: 'numero', descricao: 'Código' },
     { campo: '', descricao: 'Ações' }
   ]
 
@@ -98,7 +99,6 @@ export class AgenciasComponent implements IList<Agencia>, OnInit {
   }
 
   delete(id: number): void {
-    if (confirm('Confirma a exclusão da agência?')) {
       this.servico.delete(id).subscribe({
         complete: () => {
           this.get();
@@ -108,7 +108,7 @@ export class AgenciasComponent implements IList<Agencia>, OnInit {
           });
         }
       });
-    }
+
   }
 
   openDeleteModal(id: number) {
@@ -156,12 +156,13 @@ export class AgenciasComponent implements IList<Agencia>, OnInit {
       nome: agencia.nome,
       numero: agencia.numero
     });
+    this.initialFormValues = this.editForm.value;
     const editModal = new bootstrap.Modal(document.getElementById('editModal'));
     editModal.show();
   }
 
   confirmEdit() {
-    if (this.agenciaSelecionada && this.editForm.valid) {
+    if (this.agenciaSelecionada && this.editForm.valid && this.formChanged()) {
       const agenciaAtualizada: Agencia = {
         ...this.agenciaSelecionada,
         ...this.editForm.value
@@ -178,6 +179,10 @@ export class AgenciasComponent implements IList<Agencia>, OnInit {
         }
       });
     }
+  }
+
+  formChanged(): boolean {
+    return JSON.stringify(this.initialFormValues) !== JSON.stringify(this.editForm.value);
   }
 
   cancelAdd(form: NgForm) {

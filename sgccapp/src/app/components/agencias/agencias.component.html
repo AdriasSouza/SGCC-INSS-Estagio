@@ -80,12 +80,20 @@
           <div class="mb-3">
             <label for="addNome" class="form-label">Nome</label>
             <input type="text" class="form-control" id="addNome" formControlName="nome">
+            <div *ngIf="addForm.get('nome')?.invalid && (addForm.get('nome')?.dirty || addForm.get('nome')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
+            </div>
           </div>
           <div class="mb-3">
             <label for="addNumero" class="form-label">Número</label>
-            <input type="text" class="form-control" id="addNumero" formControlName="numero">
+            <input type="text" class="form-control" id="addNumero" formControlName="numero" maxlength="8">
+            <div *ngIf="addForm.get('numero')?.invalid && (addForm.get('numero')?.dirty || addForm.get('numero')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('numero')?.errors?.['required']">Número é obrigatório.</div>
+              <div *ngIf="addForm.get('numero')?.errors?.['pattern']">Número deve conter apenas números.</div>
+              <div *ngIf="addForm.get('numero')?.errors?.['maxlength']">Número deve ter até 8 dígitos.</div>
+            </div>
           </div>
-          <button type="submit" class="btn btn-primary me-2">Adicionar</button>
+          <button type="submit" class="btn btn-primary me-2" [disabled]="!addForm.valid">Adicionar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </form>
       </div>
@@ -106,12 +114,20 @@
           <div class="mb-3">
             <label for="editNome" class="form-label">Nome</label>
             <input type="text" class="form-control" id="editNome" formControlName="nome">
+            <div *ngIf="editForm.get('nome')?.invalid && (editForm.get('nome')?.dirty || editForm.get('nome')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
+            </div>
           </div>
           <div class="mb-3">
             <label for="editNumero" class="form-label">Número</label>
-            <input type="text" class="form-control" id="editNumero" formControlName="numero">
+            <input type="text" class="form-control" id="editNumero" formControlName="numero" maxlength="8">
+            <div *ngIf="editForm.get('numero')?.invalid && (editForm.get('numero')?.dirty || editForm.get('numero')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('numero')?.errors?.['required']">Número é obrigatório.</div>
+              <div *ngIf="editForm.get('numero')?.errors?.['pattern']">Número deve conter apenas números.</div>
+              <div *ngIf="editForm.get('numero')?.errors?.['maxlength']">Número deve ter até 8 dígitos.</div>
+            </div>
           </div>
-          <button type="submit" class="btn btn-primary">Salvar</button>
+          <button type="submit" class="btn btn-primary me-2" [disabled]="!editForm.valid || !formChanged()">Salvar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </form>
       </div>
@@ -129,7 +145,7 @@
       </div>
       <div class="modal-body">
         <p>Tem certeza que deseja excluir esta agência?</p>
-        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Excluir</button>
+        <button type="button" class="btn btn-danger me-2" (click)="confirmDelete()">Excluir</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
       </div>
     </div>

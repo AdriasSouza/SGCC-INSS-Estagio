@@ -66,57 +66,69 @@
     </div>
   </div>
   
-  <!-- Modal de Adição de Tipo de Componente -->
-  <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addModalLabel">Adicionar Tipo de Componente</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
-            <div class="mb-3">
-              <label for="addNome" class="form-label">Nome</label>
-              <input type="text" class="form-control" id="addNome" formControlName="nome">
+<!-- Modal de Adição de Tipo de Componente -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addModalLabel">Adicionar Tipo de Componente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
+          <div class="mb-3">
+            <label for="addNome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="addNome" formControlName="nome">
+            <div *ngIf="addForm.get('nome')?.invalid && (addForm.get('nome')?.dirty || addForm.get('nome')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
             </div>
-            <div class="mb-3">
-              <label for="addDescricao" class="form-label">Descrição</label>
-              <input type="text" class="form-control" id="addDescricao" formControlName="descricao">
+          </div>
+          <div class="mb-3">
+            <label for="addDescricao" class="form-label">Descrição</label>
+            <input type="text" class="form-control" id="addDescricao" formControlName="descricao">
+            <div *ngIf="addForm.get('descricao')?.invalid && (addForm.get('descricao')?.dirty || addForm.get('descricao')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('descricao')?.errors?.['required']">Descrição é obrigatória.</div>
             </div>
-            <button type="submit" class="btn btn-primary me-2">Adicionar</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          </form>
-        </div>
+          </div>
+          <button type="submit" class="btn btn-primary me-2" [disabled]="!addForm.valid">Adicionar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </form>
       </div>
     </div>
   </div>
+</div>
   
-  <!-- Modal de Edição de Tipo de Componente -->
-  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editModalLabel">Editar Tipo de Componente</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
-            <div class="mb-3">
-              <label for="editNome" class="form-label">Nome</label>
-              <input type="text" class="form-control" id="editNome" formControlName="nome">
+<!-- Modal de Edição de Tipo de Componente -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Editar Tipo de Componente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
+          <div class="mb-3">
+            <label for="editNome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="editNome" formControlName="nome">
+            <div *ngIf="editForm.get('nome')?.invalid && (editForm.get('nome')?.dirty || editForm.get('nome')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
             </div>
-            <div class="mb-3">
-              <label for="editDescricao" class="form-label">Descrição</label>
-              <input type="text" class="form-control" id="editDescricao" formControlName="descricao">
+          </div>
+          <div class="mb-3">
+            <label for="editDescricao" class="form-label">Descrição</label>
+            <input type="text" class="form-control" id="editDescricao" formControlName="descricao">
+            <div *ngIf="editForm.get('descricao')?.invalid && (editForm.get('descricao')?.dirty || editForm.get('descricao')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('descricao')?.errors?.['required']">Descrição é obrigatória.</div>
             </div>
-            <button type="submit" class="btn btn-primary me-2" [disabled]="!editForm.dirty">Salvar</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          </form>
-        </div>
+          </div>
+          <button type="submit" class="btn btn-primary me-2" [disabled]="!editForm.valid || !formChanged()">Salvar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </form>
       </div>
     </div>
   </div>
+</div>
   
   <!-- Modal de Exclusão de Tipo de Componente -->
   <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -128,7 +140,7 @@
         </div>
         <div class="modal-body">
           <p>Tem certeza que deseja excluir este tipo de componente?</p>
-          <button type="button" class="btn btn-danger" (click)="confirmDelete()">Excluir</button>
+          <button type="button" class="btn btn-danger me-2" (click)="confirmDelete()">Excluir</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </div>
       </div>
