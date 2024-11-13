@@ -108,6 +108,7 @@ class UserFilter(filters.FilterSet):
         model = User
         fields = ['email', 'servidor', 'is_staff', 'is_superuser']
 
+
 # View para administradores visualizarem dados de um usuário específico
 class UserAdminDataView(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all().order_by('id')
@@ -115,6 +116,27 @@ class UserAdminDataView(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAdminUser]  # Apenas administradores podem acessar
     filter_backends = [DjangoFilterBackend]
     filterset_class = UserFilter
+
+
+# View para deletar um usuário
+class UserDeleteView(APIView):
+    permission_classes = [IsAdminUser]  # Apenas administradores podem deletar usuários
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            # Obtém o usuário pelo ID fornecido na URL
+            usuario = User.objects.get(pk=kwargs['pk'])
+            
+            # Verifica se o usuário que está fazendo a requisição não é o próprio usuário a ser deletado
+            if usuario == request.user:
+                return Response({"detail": "Você não pode deletar sua própria conta."}, status=status.HTTP_403_FORBIDDEN)
+            
+            # Deleta o usuário
+            usuario.delete()
+            
+            return Response({"detail": "Usuário deletado com sucesso."}, status=status.HTTP_204_NO_CONTENT)
+        except User.DoesNotExist:
+            return Response({"detail": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
 
 # View para logout do usuário, invalidando o refresh token

@@ -12,7 +12,8 @@ from .views import (
     LogoutView,       # View para logout de usuários
     ExportServidoresCSVView,  # View para exportar CSV dos Servidores socorro
     UserAdminUpdateView,
-    UserAdminDataView
+    UserAdminDataView,
+    UserDeleteView,
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -43,6 +44,8 @@ urlpatterns = [
     # path('user_data_admin/<int:pk>/', UserAdminDataView.as_view()),
     # Rota para update de usuario
     path('user_update/', UserUpdateView.as_view()),
+    # Deletar usuarios
+    path('user_delete/<int:pk>/', UserDeleteView.as_view()),
     # Atualiza um usuario em especifico
     path('user_update_admin/<int:pk>/', UserAdminUpdateView.as_view()),
     # Rota para logout de usuários

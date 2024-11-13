@@ -22,6 +22,7 @@ from .serializers import (
     ComponenteSerializer,
 )
 
+
 # Função auxiliar para validação de datas
 def validar_datas(data_inicio, data_fim):
     try:
