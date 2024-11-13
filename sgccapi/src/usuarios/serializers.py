@@ -126,7 +126,8 @@ class UserSerializer(serializers.ModelSerializer):
 # Serializer para o modelo Solicitacao, que representa uma solicitação feita por um usuário.
 class SolicitacaoSerializer(serializers.ModelSerializer):
     # Campo que representa o relacionamento com o usuário solicitante, usando o ID do usuário.
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), required=False, allow_null=True)
 
     class Meta:
         model = Solicitacao

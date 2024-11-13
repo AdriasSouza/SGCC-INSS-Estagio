@@ -160,7 +160,7 @@ class Solicitacao(models.Model):
         choices=STATUS_CHOICES,
         default='ANALISE'
     )  # Status da solicitação
-    descricao = models.CharField(max_length=255)  # Descrição da solicitação
+    descricao = models.CharField(max_length=255, blank=True, null=True)  # Descrição da solicitação
     justificativa = models.CharField(max_length=255, blank=True, null=True)  # Justificativa opcional
 
     def __str__(self):
