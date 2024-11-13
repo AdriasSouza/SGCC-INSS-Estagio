@@ -66,7 +66,7 @@
           <div class="mb-3">
             <label for="addCodigo" class="form-label">Código</label>
             <input type="text" class="form-control" id="addCodigo" formControlName="codigo" maxlength="8">
-            <div *ngIf="addForm.get('codigo')?.invalid && (addForm.get('codigo')?.dirty || addForm.get('codigo')?.touched)" class="text-danger">
+            <div *ngIf="addForm.get('codigo')?.invalid" class="text-danger">
               <div *ngIf="addForm.get('codigo')?.errors?.['required']">Código é obrigatório.</div>
               <div *ngIf="addForm.get('codigo')?.errors?.['pattern']">Código deve conter apenas números.</div>
               <div *ngIf="addForm.get('codigo')?.errors?.['maxlength']">Código deve ter até 8 dígitos.</div>
@@ -75,7 +75,7 @@
           <div class="mb-3">
             <label for="addNome" class="form-label">Nome</label>
             <input type="text" class="form-control" id="addNome" formControlName="nome">
-            <div *ngIf="addForm.get('nome')?.invalid && (addForm.get('nome')?.dirty || addForm.get('nome')?.touched)" class="text-danger">
+            <div *ngIf="addForm.get('nome')?.invalid" class="text-danger">
               <div *ngIf="addForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
             </div>
           </div>
@@ -100,7 +100,7 @@
           <div class="mb-3">
             <label for="editCodigo" class="form-label">Código</label>
             <input type="text" class="form-control" id="editCodigo" formControlName="codigo" maxlength="8">
-            <div *ngIf="editForm.get('codigo')?.invalid && (editForm.get('codigo')?.dirty || editForm.get('codigo')?.touched)" class="text-danger">
+            <div *ngIf="editForm.get('codigo')?.invalid" class="text-danger">
               <div *ngIf="editForm.get('codigo')?.errors?.['required']">Código é obrigatório.</div>
               <div *ngIf="editForm.get('codigo')?.errors?.['pattern']">Código deve conter apenas números.</div>
               <div *ngIf="editForm.get('codigo')?.errors?.['maxlength']">Código deve ter até 8 dígitos.</div>
@@ -109,7 +109,7 @@
           <div class="mb-3">
             <label for="editNome" class="form-label">Nome</label>
             <input type="text" class="form-control" id="editNome" formControlName="nome">
-            <div *ngIf="editForm.get('nome')?.invalid && (editForm.get('nome')?.dirty || editForm.get('nome')?.touched)" class="text-danger">
+            <div *ngIf="editForm.get('nome')?.invalid" class="text-danger">
               <div *ngIf="editForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
             </div>
           </div>

@@ -11,7 +11,7 @@ import { SolicitacaoComponent } from './components/solicitacao/solicitacao.compo
 import { ManutencaoComponent } from './components/manutencao/manutencao.component';
 import { TipoComponenteComponent } from './components/tipo-componente/tipo-componente.component';
 import { TipoEquipamentoComponent } from './components/tipo-equipamento/tipo-equipamento.component';
-import { RequisicoesComponent } from './components/requisicoes/requisicoes.component';
+
 import { SetoresComponent } from './components/setores/setores.component';
 
 export const routes: Routes = [
@@ -24,7 +24,6 @@ export const routes: Routes = [
     { path: 'relatorios', component: RelatoriosComponent },
     { path: 'manutencao', component: ManutencaoComponent },
     { path: 'solicitacao', component: SolicitacaoComponent },
-    { path: 'requisicao', component: RequisicoesComponent },
     { path: 'tipo-comp', component: TipoComponenteComponent },
     { path: 'tipo-equip', component: TipoEquipamentoComponent },
     { path: 'setores', component: SetoresComponent },

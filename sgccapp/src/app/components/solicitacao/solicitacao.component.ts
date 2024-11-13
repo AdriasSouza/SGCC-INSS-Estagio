@@ -40,9 +40,8 @@ export class SolicitacaoComponent implements IList<Solicitacao>, OnInit {
     });
 
     this.addForm = this.fb.group({
-      user: ['', Validators.required],
-      data: ['', Validators.required],
-      descricao: ['', Validators.required]
+      descricao: ['', Validators.required],
+      justificativa: ['', Validators.required]
     });
 
     this.approveForm = this.fb.group({
@@ -172,6 +171,36 @@ export class SolicitacaoComponent implements IList<Solicitacao>, OnInit {
     addModal.hide();
     const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
     cancelModal.show();
+  }
+
+  confirmAdd() {
+    if (this.userId === null) {
+      console.error('User ID is null');
+      return;
+    }
+    const novaSolicitacao: Solicitacao = {
+      id: 0,
+      user: { id: this.userId, email: '', password: '' }, // Preencha com os dados do usuário atual
+      data: new Date().toISOString(),
+      status: 'ANALISE',
+      descricao: this.addForm.get('descricao')?.value,
+      justificativa: this.addForm.get('justificativa')?.value
+    };
+
+    this.servico.save(novaSolicitacao).subscribe({
+      complete: () => {
+        this.get();
+        this.servicoAlerta.enviarAlerta({
+          tipo: ETipoAlerta.SUCESSO,
+          mensagem: "Solicitação criada com sucesso!"
+        });
+        const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+        addModal.hide();
+      },
+      error: (err) => {
+        console.error('Erro ao criar solicitação:', err); // Adiciona log para depuração
+      }
+    });
   }
 
   openEditModal(solicitacao: Solicitacao) {

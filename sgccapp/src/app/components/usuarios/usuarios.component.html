@@ -37,7 +37,7 @@
     </thead>
     <tbody>
       <tr *ngFor="let usuario of registrosFiltrados()">
-        <td>{{ usuario.servidor?.nome_completo }}</td>
+        <td>{{ usuario.servidor?.nome_completo || 'N/A' }}</td>
         <td>{{ usuario.email }}</td>
         <td>{{ usuario.servidor?.inscricao_institucional || 'N/A' }}</td>
         <td>{{ usuario.servidor?.nome_completo || 'N/A' }}</td>
@@ -64,7 +64,7 @@
             <div class="mb-3">
               <label for="addEmail" class="form-label">Email</label>
               <input type="email" class="form-control" id="addEmail" formControlName="email" aria-required="true">
-              <div *ngIf="addForm.get('email')?.invalid && (addForm.get('email')?.dirty || addForm.get('email')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('email')?.invalid " class="text-danger">
                 <div *ngIf="addForm.get('email')?.errors?.['required']">Email é obrigatório.</div>
                 <div *ngIf="addForm.get('email')?.errors?.['email']">Email inválido.</div>
               </div>
@@ -72,14 +72,14 @@
             <div class="mb-3">
               <label for="addNovaSenha" class="form-label">Nova Senha</label>
               <input type="password" class="form-control" id="addNovaSenha" formControlName="novaSenha" aria-required="true">
-              <div *ngIf="addForm.get('novaSenha')?.invalid && (addForm.get('novaSenha')?.dirty || addForm.get('novaSenha')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('novaSenha')?.invalid " class="text-danger">
                 <div *ngIf="addForm.get('novaSenha')?.errors?.['required']">Senha é obrigatória.</div>
               </div>
             </div>
             <div class="mb-3">
               <label for="addConfirmaSenha" class="form-label">Confirmar Senha</label>
               <input type="password" class="form-control" id="addConfirmaSenha" formControlName="confirmaSenha" aria-required="true">
-              <div *ngIf="addForm.get('confirmaSenha')?.invalid && (addForm.get('confirmaSenha')?.dirty || addForm.get('confirmaSenha')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('confirmaSenha')?.invalid" class="text-danger">
                 <div *ngIf="addForm.get('confirmaSenha')?.errors?.['required']">Confirmar Senha é obrigatória.</div>
                 <div *ngIf="addForm.get('confirmaSenha')?.errors?.['passwordMismatch']">As senhas não coincidem.</div>
               </div>
@@ -89,7 +89,7 @@
               <select class="form-select" id="addServidor" formControlName="servidor">
                 <option *ngFor="let servidor of servidores" [value]="servidor.id">{{ servidor.nome_completo }}</option>
               </select>
-              <div *ngIf="addForm.get('servidor')?.invalid && (addForm.get('servidor')?.dirty || addForm.get('servidor')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('servidor')?.invalid" class="text-danger">
                 <div *ngIf="addForm.get('servidor')?.errors?.['required']">Servidor é obrigatório.</div>
               </div>
             </div>
@@ -122,7 +122,7 @@
             <div class="mb-3">
               <label for="editEmail" class="form-label">Email</label>
               <input type="email" class="form-control" id="editEmail" formControlName="email" aria-required="true">
-              <div *ngIf="editForm.get('email')?.invalid && (editForm.get('email')?.dirty || editForm.get('email')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('email')?.invalid" class="text-danger">
                 <div *ngIf="editForm.get('email')?.errors?.['required']">Email é obrigatório.</div>
                 <div *ngIf="editForm.get('email')?.errors?.['email']">Email inválido.</div>
               </div>
@@ -134,7 +134,7 @@
             <div class="mb-3">
               <label for="editConfirmaSenha" class="form-label">Confirmar Senha</label>
               <input type="password" class="form-control" id="editConfirmaSenha" formControlName="confirmaSenha">
-              <div *ngIf="editForm.get('confirmaSenha')?.invalid && (editForm.get('confirmaSenha')?.dirty || editForm.get('confirmaSenha')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('confirmaSenha')?.invalid" class="text-danger">
                 <div *ngIf="editForm.get('confirmaSenha')?.errors?.['passwordMismatch']">As senhas não coincidem.</div>
               </div>
             </div>
@@ -143,7 +143,7 @@
               <select class="form-select" id="editServidor" formControlName="servidor">
                 <option *ngFor="let servidor of servidores" [value]="servidor.id">{{ servidor.nome_completo }}</option>
               </select>
-              <div *ngIf="editForm.get('servidor')?.invalid && (editForm.get('servidor')?.dirty || editForm.get('servidor')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('servidor')?.invalid" class="text-danger">
                 <div *ngIf="editForm.get('servidor')?.errors?.['required']">Servidor é obrigatório.</div>
               </div>
             </div>
@@ -158,6 +158,23 @@
             <button type="submit" class="btn btn-warning me-2" [disabled]="!editForm.valid">Salvar Alterações</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
           </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Exclusão de Usuário -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Excluir Usuário</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Tem certeza de que deseja excluir este usuário?</p>
+          <button type="button" class="btn btn-danger me-2" (click)="confirmDelete()">Excluir</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         </div>
       </div>
     </div>

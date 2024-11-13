@@ -83,14 +83,14 @@
             <div class="mb-3">
               <label for="addDescricao" class="form-label">Descrição</label>
               <input type="text" class="form-control" id="addDescricao" formControlName="descricao">
-              <div *ngIf="addForm.get('descricao')?.invalid && (addForm.get('descricao')?.dirty || addForm.get('descricao')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('descricao')?.invalid" class="text-danger">
                 <div *ngIf="addForm.get('descricao')?.errors?.['required']">Descrição é obrigatória.</div>
               </div>
             </div>
             <div class="mb-3">
               <label for="addData" class="form-label">Data</label>
               <input type="date" class="form-control" id="addData" formControlName="data" [max]="hoje">
-              <div *ngIf="addForm.get('data')?.invalid && (addForm.get('data')?.dirty || addForm.get('data')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('data')?.invalid" class="text-danger">
                 <div *ngIf="addForm.get('data')?.errors?.['required']">Data é obrigatória.</div>
                 <div *ngIf="addForm.get('data')?.errors?.['max']">Data não pode ser futura.</div>
               </div>
@@ -101,7 +101,7 @@
                 <option value="" disabled selected>Selecione um equipamento</option>
                 <option *ngFor="let equipamento of equipamentos" [value]="equipamento.id">{{ equipamento.plaqueta }} - {{ equipamento.nome }}</option>
               </select>
-              <div *ngIf="addForm.get('equipamento')?.invalid && (addForm.get('equipamento')?.dirty || addForm.get('equipamento')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('equipamento')?.invalid" class="text-danger">
                 <div *ngIf="addForm.get('equipamento')?.errors?.['required']">Equipamento é obrigatório.</div>
               </div>
             </div>
@@ -111,7 +111,7 @@
                 <option value="" disabled selected>Selecione um responsável</option>
                 <option *ngFor="let responsavel of responsaveis" [value]="responsavel.id">{{ responsavel.inscricao_institucional }} - {{ responsavel.nome_completo }}</option>
               </select>
-              <div *ngIf="addForm.get('responsavel')?.invalid && (addForm.get('responsavel')?.dirty || addForm.get('responsavel')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('responsavel')?.invalid" class="text-danger">
                 <div *ngIf="addForm.get('responsavel')?.errors?.['required']">Responsável é obrigatório.</div>
               </div>
             </div>
@@ -136,14 +136,14 @@
             <div class="mb-3">
               <label for="editDescricao" class="form-label">Descrição</label>
               <input type="text" class="form-control" id="editDescricao" formControlName="descricao">
-              <div *ngIf="editForm.get('descricao')?.invalid && (editForm.get('descricao')?.dirty || editForm.get('descricao')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('descricao')?.invalid" class="text-danger">
                 <div *ngIf="editForm.get('descricao')?.errors?.['required']">Descrição é obrigatória.</div>
               </div>
             </div>
             <div class="mb-3">
               <label for="editData" class="form-label">Data</label>
               <input type="date" class="form-control" id="editData" formControlName="data" [max]="hoje">
-              <div *ngIf="editForm.get('data')?.invalid && (editForm.get('data')?.dirty || editForm.get('data')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('data')?.invalid" class="text-danger">
                 <div *ngIf="editForm.get('data')?.errors?.['required']">Data é obrigatória.</div>
                 <div *ngIf="editForm.get('data')?.errors?.['max']">Data não pode ser futura.</div>
               </div>
@@ -154,7 +154,7 @@
                 <option value="" disabled selected>Selecione um equipamento</option>
                 <option *ngFor="let equipamento of equipamentos" [value]="equipamento.id">{{ equipamento.plaqueta }} - {{ equipamento.nome }}</option>
               </select>
-              <div *ngIf="editForm.get('equipamento')?.invalid && (editForm.get('equipamento')?.dirty || editForm.get('equipamento')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('equipamento')?.invalid" class="text-danger">
                 <div *ngIf="editForm.get('equipamento')?.errors?.['required']">Equipamento é obrigatório.</div>
               </div>
             </div>
@@ -164,7 +164,7 @@
                 <option value="" disabled selected>Selecione um responsável</option>
                 <option *ngFor="let responsavel of responsaveis" [value]="responsavel.id">{{ responsavel.inscricao_institucional }} - {{ responsavel.nome_completo }}</option>
               </select>
-              <div *ngIf="editForm.get('responsavel')?.invalid && (editForm.get('responsavel')?.dirty || editForm.get('responsavel')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('responsavel')?.invalid" class="text-danger">
                 <div *ngIf="editForm.get('responsavel')?.errors?.['required']">Responsável é obrigatório.</div>
               </div>
             </div>

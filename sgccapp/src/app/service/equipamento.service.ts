@@ -55,7 +55,7 @@ export class EquipamentoService implements IService<Equipamento> {
       sala: objeto?.sala || null,
       setor: objeto?.setor?.id || null,
       tipo: objeto.tipo?.id || null,
-      servidor: objeto.servidor_responsavel?.id || null,
+      servidor_responsavel: objeto.servidor_responsavel?.id,
       data_aquisicao: objeto?.data_aquisicao || null
     };
 
@@ -71,18 +71,6 @@ export class EquipamentoService implements IService<Equipamento> {
       console.log('Dados edição:', equipamentoData);
       return this.http.put<Equipamento>(url, equipamentoData, { headers });
     } else {
-      const equipamentoData: any = {
-        plaqueta: objeto?.plaqueta || null,
-        nome: objeto?.nome || null,
-        marca: objeto?.marca || null,
-        estado: objeto.estado || null,
-        situacao: objeto.situacao || null,
-        sala: objeto?.sala || null,
-        setor: objeto?.setor?.id || null,
-        tipo: objeto.tipo?.id || null,
-        servidor: objeto.servidor_responsavel?.id || null,
-        data_aquisicao: objeto?.data_aquisicao || null
-      };
       console.log('Dados criação:', equipamentoData);
       return this.http.post<Equipamento>(this.apiUrl, equipamentoData, { headers });
     }

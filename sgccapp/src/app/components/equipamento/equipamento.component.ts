@@ -42,17 +42,16 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
     private servicoAlerta: AlertaService
   ) {
     this.editForm = this.fb.group({
-      id: [''],
       plaqueta: ['', Validators.required],
       nome: ['', Validators.required],
       marca: [''],
       estado: ['', Validators.required],
       situacao: ['', Validators.required],
       sala: [''],
-      setor: ['', Validators.required],
+      setor: [''],
       tipo: ['', Validators.required],
-      servidor_responsavel: ['', Validators.required],
-      data_aquisicao: ['']
+      servidor_responsavel: [''],
+      data_aquisicao: ['', Validators.required]
     });
 
     this.addForm = this.fb.group({
@@ -62,10 +61,10 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
       estado: ['', Validators.required],
       situacao: ['', Validators.required],
       sala: [''],
-      setor: ['', Validators.required],
+      setor: [''],
       tipo: ['', Validators.required],
-      servidor_responsavel: ['', Validators.required],
-      data_aquisicao: ['']
+      servidor_responsavel: [''],
+      data_aquisicao: ['', Validators.required]
     });
   }
 
@@ -103,6 +102,8 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
     { campo: 'situacao', descricao: 'Situação' },
     { campo: 'setor.nome', descricao: 'Setor' },
     { campo: 'tipo.nome', descricao: 'Tipo' },
+    { campo: 'servidor_responsavel.nome_completo', descricao: 'Servidor Responsável' },
+    { campo: 'data_aquisicao', descricao: 'Data de Aquisição' },
     { campo: '', descricao: 'Ações' }
   ]
 
@@ -186,18 +187,16 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
   }
 
   delete(id: number): void {
-    if (confirm('Confirma a exclusão do equipamento?')) {
-      this.servico.delete(id).subscribe({
-        complete: () => {
-          this.get();
-          this.servicoAlerta.enviarAlerta({
-            tipo: ETipoAlerta.SUCESSO,
-            mensagem: "Equipamento excluído com sucesso!"
-          });
-          this.showSuccessModal("Equipamento excluído com sucesso!");
-        }
-      });
-    }
+    this.servico.delete(id).subscribe({
+      complete: () => {
+        this.get();
+        this.servicoAlerta.enviarAlerta({
+          tipo: ETipoAlerta.SUCESSO,
+          mensagem: "Equipamento excluído com sucesso!"
+        });
+        this.showSuccessModal("Equipamento excluído com sucesso!");
+      }
+    });
   }
 
   openDeleteModal(id: number) {

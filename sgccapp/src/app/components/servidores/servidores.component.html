@@ -63,7 +63,7 @@
           <div class="mb-3">
             <label for="addInscricao" class="form-label">Inscrição Institucional</label>
             <input type="text" class="form-control" id="addInscricao" formControlName="inscricao_institucional" maxlength="7" (blur)="checkInscricaoInstitucional('add')">
-            <div *ngIf="addForm.get('inscricao_institucional')?.invalid && (addForm.get('inscricao_institucional')?.dirty || addForm.get('inscricao_institucional')?.touched)" class="text-danger">
+            <div *ngIf="addForm.get('inscricao_institucional')?.invalid" class="text-danger">
               <div *ngIf="addForm.get('inscricao_institucional')?.errors?.['required']">Inscrição Institucional é obrigatória.</div>
               <div *ngIf="addForm.get('inscricao_institucional')?.errors?.['pattern']">Inscrição Institucional deve conter apenas números.</div>
               <div *ngIf="addForm.get('inscricao_institucional')?.errors?.['minlength']">Inscrição Institucional deve ter 7 caracteres.</div>
@@ -74,7 +74,7 @@
           <div class="mb-3">
             <label for="addNome" class="form-label">Nome Completo</label>
             <input type="text" class="form-control" id="addNome" formControlName="nome_completo">
-            <div *ngIf="addForm.get('nome_completo')?.invalid && (addForm.get('nome_completo')?.dirty || addForm.get('nome_completo')?.touched)" class="text-danger">
+            <div *ngIf="addForm.get('nome_completo')?.invalid" class="text-danger">
               <div *ngIf="addForm.get('nome_completo')?.errors?.['required']">Nome Completo é obrigatório.</div>
             </div>
           </div>
@@ -99,7 +99,7 @@
           <div class="mb-3">
             <label for="editInscricao" class="form-label">Inscrição Institucional</label>
             <input type="text" class="form-control" id="editInscricao" formControlName="inscricao_institucional" maxlength="7" (blur)="checkInscricaoInstitucional('edit')">
-            <div *ngIf="editForm.get('inscricao_institucional')?.invalid && (editForm.get('inscricao_institucional')?.dirty || editForm.get('inscricao_institucional')?.touched)" class="text-danger">
+            <div *ngIf="editForm.get('inscricao_institucional')?.invalid" class="text-danger">
               <div *ngIf="editForm.get('inscricao_institucional')?.errors?.['required']">Inscrição Institucional é obrigatória.</div>
               <div *ngIf="editForm.get('inscricao_institucional')?.errors?.['pattern']">Inscrição Institucional deve conter apenas números.</div>
               <div *ngIf="editForm.get('inscricao_institucional')?.errors?.['minlength']">Inscrição Institucional deve ter 7 caracteres.</div>
@@ -110,7 +110,7 @@
           <div class="mb-3">
             <label for="editNome" class="form-label">Nome Completo</label>
             <input type="text" class="form-control" id="editNome" formControlName="nome_completo">
-            <div *ngIf="editForm.get('nome_completo')?.invalid && (editForm.get('nome_completo')?.dirty || editForm.get('nome_completo')?.touched)" class="text-danger">
+            <div *ngIf="editForm.get('nome_completo')?.invalid" class="text-danger">
               <div *ngIf="editForm.get('nome_completo')?.errors?.['required']">Nome Completo é obrigatório.</div>
             </div>
           </div>

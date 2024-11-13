@@ -79,7 +79,7 @@ export class SetoresComponent implements IList<Setor>, OnInit {
   colunas: TheadOrdenacao = [
     { campo: 'codigo', descricao: 'Código' },
     { campo: 'nome', descricao: 'Nome' },
-    { campo: 'agencia.nome', descricao: 'Agência' },
+    { campo: 'agencia.nome', descricao: 'Unidade Superior' },
     { campo: 'chefe.nome_completo', descricao: 'Chefe' },
     { campo: '', descricao: 'Ações' }
   ]
