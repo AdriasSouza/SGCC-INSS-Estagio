@@ -86,16 +86,16 @@
             </div>
             <div class="mb-3">
               <label for="addServidor" class="form-label">Servidor</label>
-              <select class="form-control" id="addServidor" formControlName="servidorId">
+              <select class="form-select" id="addServidor" formControlName="servidor">
                 <option *ngFor="let servidor of servidores" [value]="servidor.id">{{ servidor.nome_completo }}</option>
               </select>
-              <div *ngIf="addForm.get('servidorId')?.invalid && (addForm.get('servidorId')?.dirty || addForm.get('servidorId')?.touched)" class="text-danger">
-                <div *ngIf="addForm.get('servidorId')?.errors?.['required']">Servidor é obrigatório.</div>
+              <div *ngIf="addForm.get('servidor')?.invalid && (addForm.get('servidor')?.dirty || addForm.get('servidor')?.touched)" class="text-danger">
+                <div *ngIf="addForm.get('servidor')?.errors?.['required']">Servidor é obrigatório.</div>
               </div>
             </div>
             <div class="mb-3">
               <label for="addTipoUsuario" class="form-label">Tipo de Usuário</label>
-              <select class="form-control" id="addTipoUsuario" formControlName="tipoUsuario">
+              <select class="form-select" id="addTipoUsuario" formControlName="tipoUsuario">
                 <option value="comum">Usuário Comum</option>
                 <option value="admin">Administrador</option>
                 <option value="superuser">Superusuário</option>
@@ -139,22 +139,23 @@
               </div>
             </div>
             <div class="mb-3">
-              <label for="addServidor" class="form-label">Editar Servidor</label>
-              <select class="form-control" id="addServidor" formControlName="servidorId">
+              <label for="editServidor" class="form-label">Servidor</label>
+              <select class="form-select" id="editServidor" formControlName="servidor">
                 <option *ngFor="let servidor of servidores" [value]="servidor.id">{{ servidor.nome_completo }}</option>
               </select>
-              <div *ngIf="addForm.get('servidorId')?.invalid && (addForm.get('servidorId')?.dirty || addForm.get('servidorId')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('servidor')?.invalid && (editForm.get('servidor')?.dirty || editForm.get('servidor')?.touched)" class="text-danger">
+                <div *ngIf="editForm.get('servidor')?.errors?.['required']">Servidor é obrigatório.</div>
               </div>
             </div>
             <div class="mb-3">
               <label for="editTipoUsuario" class="form-label">Tipo de Usuário</label>
-              <select class="form-control" id="editTipoUsuario" formControlName="tipoUsuario">
+              <select class="form-select" id="editTipoUsuario" formControlName="tipoUsuario">
                 <option value="comum">Usuário Comum</option>
                 <option value="admin">Administrador</option>
                 <option value="superuser">Superusuário</option>
               </select>
             </div>
-            <button type="submit" class="btn btn-warning me-2">Salvar Alterações</button>
+            <button type="submit" class="btn btn-warning me-2" [disabled]="!editForm.valid">Salvar Alterações</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
           </form>
         </div>

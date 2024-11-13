@@ -1,7 +1,6 @@
 import { Component, Inject } from "@angular/core";
-import { FormBuilder, FormGroup, FormsModule, NgForm, ReactiveFormsModule, Validators } from "@angular/forms";
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ILoginService, LoginService } from "../../service/login/i-login.service";
-import { User } from "../../model/user.model";
 import { CommonModule } from "@angular/common";
 
 @Component({
@@ -26,16 +25,20 @@ export class LoginComponent {
     });
   }
 
-  // usuario: User = <User>{};
-
   onSubmit(): void {
     if (this.loginForm.valid) {
       const loginData = {
         email: this.loginForm.get('email')?.value,
         password: this.loginForm.get('password')?.value
       };
-      this.servico.login(loginData.email, loginData.password)
+      this.servico.login(loginData.email, loginData.password).subscribe({
+        next: () => {
+          this.errorMessage = null;
+        },
+        error: () => {
+          this.errorMessage = 'Credenciais inválidas. Por favor, tente novamente.';
+        }
+      });
     }
   }
-
 }

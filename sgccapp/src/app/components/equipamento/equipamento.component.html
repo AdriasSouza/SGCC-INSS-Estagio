@@ -3,162 +3,123 @@
     border-width: 3px; /* Aumentando a espessura da borda */
   }
 </style>
-
 <div class="container mt-4">
   <!-- Título da página -->
-  <h3 class="fw-bold mb-4">Gestão de Equipamento</h3>
+  <h3 class="fw-bold mb-4">Gestão de Equipamentos</h3>
   <h5 class="mb-4">Tabela com todos os equipamentos registrados no sistema</h5>
-
   <!-- Contêiner flexível para os botões -->
   <div class="d-flex justify-content-between mb-3">
     <!-- Botão para ocultar e abrir os filtros -->
-    <button class="btn btn-secondary mb-3" (click)="toggleFiltros()">
+    <button class="btn btn-secondary" (click)="toggleFiltros()">
       {{ mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
     </button>
     <!-- Botão para adicionar novo equipamento -->
-    <button class="btn btn-primary mb-3" (click)="openAddModal()">Adicionar Equipamento</button>
+    <button class="btn btn-primary" (click)="openAddModal()">Adicionar Equipamento</button>
   </div>
-
   <!-- Filtros -->
   <div class="row mb-3" *ngIf="mostrarFiltros">
-    <div class="col-md-4 mb-3">
-      <label for="marcaSelect" class="form-label">Marca</label>
-      <select id="marcaSelect" class="form-select" [(ngModel)]="filtroMarca">
-        <option value="">Todas as Marcas</option>
-        <option *ngFor="let marca of marcas" [value]="marca">{{ marca }}</option>
-      </select>
+    <div class="col-md-3 mb-3">
+      <label for="filterPlaqueta" class="form-label">Plaqueta</label>
+      <input type="text" id="filterPlaqueta" class="form-control" [(ngModel)]="filtroPlaqueta">
     </div>
-
-    <div class="col-md-4 mb-3">
-      <label for="tipoSelect" class="form-label">Tipo</label>
-      <select id="tipoSelect" class="form-select" [(ngModel)]="filtroTipo">
-        <option value="">Todos os Tipos</option>
-        <option *ngFor="let tipo of tipoEquipamento" [value]="tipo.nome">{{ tipo.nome }}</option>
-      </select>
+    <div class="col-md-3 mb-3">
+      <label for="filterNome" class="form-label">Nome</label>
+      <input type="text" id="filterNome" class="form-control" [(ngModel)]="filtroNome">
     </div>
-
-    <div class="col-md-4 mb-3">
-      <label for="setorSelect" class="form-label">Setor</label>
-      <select id="setorSelect" class="form-select" [(ngModel)]="filtroSetor">
-        <option value="">Todos os Setores</option>
-        <option *ngFor="let setor of setores" [value]="setor.nome">{{ setor.nome }}</option>
-      </select>
+    <div class="col-md-3 mb-3">
+      <label for="filterMarca" class="form-label">Marca</label>
+      <input type="text" id="filterMarca" class="form-control" [(ngModel)]="filtroMarca">
     </div>
-
-    <div class="col-md-4 mb-3">
-      <label for="estadoSelect" class="form-label">Estado</label>
-      <select id="estadoSelect" class="form-select" [(ngModel)]="filtroEstado">
-        <option value="">Todos os Estados</option>
-        <option *ngFor="let estado of estados" [value]="estado">{{ estado }}</option>
-      </select>
-    </div>
-
-    <div class="col-md-4 mb-3">
-      <label for="situacaoSelect" class="form-label">Situação</label>
-      <select id="situacaoSelect" class="form-select" [(ngModel)]="filtroSituacao">
-        <option value="">Todas as Situações</option>
-        <option *ngFor="let situacao of situacoes" [value]="situacao">{{ situacao }}</option>
-      </select>
-    </div>
-
-    <div class="col-md-4 mb-3">
-      <label for="dataInicio" class="form-label">Data Início</label>
-      <input type="date" id="dataInicio" class="form-control" [(ngModel)]="filtroDataInicio">
-    </div>
-
-    <div class="col-md-4 mb-3">
-      <label for="dataFim" class="form-label">Data Fim</label>
-      <input type="date" id="dataFim" class="form-control" [(ngModel)]="filtroDataFim">
+    <div class="col-md-3 mb-3">
+      <label for="filterEstado" class="form-label">Estado</label>
+      <input type="text" id="filterEstado" class="form-control" [(ngModel)]="filtroEstado">
     </div>
   </div>
-
   <!-- Spinner de Carregamento -->
   <div class="text-center my-4">
     <div class="spinner-border" role="status" *ngIf="loading">
       <span class="visually-hidden">Loading...</span>
     </div>
   </div>
-
-  <!-- Tabela -->
+  <!-- Tabela de Equipamentos -->
   <div class="table-responsive min-vh-100">
     <table class="table table-striped table-bordered" *ngIf="!loading">
-      <thead app-thead-ordenacao
+      <thead class="table-active" app-thead-ordenacao
         [colunas]="colunas"
         (ordenacaoAtualizada)="ordenar($event)">
       </thead>
       <tbody>
         <tr *ngFor="let equipamento of registrosFiltrados()">
-          <td>{{equipamento.plaqueta}}</td>
-          <td>{{equipamento.nome}}</td>
-          <td>{{equipamento.marca}}</td>
-          <td>{{equipamento.tipo?.nome}}</td> <!-- Exibe o nome do tipo de equipamento -->
-          <td>{{equipamento.setor?.nome}}</td> <!-- Exibe o nome do setor -->
-          <td>{{equipamento.servidor_responsavel?.nome_completo}}</td> <!-- Exibe o nome completo do servidor -->
-          <td>{{equipamento.sala}}</td>
-          <td>{{equipamento.estado}}</td>
-          <td>{{equipamento.situacao}}</td>
-          <td>{{equipamento.data_aquisicao | date}}</td>
+          <td>{{ equipamento.plaqueta }}</td>
+          <td>{{ equipamento.nome }}</td>
+          <td>{{ equipamento.marca }}</td>
+          <td>{{ equipamento.estado }}</td>
+          <td>{{ equipamento.situacao }}</td>
+          <td>{{ equipamento.setor?.nome }}</td>
+          <td>{{ equipamento.tipo?.nome }}</td>
           <td>
-            <button class="btn btn-warning btn-sm me-2 mb-2" (click)="openEditModal(equipamento)">Editar</button>
-            <button class="btn btn-danger btn-sm mb-2" (click)="openDeleteModal(equipamento.id)">Excluir</button>
+            <button class="btn btn-sm btn-primary me-2 mb-2" (click)="openEditModal(equipamento)">Editar</button>
+            <button class="btn btn-sm btn-danger me-2 mb-2" (click)="openDeleteModal(equipamento.id)">Excluir</button>
             <button class="btn btn-info btn-sm mb-2" (click)="openComponentesModal(equipamento)">Componentes</button>
           </td>
         </tr>
       </tbody>
       <tfoot>
         <tr>
-          <td colspan="11">
+          <td colspan="8">
             <span *ngIf="registros.length == 0">Nenhum registro encontrado</span>
           </td>
         </tr>
       </tfoot>
     </table>
   </div>
-
-  <!-- Modal de Adição de Equipamento -->
-  <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addModalLabel">Adicionar Equipamento</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" (click)="cancelAdd()"></button>
-        </div>
-        <div class="modal-body">
-          <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
-            <div class="mb-3">
-              <label for="addPlaqueta" class="form-label">Plaqueta</label>
-              <input type="text" class="form-control" id="addPlaqueta" formControlName="plaqueta" maxlength="9" placeholder="Digite a plaqueta" (input)="validatePlaqueta($event)">
-              <div *ngIf="addForm.get('plaqueta')?.invalid && (addForm.get('plaqueta')?.dirty || addForm.get('plaqueta')?.touched)" class="text-danger">
-                <div *ngIf="addForm.get('plaqueta')?.errors?.['required']">Plaqueta é obrigatória.</div>
-                <div *ngIf="addForm.get('plaqueta')?.errors?.['maxlength']">Plaqueta deve conter exatamente 9 caracteres.</div>
-              </div>
+</div>
+<!-- Modal de Adição de Equipamento -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addModalLabel">Adicionar Equipamento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" (click)="cancelAdd()"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
+          <div class="mb-3">
+            <label for="addPlaqueta" class="form-label">Plaqueta</label>
+            <input type="text" class="form-control" id="addPlaqueta" formControlName="plaqueta" maxlength="9" placeholder="Digite a plaqueta" (input)="validatePlaqueta($event)">
+            <div *ngIf="addForm.get('plaqueta')?.invalid && (addForm.get('plaqueta')?.dirty || addForm.get('plaqueta')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('plaqueta')?.errors?.['required']">Plaqueta é obrigatória.</div>
+              <div *ngIf="addForm.get('plaqueta')?.errors?.['maxlength']">Plaqueta deve conter exatamente 9 caracteres.</div>
             </div>
-            <div class="mb-3">
-              <label for="addNome" class="form-label">Nome</label>
-              <input type="text" class="form-control" id="addNome" formControlName="nome" placeholder="Digite o nome">
-              <div *ngIf="addForm.get('nome')?.invalid && (addForm.get('nome')?.dirty || addForm.get('nome')?.touched)" class="text-danger">
-                <div *ngIf="addForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
-              </div>
+          </div>
+          <div class="mb-3">
+            <label for="addNome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="addNome" formControlName="nome">
+            <div *ngIf="addForm.get('nome')?.invalid && (addForm.get('nome')?.dirty || addForm.get('nome')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
             </div>
-            <div class="mb-3">
-              <label for="addMarca" class="form-label">Marca</label>
-              <input type="text" class="form-control" id="addMarca" formControlName="marca" placeholder="Digite a marca">
-            </div>
-            <div class="mb-3">
-              <label for="addEstado" class="form-label">Estado</label>
+          </div>
+          <div class="mb-3">
+            <label for="addMarca" class="form-label">Marca</label>
+            <input type="text" class="form-control" id="addMarca" formControlName="marca">
+          </div>
+          <div class="mb-3">
+            <label for="addEstado" class="form-label">Estado</label>
               <select id="addEstado" class="form-select" formControlName="estado">
+                <option value="" disabled selected>Selecione um estado</option>
                 <option value="DEFASADO">DEFASADO</option>
                 <option value="ATENÇÃO">ATENÇÃO</option>
                 <option value="BOM">BOM</option>
                 <option value="NOVO">NOVO</option>
               </select>
-              <div *ngIf="addForm.get('estado')?.invalid && (addForm.get('estado')?.dirty || addForm.get('estado')?.touched)" class="text-danger">
-                <div *ngIf="addForm.get('estado')?.errors?.['required']">Estado é obrigatório.</div>
-              </div>
+            <div *ngIf="addForm.get('estado')?.invalid && (addForm.get('estado')?.dirty || addForm.get('estado')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('estado')?.errors?.['required']">Estado é obrigatório.</div>
             </div>
-            <div class="mb-3">
-              <label for="addSituacao" class="form-label">Situação</label>
+          </div>
+          <div class="mb-3">
+            <label for="addSituacao" class="form-label">Situação</label>
               <select id="addSituacao" class="form-select" formControlName="situacao">
+                <option value="" disabled selected>Selecione uma situação</option>
                 <option value="EM_USO">EM USO</option>
                 <option value="RESERVA">RESERVA</option>
                 <option value="MANUTENCAO">MANUTENÇÃO</option>
@@ -167,123 +128,152 @@
                 <option value="PERDIDO">PERDIDO</option>
                 <option value="ROUBADO">ROUBADO</option>
               </select>
-              <div *ngIf="addForm.get('situacao')?.invalid && (addForm.get('situacao')?.dirty || addForm.get('situacao')?.touched)" class="text-danger">
-                <div *ngIf="addForm.get('situacao')?.errors?.['required']">Situação é obrigatória.</div>
-              </div>
+            <div *ngIf="addForm.get('situacao')?.invalid && (addForm.get('situacao')?.dirty || addForm.get('situacao')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('situacao')?.errors?.['required']">Situação é obrigatória.</div>
             </div>
-            <div class="mb-3">
-              <label for="addSala" class="form-label">Sala</label>
-              <input type="number" class="form-control" id="addSala" formControlName="sala" placeholder="Digite a sala">
+          </div>
+          <div class="mb-3">
+            <label for="addSala" class="form-label">Sala</label>
+            <input type="text" class="form-control" id="addSala" formControlName="sala">
+          </div>
+          <div class="mb-3">
+            <label for="addSetor" class="form-label">Setor</label>
+            <select id="addSetor" class="form-select" formControlName="setor">
+              <option value="" disabled selected>Selecione um setor</option>
+              <option *ngFor="let setor of setores" [value]="setor.id">{{ setor.nome }}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="addTipo" class="form-label">Tipo</label>
+            <select id="addTipo" class="form-select" formControlName="tipo">
+              <option value="" disabled selected>Selecione um tipo</option>
+              <option *ngFor="let tipo of tiposEquipamento" [value]="tipo.id">{{ tipo.nome }}</option>
+            </select>
+            <div *ngIf="addForm.get('tipo')?.invalid && (addForm.get('tipo')?.dirty || addForm.get('tipo')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('tipo')?.errors?.['required']">Tipo é obrigatório.</div>
             </div>
-            <div class="mb-3">
-              <label for="addSetor" class="form-label">Setor</label>
-              <select id="addSetor" class="form-select" formControlName="setor">
-                <option *ngFor="let setor of setores" [value]="setor.id">{{ setor.nome }}</option>
-              </select>
+          </div>
+          <div class="mb-3">
+            <label for="addServidor" class="form-label">Servidor Responsável</label>
+            <select id="addServidor" class="form-select" formControlName="servidor">
+              <option value="" disabled selected>Selecione um servidor</option>
+              <option *ngFor="let servidor of servidores" [value]="servidor.id">{{ servidor.nome_completo }}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="addDataAquisicao" class="form-label">Data de Aquisição</label>
+            <input type="date" class="form-control" id="addDataAquisicao" formControlName="data_aquisicao">
+            <div *ngIf="addForm.get('data_aquisicao')?.invalid && (addForm.get('data_aquisicao')?.dirty || addForm.get('data_aquisicao')?.touched)" class="text-danger">
+              <div *ngIf="addForm.get('data_aquisicao')?.errors?.['required']">Data de Aquisição é obrigatória.</div>
             </div>
-            <div class="mb-3">
-              <label for="addTipo" class="form-label">Tipo</label>
-              <select id="addTipo" class="form-select" formControlName="tipo">
-                <option *ngFor="let tipo of tipoEquipamento" [value]="tipo.id">{{ tipo.nome }}</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="addDataAquisicao" class="form-label">Data de Aquisição</label>
-              <input type="date" class="form-control" id="addDataAquisicao" formControlName="data_aquisicao">
-            </div>
-            <button type="submit" class="btn btn-primary me-2" [disabled]="!addForm.valid">Adicionar</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="cancelAdd()">Cancelar</button>
-          </form>
-        </div>
+          </div>
+          <button type="submit" class="btn btn-primary me-2" [disabled]="!addForm.valid">Adicionar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="cancelAdd()">Cancelar</button>
+        </form>
       </div>
     </div>
   </div>
-
-  <!-- Modal de Edição de Equipamento -->
-  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editModalLabel">Editar Equipamento</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
-            <div class="mb-3">
-              <label for="editPlaqueta" class="form-label">Plaqueta</label>
-              <input type="text" class="form-control" id="editPlaqueta" formControlName="plaqueta" maxlength="9" placeholder="Digite a plaqueta" (input)="validatePlaqueta($event)">
-              <div *ngIf="editForm.get('plaqueta')?.invalid && (editForm.get('plaqueta')?.dirty || editForm.get('plaqueta')?.touched)" class="text-danger">
-                <div *ngIf="editForm.get('plaqueta')?.errors?.['required']">Plaqueta é obrigatória.</div>
-                <div *ngIf="editForm.get('plaqueta')?.errors?.['maxlength']">Plaqueta deve conter exatamente 9 caracteres.</div>
-              </div>
+</div>
+<!-- Modal de Edição de Equipamento -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Editar Equipamento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" (click)="cancelAdd()"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
+          <div class="mb-3">
+            <label for="editPlaqueta" class="form-label">Plaqueta</label>
+            <input type="text" class="form-control" id="editPlaqueta" formControlName="plaqueta">
+            <div *ngIf="editForm.get('plaqueta')?.invalid && (editForm.get('plaqueta')?.dirty || editForm.get('plaqueta')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('plaqueta')?.errors?.['required']">Plaqueta é obrigatória.</div>
             </div>
-            <div class="mb-3">
-              <label for="editNome" class="form-label">Nome</label>
-              <input type="text" class="form-control" id="editNome" formControlName="nome" placeholder="Digite o nome">
-              <div *ngIf="editForm.get('nome')?.invalid && (editForm.get('nome')?.dirty || editForm.get('nome')?.touched)" class="text-danger">
-                <div *ngIf="editForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
-              </div>
+          </div>
+          <div class="mb-3">
+            <label for="editNome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="editNome" formControlName="nome">
+            <div *ngIf="editForm.get('nome')?.invalid && (editForm.get('nome')?.dirty || editForm.get('nome')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
             </div>
-            <div class="mb-3">
-              <label for="editMarca" class="form-label">Marca</label>
-              <input type="text" class="form-control" id="editMarca" formControlName="marca" placeholder="Digite a marca">
+          </div>
+          <div class="mb-3">
+            <label for="editMarca" class="form-label">Marca</label>
+            <input type="text" class="form-control" id="editMarca" formControlName="marca">
+          </div>
+          <div class="mb-3">
+            <label for="editEstado" class="form-label">Estado</label>
+            <input type="text" class="form-control" id="editEstado" formControlName="estado">
+            <div *ngIf="editForm.get('estado')?.invalid && (editForm.get('estado')?.dirty || editForm.get('estado')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('estado')?.errors?.['required']">Estado é obrigatório.</div>
             </div>
-            <div class="mb-3">
-              <label for="editEstado" class="form-label">Estado</label>
-              <select id="editEstado" class="form-select" formControlName="estado">
-                <option value="DEFASADO">DEFASADO</option>
-                <option value="ATENÇÃO">ATENÇÃO</option>
-                <option value="BOM">BOM</option>
-                <option value="NOVO">NOVO</option>
-              </select>
-              <div *ngIf="editForm.get('estado')?.invalid && (editForm.get('estado')?.dirty || editForm.get('estado')?.touched)" class="text-danger">
-                <div *ngIf="editForm.get('estado')?.errors?.['required']">Estado é obrigatório.</div>
-              </div>
+          </div>
+          <div class="mb-3">
+            <label for="editSituacao" class="form-label">Situação</label>
+            <input type="text" class="form-control" id="editSituacao" formControlName="situacao">
+            <div *ngIf="editForm.get('situacao')?.invalid && (editForm.get('situacao')?.dirty || editForm.get('situacao')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('situacao')?.errors?.['required']">Situação é obrigatória.</div>
             </div>
-            <div class="mb-3">
-              <label for="editSituacao" class="form-label">Situação</label>
-              <select id="editSituacao" class="form-select" formControlName="situacao">
-                <option value="EM_USO">EM USO</option>
-                <option value="RESERVA">RESERVA</option>
-                <option value="MANUTENCAO">MANUTENÇÃO</option>
-                <option value="BAIXA">BAIXA</option>
-                <option value="ALIENACAO">ALIENAÇÃO</option>
-                <option value="PERDIDO">PERDIDO</option>
-                <option value="ROUBADO">ROUBADO</option>
-              </select>
-              <div *ngIf="editForm.get('situacao')?.invalid && (editForm.get('situacao')?.dirty || editForm.get('situacao')?.touched)" class="text-danger">
-                <div *ngIf="editForm.get('situacao')?.errors?.['required']">Situação é obrigatória.</div>
-              </div>
+          </div>
+          <div class="mb-3">
+            <label for="editSala" class="form-label">Sala</label>
+            <input type="text" class="form-control" id="editSala" formControlName="sala">
+          </div>
+          <div class="mb-3">
+            <label for="editSetor" class="form-label">Setor</label>
+            <select id="editSetor" class="form-select" formControlName="setor">
+              <option value="" disabled selected>Selecione um setor</option>
+              <option *ngFor="let setor of setores" [value]="setor.id">{{ setor.nome }}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="editTipo" class="form-label">Tipo</label>
+            <select id="editTipo" class="form-select" formControlName="tipo">
+              <option value="" disabled selected>Selecione um tipo</option>
+              <option *ngFor="let tipo of tiposEquipamento" [value]="tipo.id">{{ tipo.nome }}</option>
+            </select>
+            <div *ngIf="editForm.get('tipo')?.invalid && (editForm.get('tipo')?.dirty || editForm.get('tipo')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('tipo')?.errors?.['required']">Tipo é obrigatório.</div>
             </div>
-            <div class="mb-3">
-              <label for="editSala" class="form-label">Sala</label>
-              <input type="number" class="form-control" id="editSala" formControlName="sala" placeholder="Digite a sala">
+          </div>
+          <div class="mb-3">
+            <label for="addServidor" class="form-label">Servidor Responsável</label>
+            <select id="addServidor" class="form-select" formControlName="servidor">
+              <option value="" disabled selected>Selecione um servidor</option>
+              <option *ngFor="let servidor of servidores" [value]="servidor.id">{{ servidor.nome_completo }}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="editDataAquisicao" class="form-label">Data de Aquisição</label>
+            <input type="date" class="form-control" id="editDataAquisicao" formControlName="data_aquisicao">
+            <div *ngIf="editForm.get('data_aquisicao')?.invalid && (editForm.get('data_aquisicao')?.dirty || editForm.get('data_aquisicao')?.touched)" class="text-danger">
+              <div *ngIf="editForm.get('data_aquisicao')?.errors?.['required']">Data de Aquisição é obrigatória.</div>
             </div>
-            <div class="mb-3">
-              <label for="editSetor" class="form-label">Setor</label>
-              <select id="editSetor" class="form-select" formControlName="setor">
-                <option value="" disabled selected>Selecione um setor</option>
-                <option *ngFor="let setor of setores" [value]="setor.id">{{ setor.nome }}</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="editTipo" class="form-label">Tipo</label>
-              <select id="editTipo" class="form-select" formControlName="tipo">
-                <option value="" disabled selected>Selecione um tipo</option>
-                <option *ngFor="let tipo of tipoEquipamento" [value]="tipo.id">{{ tipo.nome }}</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="editDataAquisicao" class="form-label">Data de Aquisição</label>
-              <input type="date" class="form-control" id="editDataAquisicao" formControlName="data_aquisicao">
-            </div>
-            <button type="submit" class="btn btn-primary me-2" [disabled]="!editForm.valid || !formChanged()">Salvar</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          </form>
-        </div>
+          </div>
+          <button type="submit" class="btn btn-primary me-2" [disabled]="!editForm.valid || !formChanged()">Salvar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="cancelAdd()">Cancelar</button>
+        </form>
       </div>
     </div>
   </div>
+</div>
+<!-- Modal de Exclusão de Equipamento -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Excluir Equipamento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Tem certeza que deseja excluir este equipamento?</p>
+        <button type="button" class="btn btn-danger me-2" (click)="confirmDelete()">Excluir</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- Modal de Componentes do Equipamento -->
   <div class="modal fade" id="componentModal" tabindex="-1" aria-labelledby="componentModalLabel" aria-hidden="true">
@@ -317,20 +307,19 @@
     </div>
   </div>
 
-
-  <!-- Modal de Exclusão de Equipamento -->
-  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteModalLabel">Excluir Equipamento</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p>Tem certeza que deseja excluir este equipamento?</p>
-          <button type="button" class="btn btn-danger" (click)="confirmDelete()">Excluir</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        </div>
+<!-- Modal de Sucesso -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="successModalLabel">Operação bem-sucedida</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>{{ successMessage }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
       </div>
     </div>
   </div>

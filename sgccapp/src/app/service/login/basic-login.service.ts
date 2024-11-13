@@ -1,7 +1,8 @@
 import { HttpClient, HttpHeaders, HttpRequest } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 import { ILoginService } from './i-login.service';
 import { environment } from '../../environments/environment';
@@ -22,7 +23,7 @@ export class BasicLoginService implements ILoginService {
   private http: HttpClient = inject(HttpClient);
   private router: Router = inject(Router);
 
-  login(email: string, password: string): void {
+  login(email: string, password: string): Observable<any> {
     
     const credenciaisCodificadas = btoa(
       email + ':' + password
@@ -34,15 +35,13 @@ export class BasicLoginService implements ILoginService {
     };
     const url = environment.API_URL + '/api/usuarios/login';
 
-    this.http.get<User>(url, opcoesHttp).subscribe({
-      next: (usuario: User) => {
+    return this.http.get<User>(url, opcoesHttp).pipe(
+      tap((usuario: User) => {
         sessionStorage.setItem('usuario', JSON.stringify(usuario));
         this.usuarioAutenticado.next(usuario);
-      },
-      complete: () => {
         this.router.navigate(['/equipamentos']); // Redirecionar para /equipamentos após login bem-sucedido
-      }
-    });
+      })
+    );
 
   }
 

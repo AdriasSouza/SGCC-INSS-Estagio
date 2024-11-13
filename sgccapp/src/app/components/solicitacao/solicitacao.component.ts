@@ -13,6 +13,8 @@ import { TheadOrdenacaoComponent } from '../thead-ordenacao/thead-ordenacao.comp
 import { BarraComandosComponent } from '../barra-comandos/barra-comandos.component';
 import { RespostaPaginada } from '../../model/resposta-paginada';
 import { Servidor } from '../../model/servidor.model'; // Importando o modelo Servidor
+import { UserService } from '../../service/user.service';
+import { User } from '../../model/user.model';
 
 declare var bootstrap: any;
 
@@ -30,6 +32,7 @@ export class SolicitacaoComponent implements IList<Solicitacao>, OnInit {
     private http: HttpClient,
     private servico: SolicitacaoService, // Adicionando o serviço SolicitacaoService como dependência
     private servicoAlerta: AlertaService, // Adicionando o serviço AlertaService
+    private userService: UserService // Adicionando o serviço UserService como dependência
   ) {
     this.editForm = this.fb.group({
       status: ['', Validators.required],
@@ -56,7 +59,7 @@ export class SolicitacaoComponent implements IList<Solicitacao>, OnInit {
   }
 
   ngOnInit() {
-    this.get();
+    this.getUserData();
     console.log('SolicitacaoComponent inicializado!');
   }
 
@@ -75,6 +78,9 @@ export class SolicitacaoComponent implements IList<Solicitacao>, OnInit {
   showDropdown: boolean[] = [];
   loading: boolean = false;
   solicitacaoSelecionada: Solicitacao | null = null;
+  isAdmin: boolean = false;
+  isStaff: boolean = false;
+  userId: number | null = null;
 
   colunas: TheadOrdenacao = [
     { campo: 'user.email', descricao: 'Solicitante' },
@@ -97,11 +103,29 @@ export class SolicitacaoComponent implements IList<Solicitacao>, OnInit {
     this.get(this.termoBusca);
   }
 
+  getUserData(): void {
+    this.userService.getUserData().subscribe({
+      next: (user: User) => {
+        this.isAdmin = user.is_superuser || false;
+        this.isStaff = user.is_staff || false;
+        this.userId = user.id ?? null;
+        this.get();
+      },
+      error: (err) => {
+        console.error('Erro ao buscar dados do usuário:', err);
+      }
+    });
+  }
+
   get(termoBusca?: string): void {
     this.termoBusca = termoBusca;
     this.servico.get(termoBusca).subscribe({
       next: (resposta: RespostaPaginada<Solicitacao>) => {
-        this.registros = resposta.results; // Extrai os registros da resposta paginada
+        if (this.isAdmin) {
+          this.registros = resposta.results; // Admin vê todas as solicitações
+        } else if (this.isStaff) {
+          this.registros = resposta.results.filter(solicitacao => solicitacao.user?.id === this.userId); // Staff vê apenas suas próprias solicitações
+        }
         console.log('registros:', this.registros); // Adiciona o console.log para ver os registros
       },
       error: (err) => {

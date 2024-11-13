@@ -54,17 +54,24 @@ export class JwtLoginService implements ILoginService {
     }
   }
 
-  login(email: string, password: string): void {
-    this.http.post(`${this.apiUrl}/login/`, { email, password }).subscribe({
-      next: (response: any) => {
-        const accessToken = response.access;
-        const refreshToken = response.refresh;
-        this.configurarSessaoUsuario(accessToken, refreshToken);
-        this.agendarRenovacaoToken();
-      },
-      complete: () => {
-        this.router.navigate(['/equipamentos']); // Redirecionar para /equipamentos após login bem-sucedido
-      }
+  login(email: string, password: string): Observable<any> {
+    return new Observable(observer => {
+      this.http.post(`${this.apiUrl}/login/`, { email, password }).subscribe({
+        next: (response: any) => {
+          const accessToken = response.access;
+          const refreshToken = response.refresh;
+          this.configurarSessaoUsuario(accessToken, refreshToken);
+          this.agendarRenovacaoToken();
+          observer.next(response);
+          observer.complete();
+        },
+        complete: () => {
+          this.router.navigate(['/equipamentos']); // Redirecionar para /equipamentos após login bem-sucedido
+        },
+        error: (err) => {
+          observer.error(err);
+        },
+      });
     });
   }
 
@@ -121,3 +128,5 @@ export class JwtLoginService implements ILoginService {
     return request;
   }
 }
+
+

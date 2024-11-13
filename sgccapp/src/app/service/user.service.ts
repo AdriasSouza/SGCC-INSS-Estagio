@@ -70,7 +70,7 @@ export class UserService implements IService<User> {
 
   delete(id: number): Observable<void> {
     const headers = this.getAuthHeaders();
-    const url = `${this.apiUrl}user_update_admin/${id}/`;
+    const url = `${this.apiUrl}user_delete/${id}/`;
     return this.http.delete<void>(url, { headers });
   }
   getById(id: number): Observable<User> {

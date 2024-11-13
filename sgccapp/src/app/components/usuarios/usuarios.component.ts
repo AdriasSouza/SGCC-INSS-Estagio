@@ -43,19 +43,18 @@ export class UsuariosComponent implements OnInit {
     // Formulário de Adicionar
     this.addForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      novaSenha: [''],
-      confirmarSenha: [''],
-      tipoUsuario: ['comum', Validators.required],
+      novaSenha: ['', Validators.required],
+      confirmaSenha: ['', Validators.required],
+      tipoUsuario: ['', Validators.required],
       servidor: ['', Validators.required]
     }, { validators: this.passwordMatchValidator });
 
     // Formulário de Editar
     this.editForm = this.fb.group({
-      id: [''],
       email: ['', [Validators.email]],
       novaSenha: [''],
-      confirmarSenha: [''],
-      tipoUsuario: ['comum'],
+      confirmaSenha: [''],
+      tipoUsuario: [''],
       servidor: ['']
     }, { validators: this.passwordMatchValidator });
   }
@@ -254,9 +253,13 @@ export class UsuariosComponent implements OnInit {
 
   // Validação para assegurar que a senha e a confirmação coincidam
   passwordMatchValidator(control: AbstractControl): { [key: string]: boolean } | null {
-    const form = control.parent;
-    if (form && control.value !== form.get('novaSenha')?.value) {
-      return { passwordMismatch: true };
+    const form = control.parent as FormGroup;
+    if (form) {
+      const novaSenha = form.get('novaSenha')?.value;
+      const confirmaSenha = form.get('confirmaSenha')?.value;
+      if (novaSenha !== confirmaSenha) {
+        return { passwordMismatch: true };
+      }
     }
     return null;
   }
