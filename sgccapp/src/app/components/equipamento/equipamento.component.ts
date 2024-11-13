@@ -106,7 +106,7 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
     });
 
     this.componentForm = this.fb.group({
-      componente: ['']
+      componentes: ['']
     });
   }
 
@@ -160,7 +160,7 @@ export class EquipamentoComponent implements IList<Equipamento>, OnInit {
              (!this.filtroDataInicio || new Date(equipamento.data_aquisicao!) >= new Date(this.filtroDataInicio)) &&
              (!this.filtroDataFim || new Date(equipamento.data_aquisicao!) <= new Date(this.filtroDataFim));
     });
-  } 
+  }
 
   loadFilterOptions() {
     this.servico.get().subscribe({

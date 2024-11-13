@@ -27,13 +27,13 @@ class TipoEquipamentoSerializer(serializers.ModelSerializer):
 # Serializer para o modelo Equipamento
 class EquipamentoSerializer(serializers.ModelSerializer):
     # Relacionamento com o modelo TipoEquipamento
-    tipo = serializers.PrimaryKeyRelatedField(queryset=TipoEquipamento.objects.all())
+    tipo = serializers.PrimaryKeyRelatedField(queryset=TipoEquipamento.objects.all(), required=False, allow_null=True)
     # Relacionamento com o modelo Setor
-    setor = serializers.PrimaryKeyRelatedField(queryset=Setor.objects.all())
+    setor = serializers.PrimaryKeyRelatedField(queryset=Setor.objects.all(), required=False, allow_null=True)
     # Relacionamento com o modelo Servidor
-    servidor_responsavel = serializers.PrimaryKeyRelatedField(queryset=Servidor.objects.all())
+    servidor_responsavel = serializers.PrimaryKeyRelatedField(queryset=Servidor.objects.all(), required=False, allow_null=True)
     # Relacionamento com o modelo Componente (permitindo múltiplos e null)
-    componentes = serializers.PrimaryKeyRelatedField(queryset=Componente.objects.all(), allow_null=True, many=True)
+    componentes = serializers.PrimaryKeyRelatedField(queryset=Componente.objects.all(), required=False, allow_null=True, many=True)
 
     class Meta:
         model = Equipamento
@@ -58,9 +58,9 @@ class EquipamentoSerializer(serializers.ModelSerializer):
 # Serializer para o modelo Manutencao
 class ManutencaoSerializer(serializers.ModelSerializer):
     # Relacionamento com o modelo Equipamento
-    equipamento = serializers.PrimaryKeyRelatedField(queryset=Equipamento.objects.all())
+    equipamento = serializers.PrimaryKeyRelatedField(queryset=Equipamento.objects.all(), required=False, allow_null=True)
     # Relacionamento com o modelo Servidor
-    responsavel = serializers.PrimaryKeyRelatedField(queryset=Servidor.objects.all())
+    responsavel = serializers.PrimaryKeyRelatedField(queryset=Servidor.objects.all(), required=False, allow_null=True)
 
     class Meta:
         model = Manutencao
@@ -89,7 +89,7 @@ class TipoComponenteSerializer(serializers.ModelSerializer):
 # Serializer para o modelo Componente
 class ComponenteSerializer(serializers.ModelSerializer):
     # Relacionamento com o modelo TipoComponente
-    tipo = serializers.PrimaryKeyRelatedField(queryset=TipoComponente.objects.all())
+    tipo = serializers.PrimaryKeyRelatedField(queryset=TipoComponente.objects.all(), required=False, allow_null=True)
 
     class Meta:
         model = Componente

@@ -19,13 +19,28 @@ export class UserService implements IService<User> {
 
   apiUrl: string = environment.API_URL + '/api/usuarios/';
 
-  getUserData(): Observable<User> {
+  private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('access_token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get<User>(this.apiUrl, { headers });
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
-  get(termoBusca?: string | undefined, paginacao?: RequisicaoPaginada | undefined): Observable<RespostaPaginada<User>> {
+  register(user: User): Observable<User> {
+    const headers = this.getAuthHeaders();
+    return this.http.post<User>(`${this.apiUrl}register/`, user, { headers });
+  }
+
+  getUserData(): Observable<User> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<User>(`${this.apiUrl}user_data/`, { headers });
+  }
+
+  getUserDataAdmin(id?: number): Observable<User | RespostaPaginada<User>> {
+    const headers = this.getAuthHeaders();
+    const url = id ? `${this.apiUrl}user_data_admin/${id}/` : `${this.apiUrl}user_data_admin/`;
+    return this.http.get<User | RespostaPaginada<User>>(url, { headers });
+  }
+
+  get(termoBusca?: string, paginacao?: RequisicaoPaginada): Observable<RespostaPaginada<User>> {
     let params = new HttpParams();
 
     if (termoBusca) {
@@ -37,35 +52,41 @@ export class UserService implements IService<User> {
       params = params.set('pageSize', paginacao.pageSize.toString());
     }
 
-    const token = localStorage.getItem('access_token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-
-    return this.http.get<RespostaPaginada<User>>(this.apiUrl, { headers, params });
+    const headers = this.getAuthHeaders();
+    return this.http.get<RespostaPaginada<User>>(`${this.apiUrl}user_data_admin/`, { headers, params });
   }
 
-  getById(id: number): Observable<User> {
-    const token = localStorage.getItem('access_token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    const url = this.apiUrl + id;
-    return this.http.get<User>(url, { headers });
+
+  updateUserData(user: User): Observable<User> {
+    const headers = this.getAuthHeaders();
+    return this.http.put<User>(`${this.apiUrl}user_update/`, user, { headers });
   }
 
-  save(objeto: User): Observable<User> {
-    const token = localStorage.getItem('access_token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    const url = this.apiUrl;
-    if (objeto.id) {
-      this.apiUrl + objeto.id + '/';
-      return this.http.put<User>(url, objeto, { headers });
-    } else {
-      return this.http.post<User>(url, objeto, { headers });
-    }
+  updateUserDataAdmin(user: User): Observable<User> {
+    const headers = this.getAuthHeaders();
+    const url = `${this.apiUrl}user_update_admin/${user.id}/`;
+    return this.http.put<User>(url, user, { headers });
   }
 
   delete(id: number): Observable<void> {
-    const token = localStorage.getItem('access_token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    const url = this.apiUrl + id + '/';
+    const headers = this.getAuthHeaders();
+    const url = `${this.apiUrl}user_update_admin/${id}/`;
     return this.http.delete<void>(url, { headers });
+  }
+  getById(id: number): Observable<User> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<User>(`${this.apiUrl}user_data_admin/${id}/`, { headers });
+  }
+
+  // Salva um novo usuário ou atualiza um usuário existente
+  save(user: User): Observable<User> {
+    const headers = this.getAuthHeaders();
+    if (user.id) {
+      // Atualiza o usuário existente (requer permissão de administrador)
+      return this.updateUserDataAdmin(user);
+    } else {
+      // Cria um novo usuário (requer permissão de administrador)
+      return this.register(user);
+    }
   }
 }

@@ -1,131 +1,164 @@
 <div class="container mt-4">
-    <!-- Título da página -->
-    <h3 class="fw-bold mb-4">Gestão de Usuários</h3>
-    <h5 class="mb-4">Tabela com todos os usuários registrados no sistema</h5>
-  
-    <!-- Contêiner flexível para os botões -->
-    <div class="d-flex justify-content-between mb-3">
-      <!-- Botão para ocultar e abrir os filtros -->
-      <button class="btn btn-secondary mb-3" (click)="toggleFiltros()">
-        {{ mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
-      </button>
-      <!-- Botão para adicionar novo usuário -->
-      <button class="btn btn-primary mb-3" (click)="openAddModal()">Adicionar Usuário</button>
-    </div>
-  
-    <!-- Filtros -->
-    <div *ngIf="mostrarFiltros" class="mb-3">
-      <div class="row">
-        <div class="col-md-4">
-          <input type="text" class="form-control" placeholder="Nome" [(ngModel)]="filtroNome">
-        </div>
-        <div class="col-md-4">
-          <input type="text" class="form-control" placeholder="Email" [(ngModel)]="filtroEmail">
-        </div>
+  <!-- Título da página -->
+  <h3 class="fw-bold mb-4">Gestão de Usuários</h3>
+  <h5 class="mb-4">Tabela com todos os usuários registrados no sistema</h5>
+
+  <!-- Contêiner flexível para os botões -->
+  <div class="d-flex justify-content-between mb-3">
+    <!-- Botão para ocultar e abrir os filtros -->
+    <button class="btn btn-secondary" (click)="toggleFiltros()">
+      {{ mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
+    </button>
+    <!-- Botão para adicionar novo usuário -->
+    <button class="btn btn-primary" (click)="openAddModal()">Adicionar Usuário</button>
+  </div>
+
+  <!-- Filtros -->
+  <div *ngIf="mostrarFiltros" class="mb-3">
+    <div class="row">
+      <div class="col-md-4">
+        <input type="text" class="form-control" placeholder="Email" [(ngModel)]="filtroEmail" aria-label="Filtro por Email">
       </div>
     </div>
-  
-    <!-- Tabela de Usuários -->
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Email</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let usuario of registrosFiltrados()">
-          <td>{{ usuario.servidor?.nome_completo }}</td>
-          <td>{{ usuario.email }}</td>
-          <td>
-            <button class="btn btn-sm btn-warning me-2" (click)="openEditModal(usuario)">Editar</button>
-            <button class="btn btn-sm btn-danger" (click)="usuario.id && openDeleteModal(usuario.id)">Excluir</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  
-    <!-- Modal de Adição de Usuário -->
-    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="addModalLabel">Adicionar Usuário</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
-              <div class="mb-3">
-                <label for="addNome" class="form-label">Nome</label>
-                <input type="text" class="form-control" id="addNome" formControlName="nome">
-                <div *ngIf="addForm.get('nome')?.invalid && (addForm.get('nome')?.dirty || addForm.get('nome')?.touched)" class="text-danger">
-                  <div *ngIf="addForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
-                </div>
-              </div>
-              <div class="mb-3">
-                <label for="addEmail" class="form-label">Email</label>
-                <input type="email" class="form-control" id="addEmail" formControlName="email">
-                <div *ngIf="addForm.get('email')?.invalid && (addForm.get('email')?.dirty || addForm.get('email')?.touched)" class="text-danger">
-                  <div *ngIf="addForm.get('email')?.errors?.['required']">Email é obrigatório.</div>
-                  <div *ngIf="addForm.get('email')?.errors?.['email']">Email inválido.</div>
-                </div>
-              </div>
-              <button type="submit" class="btn btn-primary me-2" [disabled]="!addForm.valid">Adicionar</button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            </form>
-          </div>
+  </div>
+
+  <!-- Tabela de Usuários -->
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Inscrição Institucional</th>
+        <th>Servidor</th>
+        <th>Superusuário</th>
+        <th>Administrador</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let usuario of registrosFiltrados()">
+        <td>{{ usuario.servidor?.nome_completo }}</td>
+        <td>{{ usuario.email }}</td>
+        <td>{{ usuario.servidor?.inscricao_institucional || 'N/A' }}</td>
+        <td>{{ usuario.servidor?.nome_completo || 'N/A' }}</td>
+        <td>{{ usuario.is_superuser ? 'Sim' : 'Não' }}</td>
+        <td>{{ usuario.is_staff ? 'Sim' : 'Não' }}</td>
+        <td>
+          <button class="btn btn-sm btn-warning me-2" (click)="openEditModal(usuario)">Editar</button>
+          <button class="btn btn-sm btn-danger" (click)="usuario.id && openDeleteModal(usuario.id)">Excluir</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Modal de Adição de Usuário -->
+  <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addModalLabel">Adicionar Usuário</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-      </div>
-    </div>
-  
-    <!-- Modal de Edição de Usuário -->
-    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="editModalLabel">Editar Usuário</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
-              <div class="mb-3">
-                <label for="editNome" class="form-label">Nome</label>
-                <input type="text" class="form-control" id="editNome" formControlName="nome">
-                <div *ngIf="editForm.get('nome')?.invalid && (editForm.get('nome')?.dirty || editForm.get('nome')?.touched)" class="text-danger">
-                  <div *ngIf="editForm.get('nome')?.errors?.['required']">Nome é obrigatório.</div>
-                </div>
+        <div class="modal-body">
+          <form [formGroup]="addForm" (ngSubmit)="confirmAdd()">
+            <div class="mb-3">
+              <label for="addEmail" class="form-label">Email</label>
+              <input type="email" class="form-control" id="addEmail" formControlName="email" aria-required="true">
+              <div *ngIf="addForm.get('email')?.invalid && (addForm.get('email')?.dirty || addForm.get('email')?.touched)" class="text-danger">
+                <div *ngIf="addForm.get('email')?.errors?.['required']">Email é obrigatório.</div>
+                <div *ngIf="addForm.get('email')?.errors?.['email']">Email inválido.</div>
               </div>
-              <div class="mb-3">
-                <label for="editEmail" class="form-label">Email</label>
-                <input type="email" class="form-control" id="editEmail" formControlName="email">
-                <div *ngIf="editForm.get('email')?.invalid && (editForm.get('email')?.dirty || editForm.get('email')?.touched)" class="text-danger">
-                  <div *ngIf="editForm.get('email')?.errors?.['required']">Email é obrigatório.</div>
-                  <div *ngIf="editForm.get('email')?.errors?.['email']">Email inválido.</div>
-                </div>
+            </div>
+            <div class="mb-3">
+              <label for="addNovaSenha" class="form-label">Nova Senha</label>
+              <input type="password" class="form-control" id="addNovaSenha" formControlName="novaSenha" aria-required="true">
+              <div *ngIf="addForm.get('novaSenha')?.invalid && (addForm.get('novaSenha')?.dirty || addForm.get('novaSenha')?.touched)" class="text-danger">
+                <div *ngIf="addForm.get('novaSenha')?.errors?.['required']">Senha é obrigatória.</div>
               </div>
-              <button type="submit" class="btn btn-primary me-2" [disabled]="!editForm.valid || !formChanged()">Salvar</button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  
-    <!-- Modal de Exclusão de Usuário -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="deleteModalLabel">Excluir Usuário</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p>Tem certeza que deseja excluir este usuário?</p>
-            <button type="button" class="btn btn-danger" (click)="confirmDelete()">Excluir</button>
+            </div>
+            <div class="mb-3">
+              <label for="addConfirmaSenha" class="form-label">Confirmar Senha</label>
+              <input type="password" class="form-control" id="addConfirmaSenha" formControlName="confirmaSenha" aria-required="true">
+              <div *ngIf="addForm.get('confirmaSenha')?.invalid && (addForm.get('confirmaSenha')?.dirty || addForm.get('confirmaSenha')?.touched)" class="text-danger">
+                <div *ngIf="addForm.get('confirmaSenha')?.errors?.['required']">Confirmar Senha é obrigatória.</div>
+                <div *ngIf="addForm.get('confirmaSenha')?.errors?.['passwordMismatch']">As senhas não coincidem.</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="addServidor" class="form-label">Servidor</label>
+              <select class="form-control" id="addServidor" formControlName="servidorId">
+                <option *ngFor="let servidor of servidores" [value]="servidor.id">{{ servidor.nome_completo }}</option>
+              </select>
+              <div *ngIf="addForm.get('servidorId')?.invalid && (addForm.get('servidorId')?.dirty || addForm.get('servidorId')?.touched)" class="text-danger">
+                <div *ngIf="addForm.get('servidorId')?.errors?.['required']">Servidor é obrigatório.</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="addTipoUsuario" class="form-label">Tipo de Usuário</label>
+              <select class="form-control" id="addTipoUsuario" formControlName="tipoUsuario">
+                <option value="comum">Usuário Comum</option>
+                <option value="admin">Administrador</option>
+                <option value="superuser">Superusuário</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary me-2" [disabled]="!addForm.valid">Adicionar</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          </div>
+          </form>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Modal de Edição de Usuário -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel">Editar Usuário</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="editForm" (ngSubmit)="confirmEdit()">
+            <div class="mb-3">
+              <label for="editEmail" class="form-label">Email</label>
+              <input type="email" class="form-control" id="editEmail" formControlName="email" aria-required="true">
+              <div *ngIf="editForm.get('email')?.invalid && (editForm.get('email')?.dirty || editForm.get('email')?.touched)" class="text-danger">
+                <div *ngIf="editForm.get('email')?.errors?.['required']">Email é obrigatório.</div>
+                <div *ngIf="editForm.get('email')?.errors?.['email']">Email inválido.</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="editNovaSenha" class="form-label">Nova Senha</label>
+              <input type="password" class="form-control" id="editNovaSenha" formControlName="novaSenha">
+            </div>
+            <div class="mb-3">
+              <label for="editConfirmaSenha" class="form-label">Confirmar Senha</label>
+              <input type="password" class="form-control" id="editConfirmaSenha" formControlName="confirmaSenha">
+              <div *ngIf="editForm.get('confirmaSenha')?.invalid && (editForm.get('confirmaSenha')?.dirty || editForm.get('confirmaSenha')?.touched)" class="text-danger">
+                <div *ngIf="editForm.get('confirmaSenha')?.errors?.['passwordMismatch']">As senhas não coincidem.</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="addServidor" class="form-label">Editar Servidor</label>
+              <select class="form-control" id="addServidor" formControlName="servidorId">
+                <option *ngFor="let servidor of servidores" [value]="servidor.id">{{ servidor.nome_completo }}</option>
+              </select>
+              <div *ngIf="addForm.get('servidorId')?.invalid && (addForm.get('servidorId')?.dirty || addForm.get('servidorId')?.touched)" class="text-danger">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="editTipoUsuario" class="form-label">Tipo de Usuário</label>
+              <select class="form-control" id="editTipoUsuario" formControlName="tipoUsuario">
+                <option value="comum">Usuário Comum</option>
+                <option value="admin">Administrador</option>
+                <option value="superuser">Superusuário</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-warning me-2">Salvar Alterações</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

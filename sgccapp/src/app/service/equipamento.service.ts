@@ -58,12 +58,12 @@ export class EquipamentoService implements IService<Equipamento> {
       servidor: objeto.servidor_responsavel?.id || null,
       data_aquisicao: objeto?.data_aquisicao || null
     };
-    
+
     if (objeto.componentes && objeto.componentes.length > 0) {
       equipamentoData.componentes = objeto.componentes.map(componente => componente.id);
-    } else {
-      equipamentoData.componentes = null;
-    }
+    } //else {
+      //equipamentoData.componentes = null;
+    //}
 
     console.log(equipamentoData);
     if (objeto.id) {
@@ -72,11 +72,11 @@ export class EquipamentoService implements IService<Equipamento> {
       return this.http.put<Equipamento>(url, equipamentoData, { headers });
     } else {
       const equipamentoData: any = {
-        plaqueta: objeto?.plaqueta,
-        nome: objeto?.nome,
+        plaqueta: objeto?.plaqueta || null,
+        nome: objeto?.nome || null,
         marca: objeto?.marca || null,
-        estado: objeto.estado,
-        situacao: objeto.situacao,
+        estado: objeto.estado || null,
+        situacao: objeto.situacao || null,
         sala: objeto?.sala || null,
         setor: objeto?.setor?.id || null,
         tipo: objeto.tipo?.id || null,

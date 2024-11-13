@@ -6,6 +6,9 @@ export type User = {
   email: string;      // Email do usuário, usado como campo de login
   password: string;   // Senha do usuário (por questões de segurança, geralmente não retornada diretamente da API)
   servidor?: Servidor | null;
+  tipoUsuario?: string | null;
+  novaSenha?: string;
+  confirmaSenha?: string;
   is_active?: boolean;
   is_staff?: boolean;
   is_superuser?: boolean;
