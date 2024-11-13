@@ -73,6 +73,7 @@ export class UserService implements IService<User> {
     const url = `${this.apiUrl}user_update_admin/${id}/`;
     return this.http.delete<void>(url, { headers });
   }
+  
   getById(id: number): Observable<User> {
     const headers = this.getAuthHeaders();
     return this.http.get<User>(`${this.apiUrl}user_data_admin/${id}/`, { headers });
