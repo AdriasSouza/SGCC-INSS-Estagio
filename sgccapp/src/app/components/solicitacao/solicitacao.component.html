@@ -9,11 +9,6 @@
   <h3 class="fw-bold mb-4">Solicitação de Equipamentos</h3>
   <h5 class="mb-4">Tabela com todas as solicitações de equipamento</h5>
 
-  <!-- Botão para abrir o modal de nova solicitação -->
-  <button class="btn btn-primary mb-3" (click)="openAddModal()">
-    <i class="bi bi-plus-circle"></i> Nova Solicitação
-  </button>
-
   <!-- Botão para ocultar e abrir os filtros -->
   <button class="btn btn-secondary mb-3" (click)="toggleFiltros()">
     {{ mostrarFiltros ? 'Ocultar Filtros' : 'Mostrar Filtros' }}
@@ -159,32 +154,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Modal de Nova Solicitação -->
-<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="addModalLabel">Nova Solicitação</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form [formGroup]="addForm">
-          <div class="mb-3">
-            <label for="addDescricao" class="form-label">Descrição</label>
-            <textarea class="form-control" id="addDescricao" formControlName="descricao"></textarea>
-          </div>
-          <div class="mb-3">
-            <label for="addJustificativa" class="form-label">Justificativa</label>
-            <textarea class="form-control" id="addJustificativa" formControlName="justificativa"></textarea>
-          </div>
-          <button type="button" class="btn btn-primary me-2" (click)="confirmAdd()">Salvar</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
 
   <!-- Modal de Edição -->
   <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">

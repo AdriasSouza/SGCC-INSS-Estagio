@@ -53,13 +53,11 @@ export class SolicitacaoService implements IService<Solicitacao> {
     const token = localStorage.getItem('access_token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
 
-    // Verificar e converter data para Date se necessário
-    const data = typeof objeto.data === 'string' ? new Date(objeto.data) : objeto.data;
     
     // Criar um objeto com os campos necessários
     const solicitacaoData = {
       user: objeto.user ? objeto.user.id : null,
-      data: data.toISOString(),
+      data: objeto.data,
       status: objeto.status,
       descricao: objeto.descricao,
       justificativa: objeto.justificativa
@@ -71,6 +69,12 @@ export class SolicitacaoService implements IService<Solicitacao> {
       const url = this.apiUrl + objeto.id + '/';
       return this.http.put<Solicitacao>(url, solicitacaoData, { headers });
     } else {
+      const solicitacaoData = {
+        data: objeto.data,
+        status: objeto.status,
+        descricao: objeto.descricao,
+        justificativa: objeto.justificativa
+      };
       return this.http.post<Solicitacao>(this.apiUrl, solicitacaoData, { headers });
     }
   }
